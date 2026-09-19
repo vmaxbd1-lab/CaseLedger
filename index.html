@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#16324f">
+<title>Case Writer Pro v6.13</title>
+<style>
+*{box-sizing:border-box}
+:root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
+body{margin:0;font-family:'Segoe UI','Noto Sans Bengali',Tahoma,sans-serif;background:var(--bg);color:var(--txt);-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+.muted{color:var(--mut)}.small{font-size:12px}.center{text-align:center}
+.red{color:var(--red)}.green{color:var(--green)}
+label{display:block;font-size:11px;font-weight:700;color:var(--mut);margin:10px 0 3px;text-transform:uppercase;letter-spacing:.3px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--txt)}
+input[type=radio]{width:auto}
+input:focus,select:focus,textarea:focus{outline:2px solid #bcd6ea;border-color:var(--navy2)}
+textarea{min-height:80px;resize:vertical}
+.flex-row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.flex-row input,.flex-row select{margin-top:0;min-width:0;flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.two label{margin-top:6px}
+/* fullscreen views */
+.fullscreen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;z-index:50}
+#setup-view{background:linear-gradient(160deg,#16324f,#1d5b79);color:#fff;overflow:auto;justify-content:flex-start;padding-top:36px}
+#login-view{background:linear-gradient(160deg,#16324f,#1d5b79);color:#fff}
+.logo-big{font-size:52px;line-height:1}
+.setup-box{width:100%;max-width:430px}
+.setup-box .card{text-align:left}
+.login-users{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:360px;margin:14px 0}
+.login-user{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.28);color:#fff;border-radius:12px;padding:8px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.login-user small{display:block;font-size:9px;opacity:.85;font-weight:600}
+.login-user.sel{background:#fff;color:var(--navy);border-color:#fff}
+.pin-input{width:210px;text-align:center;font-size:24px;letter-spacing:10px;padding:13px;border-radius:12px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;outline:none}
+.pin-input::placeholder{letter-spacing:normal;font-size:14px;color:rgba(255,255,255,.6)}
+.pin-error{color:#ffb3b3;display:none;font-weight:700;font-size:13px;margin:12px 0 0}
+.forgot-link{color:#cfe8ff;font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline;display:inline-block}
+/* header */
+#app{display:none}
+#app-header{position:sticky;top:0;z-index:30;display:flex;background:linear-gradient(135deg,#16324f,#1d5b79);color:#fff;padding:11px 12px;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#header-title{flex:1;font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-btn{background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:9px;padding:6px 10px;font-size:15px;cursor:pointer}
+.hdr-right{display:flex;gap:6px}
+/* banners */
+#banner-root{max-width:680px;margin:10px auto 0;padding:0 12px}
+.banner{display:flex;gap:8px;align-items:center;font-size:12px;border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.banner-warn{background:#fef3c7;color:#92400e}
+.banner-info{background:#dbeafe;color:#1e40af}
+.banner-btn{background:#1e40af;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-left:auto;flex:none}
+.banner-warn .banner-btn{background:#92400e}
+.banner-x{background:none;border:none;font-size:12px;cursor:pointer;color:inherit;flex:none;padding:0 2px}
+/* layout */
+.container{max-width:680px;margin:0 auto;padding:12px 12px 96px}
+.view{display:none}
+.view.active{display:block}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(22,50,79,.07)}
+.card h3{margin:0 0 10px;font-size:15px;color:var(--navy);display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #f0f4f8;padding-bottom:8px}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--mut);cursor:pointer}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.stats.c2{grid-template-columns:repeat(2,1fr)}
+.stats.c4{grid-template-columns:repeat(4,1fr)}
+.stats.c4 .stat{padding:8px 3px}
+.stats.c4 .s-v{font-size:14px}
+.stats.c4 .s-l{font-size:8.5px}
+.stat-note{grid-column:1/-1;font-size:11px;color:var(--mut);font-weight:700;margin-top:2px}
+.stat.clickable{cursor:pointer;transition:transform .12s}
+.stat.clickable:active{transform:scale(.94)}
+.officer-card.inactive{opacity:.55;background:#f6f7f9}
+.stat{border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.stat .s-ic{font-size:15px}
+.stat .s-v{font-size:15px;font-weight:800;line-height:1.15}
+.stat .s-l{font-size:9.5px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.3px}
+.st-c{background:#eef2f9;color:#16324f}
+.st-b{background:#e5f6ef;color:#14705c}
+.st-r{background:#fdecee;color:#b91c1c}
+.st-y{background:#fef3dd;color:#b45309}
+.st-p{background:#f1ecfb;color:#6d28d9}
+.st-g{background:#e0f5f3;color:#0f766e}
+/* buttons */
+.btn{display:block;width:100%;padding:11px;border:none;border-radius:11px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;background:var(--navy);color:#fff;text-align:center;text-decoration:none}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:linear-gradient(135deg,#16324f,#1d5b79)}
+.btn-wa{background:#1faa53}
+.btn-danger{background:var(--red)}
+.btn-warn{background:var(--orange)}
+.btn-info{background:var(--navy2)}
+.btn-ghost{background:#fff;color:var(--txt);border:1.5px solid var(--line)}
+.btn-small{width:auto;padding:7px 12px;font-size:12px;margin:0;background:var(--teal);color:#fff;border:none;border-radius:9px;font-weight:800;cursor:pointer;display:inline-block}
+.btn-small.btn-ghost{background:#fff;color:var(--mut);border:1.5px solid var(--line)}
+.btn-small.btn-warn{background:var(--orange)}
+.btn-small.btn-red{background:var(--red)}
+.btn-small[disabled]{opacity:.4;pointer-events:none}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px}
+/* badges */
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;color:#fff;vertical-align:middle}
+.st-new{background:#2563eb}.st-running{background:#d97706}.st-completed{background:#16a34a}.st-closed{background:#64748b}
+.prl{font-weight:800;font-size:12px}
+.pr-critical{color:#dc2626}.pr-high{color:#ea580c}.pr-medium{color:#ca8a04}.pr-low{color:#16a34a}
+/* filter grid */
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.filter-grid select{margin:0}
+.date-pair{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.date-pair input{margin:0;flex:1;min-width:0;padding:7px}
+/* case cards */
+.case-card{border:1px solid var(--line);border-left:4px solid #16a34a;border-radius:12px;padding:10px 12px;margin-top:10px;background:#fff}
+.case-card.alert-red{border-left-color:#dc2626}
+.case-head{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}
+.case-no{font-size:10.5px;color:var(--mut);font-weight:800;letter-spacing:.3px}
+.case-meta{font-size:12px;color:var(--mut);margin-top:3px}
+.progress{height:6px;background:#edf1f7;border-radius:99px;margin-top:8px;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,#2a9d8f,#14705c);border-radius:99px}
+.case-fin{display:flex;gap:10px;font-size:12px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.case-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.case-actions .btn-small{flex:1;text-align:center}
+.dl-over{color:var(--red);font-weight:800}
+.dl-soon{color:var(--orange);font-weight:800}
+.age-chip{background:#fdecee;color:#b91c1c;font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px}
+.pm-chip{background:#e8f0fe;color:#1e40af;font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.paid-chip{background:#e5f6ef;color:#14705c;font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;white-space:nowrap}
+/* deadline alarm */
+.deadline-alarm{background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 6px 22px rgba(220,38,38,.4);animation:alarmPulse 1.6s ease-in-out infinite;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@keyframes alarmPulse{0%,100%{box-shadow:0 6px 22px rgba(220,38,38,.38)}50%{box-shadow:0 6px 30px rgba(220,38,38,.65)}}
+.da-head{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:900;letter-spacing:.3px;line-height:1.3}
+.da-bell{font-size:24px;animation:alarmRing 1.2s ease-in-out infinite;display:inline-block}
+@keyframes alarmRing{0%,100%{transform:rotate(0)}15%{transform:rotate(-14deg)}30%{transform:rotate(11deg)}45%{transform:rotate(-8deg)}60%{transform:rotate(5deg)}75%{transform:rotate(-3deg)}}
+.da-row{display:flex;justify-content:space-between;gap:8px;align-items:center;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 10px;margin-top:8px}
+.da-open{flex:1;min-width:0;cursor:pointer}
+.da-t{font-size:14px;font-weight:800;line-height:1.35}
+.da-s{font-size:11px;opacity:.92;font-weight:600;margin-top:2px}
+.da-right{text-align:right;flex:none}
+.da-days{font-size:15px;font-weight:900;white-space:nowrap}
+.da-days.over{font-size:17px}
+.da-link{background:none;border:none;color:#fff;font:inherit;font-size:10.5px;font-weight:700;cursor:pointer;text-decoration:underline;opacity:.85;padding:3px 0 0}
+.da-more{text-align:center;font-size:12px;font-weight:800;margin-top:8px;opacity:.9}
+#bottom-nav button.nav-alert{position:relative}
+#bottom-nav button.nav-alert::after{content:'';position:absolute;top:3px;right:8px;width:9px;height:9px;border-radius:50%;background:#dc2626;border:2px solid #fff;animation:alarmPulse 1.2s infinite}
+/* list items */
+.list-item{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.list-item:last-child{border-bottom:none}
+/* officers */
+.officer-card{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-left:4px solid #16a34a;border-radius:12px;padding:10px;margin-top:8px;cursor:pointer;background:#fff}
+.officer-card.alert-red{border-left-color:#dc2626}
+.off-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#16324f,#1d5b79);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none}
+.off-avatar.big{width:48px;height:48px;font-size:17px}
+.off-info{flex:1;min-width:0}
+.off-info small{color:var(--mut);font-size:11px;display:block}
+.off-due{font-size:13px;font-weight:800;text-align:right}
+.chev{color:#b6c2d1;font-size:20px;font-weight:700}
+.pf-top{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+/* bottom nav */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--line);z-index:40;padding:4px 0 max(6px,env(safe-area-inset-bottom));max-width:680px;margin:0 auto;justify-content:space-around;box-shadow:0 -2px 10px rgba(22,50,79,.06)}
+#bottom-nav button{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:1px;font:inherit;font-size:9.5px;font-weight:800;color:var(--mut);padding:6px 12px;border-radius:10px;cursor:pointer}
+#bottom-nav button.active{color:var(--navy);background:#eef2f9}
+#bottom-nav button .ic{font-size:19px}
+/* more sheet + modal */
+#more-sheet{position:fixed;inset:0;z-index:60;display:none}
+#more-sheet.open{display:block}
+.overlay-bg{position:absolute;inset:0;background:rgba(10,20,35,.45)}
+.sheet-card{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:680px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));max-height:76vh;overflow:auto}
+.grabber{width:44px;height:5px;border-radius:99px;background:#d5dce6;margin:2px auto 8px}
+.sheet-item{display:flex;width:100%;gap:12px;align-items:center;background:none;border:none;font:inherit;font-size:15px;font-weight:700;padding:13px 4px;border-bottom:1px solid #f0f4f8;cursor:pointer;text-align:left;color:var(--txt)}
+#modal-root{display:none;position:fixed;inset:0;z-index:70}
+#modal-root .overlay{position:absolute;inset:0;background:rgba(10,20,35,.5);display:flex;align-items:flex-end;justify-content:center}
+.modal-card{background:#fff;width:100%;max-width:680px;border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;animation:up .22s ease}
+@keyframes up{from{transform:translateY(50px);opacity:.5}to{transform:none;opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.modal-head b{font-size:16px;color:var(--navy)}
+@media(min-width:700px){#modal-root .overlay{align-items:center;padding:20px}.modal-card{border-radius:18px;max-width:560px;max-height:82vh}}
+/* toast */
+#toast-root{position:fixed;left:0;right:0;bottom:88px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{pointer-events:auto;display:flex;gap:10px;align-items:center;background:#12263a;color:#fff;padding:10px 16px;border-radius:99px;font-size:13px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.28);opacity:0;transform:translateY(12px);transition:.25s;max-width:100%}
+.toast.show{opacity:1;transform:none}
+.toast-act{background:#2a9d8f;border:none;color:#fff;font:inherit;font-size:12px;font-weight:800;padding:5px 12px;border-radius:99px;cursor:pointer}
+/* pager */
+.pager{display:flex;justify-content:center;gap:8px;align-items:center;margin:12px 0}
+.pager-info{font-size:12px;color:var(--mut);font-weight:800}
+/* search */
+.gs-head{font-size:11px;font-weight:900;color:var(--navy);margin:14px 0 2px;text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid #f0f4f8;padding-bottom:4px}
+.gs-row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;cursor:pointer;background:#fff}
+.gs-row:active{background:#f2f6fb}
+/* templates */
+.tpl-item{border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px}
+.tpl-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.tpl-pre{white-space:pre-wrap;font:inherit;font-size:11.5px;color:var(--mut);background:#f8fafc;border-radius:8px;padding:8px;margin:7px 0 0;max-height:96px;overflow:auto}
+.preview-box{width:100%;min-height:170px;font:inherit;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;white-space:pre-wrap;margin-top:4px}
+/* case modal */
+.cm-title{margin:2px 0 10px;font-size:17px;color:var(--navy)}
+.cm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.cm-grid small{display:block;color:var(--mut);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+.cm-grid b{font-size:13px;font-weight:700}
+.cm-grid select{padding:5px 8px;font-size:12.5px;margin:0}
+.link{color:var(--navy2);cursor:pointer;text-decoration:underline}
+.cm-fin{display:flex;gap:8px;margin:12px 0 2px}
+.fin-b{flex:1;background:#f4f7fb;border-radius:10px;padding:8px 4px;text-align:center;font-size:10px;color:var(--mut);font-weight:800;text-transform:uppercase}
+.fin-b b{display:block;font-size:15px;color:var(--txt);margin-top:2px}
+.cm-sec{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
+.cm-sec>b{font-size:13px;color:var(--navy)}
+/* tables */
+.tbl-wrap{overflow:auto}
+.perm-t{width:100%;border-collapse:collapse;font-size:11px}
+.perm-t th,.perm-t td{border:1px solid var(--line);padding:5px 6px;text-align:center}
+.perm-t td:first-child,.perm-t th:first-child{text-align:left;font-weight:800}
+.perm-t .ok{color:#16a34a;font-weight:900}
+.perm-t .no{color:#cbd5e1}
+.switch-row{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;margin-top:10px;cursor:pointer;text-transform:none;letter-spacing:0}
+.switch-row input{width:auto;margin:0}
+.exp-total{text-align:right;font-size:14px;font-weight:800;color:var(--orange);margin-top:8px}
+.doc h2{margin:0 0 2px}.doc h3{margin:0 0 12px;color:#333}
+.doc table{width:100%;border-collapse:collapse;font-size:12px}
+.doc th,.doc td{border:1px solid #999;padding:5px 7px;text-align:left}
+.doc th{background:#f0f0f0}
+.doc-foot{margin-top:14px;font-size:11px;color:#666}
+#print-area{display:none}
+/* ============ SIDEBAR (PC) ============ */
+#sidebar{display:none;position:fixed;top:0;left:0;bottom:0;width:224px;background:#fff;border-right:1px solid var(--line);flex-direction:column;padding:14px 10px 10px;gap:2px;z-index:35;overflow-y:auto;box-shadow:2px 0 10px rgba(22,50,79,.05)}
+.sb-brand{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--navy);font-size:15px;padding:2px 10px 12px}
+.sb-brand .sb-logo{font-size:22px}
+#sidebar button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;font:inherit;font-size:14px;font-weight:700;color:var(--mut);padding:9px 12px;border-radius:10px;cursor:pointer;text-align:left}
+#sidebar button:hover{background:#eef2f9;color:var(--navy)}
+#sidebar button.active{background:var(--navy);color:#fff}
+#sidebar hr{border:none;border-top:1px solid var(--line);margin:8px 6px}
+.sb-me{margin-top:auto;padding:10px 8px 2px;font-size:12.5px;font-weight:700;color:var(--mut);border-top:1px solid var(--line);line-height:1.5}
+
+/* ============ DESKTOP / PC LAYOUT (>=900px) ============ */
+@media (min-width:900px){
+  #sidebar{display:flex}
+  #app{padding-left:224px}
+  #bottom-nav{display:none}
+  body{font-size:14.5px}
+  .container{max-width:1500px;padding:16px 20px 48px}
+  #banner-root{max-width:1500px}
+  #toast-root{bottom:24px}
+  #view-dashboard.active{display:grid;grid-template-columns:minmax(0,2.6fr) minmax(0,1fr);gap:14px;align-items:start}
+  #view-dashboard>*{grid-column:1}
+  #view-dashboard>.card{margin-bottom:0}
+  #deadline-alarm-root{grid-column:1/-1}
+  #deadline-alarm-root:empty{display:none}
+  #dash-main{grid-column:1/-1}
+  #dash-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+  #dash-stats .stats{display:contents}
+  #dash-stats .stat{padding:14px 10px;border-radius:14px}
+  #dash-stats .s-v{font-size:17px}
+  #dash-stats .stat-note{grid-column:1/-1}
+  #dash-alerts:empty{display:none}
+  #dash-alerts:empty+.card{grid-column:1/-1}
+  #view-dashboard>.card:last-child{grid-column:2}
+  #cases-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  #cases-list .case-card{margin-top:0}
+  #cases-list>p{grid-column:1/-1}
+  #officers-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  #officers-list .officer-card{margin-top:0}
+  #view-profile.active{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:14px;align-items:start}
+  #view-profile.active>.card{margin-bottom:0}
+  #view-expenses.active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;align-items:start}
+  #view-expenses.active>.card{margin-bottom:0}
+  #view-settings.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+  #view-settings.active>.card{margin-bottom:0}
+  #view-settings.active>p{grid-column:1/-1}
+  #view-users.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+  #view-users.active>button{grid-column:1/-1}
+  #view-users.active>.card{margin-top:0!important;margin-bottom:0}
+  #view-search.active .card{max-width:920px;margin:0 auto}
+  .case-card:hover,.officer-card:hover{box-shadow:0 4px 14px rgba(22,50,79,.13)}
+  .btn:hover,.btn-small:hover{filter:brightness(1.07)}
+  .stat.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(22,50,79,.16)}
+}
+@media print{
+ body{background:#fff}
+ body.printing #app,body.printing #toast-root,body.printing #modal-root,body.printing #more-sheet{display:none!important}
+ body.printing #print-area{display:block}
+ .btn,.btn-small,.icon-btn,button,input,select,textarea,.chips,.pager,.case-actions,#bottom-nav,#app-header,#banner-root,.filter-grid,.date-pair{display:none!important}
+ .card,.case-card,.officer-card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+ .stat,.badge,.age-chip,.progress>div{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .container{padding:0;max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SETUP (first run) ============ -->
+<div id="setup-view" class="fullscreen">
+  <div class="setup-box">
+    <div class="logo-big">⚖️</div>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.13</span></h2>
+    <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
+    <div class="card">
+      <label>আপনার নাম *</label>
+      <input id="su-name" placeholder="e.g. Adv. Rahim">
+      <label>ব্যবসার নাম (Business Name)</label>
+      <input id="su-biz" placeholder="e.g. Rahman Case Writer">
+      <label>Security PIN (৪–৬ ডিজিট) *</label>
+      <input id="su-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+      <label>PIN আবার লিখুন *</label>
+      <input id="su-pin2" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+      <label>নিরাপত্তা প্রশ্ন (PIN ভুলে গেলে কাজে লাগবে) *</label>
+      <input id="su-secq" list="secq-list" placeholder="প্রশ্ন লিখুন বা বেছে নিন">
+      <datalist id="secq-list">
+        <option value="আপনার মায়ের নাম কী?"></option>
+        <option value="আপনার প্রথম স্কুলের নাম কী?"></option>
+        <option value="আপনার জন্মজেলা কোনটি?"></option>
+        <option value="What is your pet's name?"></option>
+      </datalist>
+      <label>উত্তর *</label>
+      <input id="su-seca" placeholder="গোপন উত্তর">
+      <button class="btn btn-primary" onclick="submitSetup()">Create Admin &amp; Start ➜</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-view" class="fullscreen">
+  <div class="logo-big">🔒</div>
+  <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
+  <p style="margin:0;font-size:12px;opacity:.8">আপনার নাম বেছে নিন, তারপর PIN দিন</p>
+  <p style="margin:3px 0 0;font-size:10px;opacity:.55">Case Writer Pro v6.13 (Final) · PC + Mobile</p>
+  <div id="login-users" class="login-users"></div>
+  <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
+  <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
+  <p id="pinError" class="pin-error">❌ ভুল PIN — আবার চেষ্টা করুন</p>
+  <span class="forgot-link" onclick="forgotPin()">PIN ভুলে গেছেন?</span>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside id="sidebar">
+    <div class="sb-brand"><span class="sb-logo">⚖️</span> Case Writer Pro</div>
+    <button data-v="dashboard" onclick="go('dashboard')">🏠 Dashboard</button>
+    <button data-v="cases" onclick="go('cases')">📁 Cases</button>
+    <button data-v="officers" onclick="go('officers')">👮 Officers</button>
+    <button data-v="expenses" id="sb-expenses" onclick="go('expenses')">💸 Expenses</button>
+    <button id="sb-search" onclick="openSearchView()">🔎 Global Search</button>
+    <hr>
+    <button data-v="templates" id="sb-templates" onclick="go('templates')">📝 Templates</button>
+    <button data-v="recycle" id="sb-recycle" onclick="go('recycle')">♻️ Recycle Bin</button>
+    <button data-v="users" id="sb-users" onclick="go('users')">👥 Users &amp; Roles</button>
+    <button data-v="settings" id="sb-settings" onclick="go('settings')">⚙️ Settings</button>
+    <button onclick="lockApp()">🔒 Lock Now</button>
+    <div class="sb-me" id="sb-me"></div>
+  </aside>
+  <header id="app-header">
+    <button class="hdr-btn" id="backBtn" onclick="goBack()" style="display:none">←</button>
+    <span id="header-title">Dashboard</span>
+    <div class="hdr-right">
+      <button class="hdr-btn" onclick="openSearchView()" title="Global Search">🔎</button>
+      <button class="hdr-btn" onclick="lockApp()" title="Lock">🔒</button>
+    </div>
+  </header>
+  <div id="banner-root"></div>
+  <div class="container">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div id="deadline-alarm-root"></div>
+      <div class="card" id="dash-main">
+        <h3>📊 Dashboard <button class="icon-btn" onclick="window.print()" title="Print">🖨️</button></h3>
+        <div class="chips" id="dash-chips">
+          <button class="chip active" data-r="all" onclick="setDashRange('all')">All Time</button>
+          <button class="chip" data-r="today" onclick="setDashRange('today')">Today</button>
+          <button class="chip" data-r="week" onclick="setDashRange('week')">This Week</button>
+          <button class="chip" data-r="month" onclick="setDashRange('month')">This Month</button>
+          <button class="chip" data-r="custom" onclick="setDashRange('custom')">📅 Custom</button>
+        </div>
+        <div id="dash-custom" class="hidden">
+          <div class="flex-row">
+            <input type="date" id="dash-from">
+            <input type="date" id="dash-to">
+            <button class="btn-small" onclick="applyDashCustom()">Apply</button>
+          </div>
+        </div>
+        <div id="dash-stats"></div>
+      </div>
+      <div id="dash-alerts"></div>
+      <div class="card"><h3>🧾 Recent Payments</h3><div id="dash-recent"></div></div>
+    </div>
+
+    <!-- CASES -->
+    <div id="view-cases" class="view">
+      <div class="card">
+        <h3>📁 All Cases</h3>
+        <input id="cf-q" placeholder="🔎 Case ID / Name / Client..." style="margin-top:0" oninput="sess.caseFilters.page=1;renderCases()">
+        <div class="filter-grid">
+          <select id="cf-status" onchange="sess.caseFilters.page=1;renderCases()">
+            <option value="">All Status</option><option>New</option><option>Running</option><option>Completed</option><option>Closed</option>
+          </select>
+          <select id="cf-officer" onchange="sess.caseFilters.page=1;renderCases()"><option value="">All Officers</option></select>
+          <select id="cf-priority" onchange="sess.caseFilters.page=1;renderCases()">
+            <option value="">All Priority</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+          </select>
+          <select id="cf-sort" onchange="sess.caseFilters.page=1;renderCases()">
+            <option value="newest">Sort: Newest</option><option value="oldest">Sort: Oldest</option><option value="deadline">Sort: Deadline</option><option value="due">Sort: Due (high→low)</option><option value="priority">Sort: Priority</option><option value="deal">Sort: Deal (high→low)</option><option value="aging">Sort: Due Age (old first)</option>
+          </select>
+        </div>
+        <div class="date-pair">
+          <input type="date" id="cf-from" onchange="sess.caseFilters.page=1;renderCases()" title="Opening from">
+          <input type="date" id="cf-to" onchange="sess.caseFilters.page=1;renderCases()" title="Opening to">
+          <button class="btn-small btn-ghost" id="btn-unpaid" onclick="toggleUnpaid()">Unpaid Only</button>
+          <button class="btn-small btn-ghost" onclick="clearCaseFilters()">✖</button>
+        </div>
+        <div id="cases-summary" class="small muted" style="margin-top:8px"></div>
+      </div>
+      <button class="btn btn-primary" id="add-case-btn" onclick="openCaseForm()">＋ Add New Case</button>
+      <div id="cases-list"></div>
+      <div id="cases-pager" class="pager"></div>
+    </div>
+
+    <!-- OFFICERS -->
+    <div id="view-officers" class="view">
+      <button class="btn btn-primary" id="add-officer-btn" onclick="openOfficerForm()">＋ Add Officer</button>
+      <div class="card" style="margin-top:12px">
+        <h3>👮 Officers</h3>
+        <input id="officer-q" placeholder="🔎 Search officer name / phone..." oninput="renderOfficers()">
+        <div id="officers-list"></div>
+      </div>
+    </div>
+
+    <!-- OFFICER PROFILE -->
+    <div id="view-profile" class="view">
+      <div class="card" id="profile-head"></div>
+      <div class="card"><h3>📁 Cases</h3><div id="profile-cases"></div></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="view-expenses" class="view">
+      <div class="card">
+        <h3>💸 Add Expense</h3>
+        <div class="flex-row">
+          <input type="number" id="ex-amt" placeholder="Amount (৳)">
+          <select id="ex-cat"></select>
+        </div>
+        <div class="flex-row">
+          <input type="date" id="ex-date">
+          <input id="ex-note" placeholder="Note (optional)">
+        </div>
+        <select id="ex-case"></select>
+        <button class="btn btn-warn" onclick="addExpense()">Add Expense</button>
+      </div>
+      <div class="card">
+        <h3>📜 Expense History</h3>
+        <div class="date-pair">
+          <input type="date" id="exf-from">
+          <input type="date" id="exf-to">
+          <select id="exf-cat"></select>
+        </div>
+        <div class="flex-row">
+          <button class="btn-small" onclick="sess.expFilters.page=1;renderExpenses()">🔍 Search</button>
+          <button class="btn-small btn-ghost" onclick="clearExpFilters()">✖ Clear</button>
+        </div>
+        <div class="exp-total">Filtered Total: <span id="exp-total">৳0</span></div>
+        <div id="exp-list"></div>
+        <div id="exp-pager" class="pager"></div>
+      </div>
+    </div>
+
+    <!-- GLOBAL SEARCH -->
+    <div id="view-search" class="view">
+      <div class="card">
+        <h3>🔎 Global Search</h3>
+        <input id="gs-q" placeholder="Officer · Case ID · Case Name · Client · Phone · Payment · Note..." oninput="runGlobalSearch()">
+        <div id="gs-results"></div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div id="view-templates" class="view">
+      <div class="card">
+        <h3>📝 WhatsApp Templates</h3>
+        <p class="small muted" style="margin:0 0 4px">Template-এ <b>{{officer}}</b>, <b>{{case_no}}</b>, <b>{{due}}</b> ইত্যাদি লেখা জায়গায় অ্যাপ নিজেই তথ্য বসিয়ে দেবে।</p>
+        <div id="tpl-list"></div>
+      </div>
+      <button class="btn btn-primary" id="add-template-btn" onclick="openTemplateForm()">＋ New Template</button>
+    </div>
+
+    <!-- RECYCLE BIN -->
+    <div id="view-recycle" class="view">
+      <div class="card">
+        <h3>♻️ Recycle Bin</h3>
+        <p class="small muted" style="margin:0 0 6px">Delete করা জিনিস এখানে ৩০ দিন থাকে — চাইলে ফেরত আনুন।</p>
+        <div id="bin-list"></div>
+      </div>
+      <button class="btn btn-danger" id="empty-bin-btn" onclick="emptyBin()">🗑️ Empty Recycle Bin</button>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="view-settings" class="view">
+      <div class="card">
+        <h3>⚙️ General</h3>
+        <label>Business Name (Template-এ ব্যবহৃত হবে)</label>
+        <div class="flex-row" style="flex-wrap:nowrap">
+          <input id="st-biz">
+          <button class="btn-small" style="flex:none" onclick="saveBiz()">Save</button>
+        </div>
+        <label class="switch-row"><input type="checkbox" id="st-autolock" onchange="toggleAutoLock()"> 🔒 অটো-লক (৫ মিনিট চুপচাপ থাকলে নিজে থেকে লক)</label>
+      </div>
+      <div class="card">
+        <h3>👤 My Account</h3>
+        <div id="st-me" class="small muted"></div>
+        <button class="btn" onclick="openChangePin()">🔑 Change My PIN</button>
+        <button class="btn" id="st-secq-btn" onclick="openSecQ()">🛡️ Security Question (PIN Recovery)</button>
+      </div>
+      <div class="card">
+        <h3>🗂️ Expense Categories</h3>
+        <div id="st-cats" class="chips"></div>
+        <div class="flex-row" style="flex-wrap:nowrap">
+          <input id="st-newcat" placeholder="New category name">
+          <button class="btn-small" style="flex:none" onclick="addCategory()">Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>💵 Payment Methods</h3>
+        <p class="small muted" style="margin:0 0 6px">Add Payment-এ যে মাধ্যমগুলো দেখাবে (Cash, bKash, Nagad…)</p>
+        <div id="st-pms" class="chips"></div>
+        <div class="flex-row" style="flex-wrap:nowrap">
+          <input id="st-newpm" placeholder="New method (e.g. Upay)">
+          <button class="btn-small" style="flex:none" onclick="addPayMethod()">Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📂 Case Types</h3>
+        <p class="small muted" style="margin:0 0 6px">Case ফর্মের Case Type তালিকা — নিজের মতো যোগ/বাদ দিন (GR, UD, CR…)</p>
+        <div id="st-ctypes" class="chips"></div>
+        <div class="flex-row" style="flex-wrap:nowrap">
+          <input id="st-newctype" placeholder="New type (e.g. Metropolitan)">
+          <button class="btn-small" style="flex:none" onclick="addCaseType()">Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>💾 Backup &amp; Restore</h3>
+        <p class="small muted" id="st-lastbackup" style="margin:0 0 4px"></p>
+        <button class="btn btn-info" onclick="backupNow()">📥 Backup (JSON file)</button>
+        <button class="btn btn-warn" onclick="openRestore()">📤 Restore from Backup…</button>
+      </div>
+      <div class="card" id="danger-card">
+        <h3>⚠️ Danger Zone</h3>
+        <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
+      </div>
+      <p class="small muted center">Case Writer Pro v6.13 (Final) · PC + Mobile · 19 Sep 2026 · ⚖️ Made for case writers</p>
+    </div>
+
+    <!-- USERS -->
+    <div id="view-users" class="view">
+      <button class="btn btn-primary" id="add-user-btn" onclick="openUserForm()">＋ Add User</button>
+      <div class="card" style="margin-top:12px"><h3>👥 Users</h3><div id="users-list"></div></div>
+      <div class="card"><h3>🔑 Permission Matrix</h3><div id="perm-matrix" class="tbl-wrap"></div></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button data-v="dashboard" onclick="go('dashboard')"><span class="ic">🏠</span>Home</button>
+    <button data-v="cases" onclick="go('cases')"><span class="ic">📁</span>Cases</button>
+    <button data-v="officers" onclick="go('officers')"><span class="ic">👮</span>Officers</button>
+    <button data-v="expenses" onclick="go('expenses')"><span class="ic">💸</span>Expense</button>
+    <button data-v="more" onclick="openMoreSheet()"><span class="ic">⋯</span>More</button>
+  </nav>
+</div>
+
+<!-- MORE SHEET -->
+<div id="more-sheet">
+  <div class="overlay-bg" onclick="closeMoreSheet()"></div>
+  <div class="sheet-card">
+    <div class="grabber"></div>
+    <button class="sheet-item" id="ms-search" onclick="openSearchView()">🔎 Global Search</button>
+    <button class="sheet-item" id="ms-templates" onclick="go('templates')">📝 WhatsApp Templates</button>
+    <button class="sheet-item" id="ms-recycle" onclick="go('recycle')">♻️ Recycle Bin</button>
+    <button class="sheet-item" id="ms-settings" onclick="go('settings')">⚙️ Settings</button>
+    <button class="sheet-item" id="ms-users" onclick="go('users')">👥 Users &amp; Roles</button>
+    <button class="sheet-item" onclick="window.print()">🖨️ Print This Page</button>
+    <button class="sheet-item" onclick="lockApp()">🔒 Lock Now</button>
+    <div id="more-me" class="small muted center" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<div id="print-area"></div>
+
+<script>
+'use strict';
+/* ==================== helpers ==================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>(Math.round(Number(n))||0).toLocaleString('en-IN');
+const tk=n=>'\u09F3'+fmt(n);
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function isoOfTs(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const fmtD=iso=>{if(!iso)return '—';const p=String(iso).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:iso;};
+const daysBetween=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const monthLabel=ym=>{const p=String(ym).split('-');return (MONTHS[+p[1]-1]||p[1])+' '+p[0];};
+function uid(){try{if(crypto.randomUUID)return crypto.randomUUID();}catch(e){}return 'id-'+Date.now().toString(36)+Math.random().toString(36).slice(2,9);}
+function initials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';}
+function dmyToIso(s){if(!s)return '';const p=String(s).split('/');if(p.length===3&&p[2].length===4)return p[2]+'-'+String(p[1]).padStart(2,'0')+'-'+String(p[0]).padStart(2,'0');const t=new Date(s).getTime();if(!isNaN(t))return isoOfTs(t);return '';}
+
+/* ==================== SHA-256 (hashed PIN) ==================== */
+function sha256Sync(ascii){
+  function rr(v,a){return (v>>>a)|(v<<(32-a));}
+  var mathPow=Math.pow,maxWord=mathPow(2,32),lengthProperty='length',i,j,result='';
+  var words=[],asciiBitLength=ascii[lengthProperty]*8;
+  var hash=sha256Sync.h=sha256Sync.h||[];
+  var k=sha256Sync.k=sha256Sync.k||[];
+  var primeCounter=k[lengthProperty];
+  var isComposite={};
+  for(var candidate=2;primeCounter<64;candidate++){
+    if(!isComposite[candidate]){
+      for(i=0;i<313;i+=candidate){isComposite[i]=candidate;}
+      hash[primeCounter]=(mathPow(candidate,.5)*maxWord)|0;
+      k[primeCounter++]=(mathPow(candidate,1/3)*maxWord)|0;
+    }
+  }
+  ascii+='\x80';
+  while(ascii[lengthProperty]%64-56)ascii+='\x00';
+  for(i=0;i<ascii[lengthProperty];i++){
+    j=ascii.charCodeAt(i);
+    if(j>>8)return '';
+    words[i>>2]|=j<<((3-i)%4)*8;
+  }
+  words[words[lengthProperty]]=((asciiBitLength/maxWord)|0);
+  words[words[lengthProperty]]=(asciiBitLength);
+  for(j=0;j<words[lengthProperty];){
+    var w=words.slice(j,j+=16);var oldHash=hash;
+    hash=hash.slice(0,8);
+    for(i=0;i<64;i++){
+      var w15=w[i-15],w2=w[i-2];
+      var a=hash[0],e=hash[4];
+      var temp1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var temp2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(temp1+temp2)|0].concat(hash);
+      hash[4]=(hash[4]+temp1)|0;
+    }
+    for(i=0;i<8;i++){hash[i]=(hash[i]+oldHash[i])|0;}
+  }
+  for(i=0;i<8;i++){for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}}
+  return result;
+}
+function hashText(s){return sha256Sync(unescape(encodeURIComponent(String(s))));}
+function hashPin(pin,salt){return hashText(salt+'::'+pin);}
+
+/* ==================== storage (with preview fallback) ==================== */
+let PERSIST=true;
+const storage=(function(){
+  try{const t='__cwp_test';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}
+  catch(e){PERSIST=false;const m={};return{getItem:k=>(k in m?m[k]:null),setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];}};}
+})();
+
+/* ==================== database ==================== */
+const DB_KEY='caseLedgerDataV6';
+const OLD_KEY='caseLedgerData';
+const OLD_PIN_KEY='caseLedgerAppPin';
+let db=null,currentUser=null;
+let window_migrated=false;
+
+const sess={
+  view:'dashboard',
+  loginUserId:null,
+  resetUserId:null,
+  profileOfficerId:null,
+  dashRange:'all',dashFrom:'',dashTo:'',
+  caseFilters:{unpaid:false,page:1},
+  expFilters:{page:1}
+};
+
+function defaultTemplates(){return [
+  {id:'tpl-friend',type:'reminder',name:'Friendly Reminder',body:'আসসালামু আলাইকুম স্যার, আশা করি ভালো আছেন।\n\nCase: {{case_no}} ({{case_name}})\nTotal Amount: ৳{{total}}\nPaid: ৳{{paid}}\nDue: ৳{{due}}\n\nআপনার সুবিধামতো সময়ে বকেয়া পরিশোধ করার জন্য বিনীত অনুরোধ করছি।\n\nধন্যবাদ স্যার।\n— {{business}}'},
+  {id:'tpl-formal',type:'reminder',name:'Formal Reminder',body:'জনাব {{officer}},\n\nআপনার মামলার লেখালেখির হিসাব নিম্নরূপ:\nCase: {{case_no}} ({{case_name}})\nTotal Amount: ৳{{total}}\nPaid: ৳{{paid}}\nDue: ৳{{due}}\n\nঅনুগ্রহপূর্বক উক্ত বকেয়া পরিশোধের জন্য অনুরোধ করা হলো।\n\nবিনীত নিবেদক,\n{{business}}'},
+  {id:'tpl-urgent',type:'reminder',name:'Urgent Reminder',body:'স্যার, বকেয়া অনুদাবি —\n\nCase: {{case_no}} ({{case_name}})\nDue: ৳{{due}} (দীর্ঘদিন যাবৎ পড়ে আছে)\n\nঅনুগ্রহ করে শীঘ্রই পরিশোধের ব্যবস্থা করুন।\n\n— {{business}}'},
+  {id:'tpl-final',type:'reminder',name:'Final Reminder',body:'প্রিয় {{officer}} স্যার,\n\nCase: {{case_no}} ({{case_name}})\nDue: ৳{{due}}\n\nএটি চূড়ান্ত (Final) অনুরোধ। বকেয়া পরিশোধ না হলে সেবা স্থগিত রাখতে বাধ্য হবো।\n\nসহযোগিতার জন্য ধন্যবাদ।\n— {{business}}'},
+  {id:'tpl-receipt',type:'receipt',name:'Payment Receipt',body:'প্রিয় {{officer}} স্যার,\n\n৳{{amount}} গ্রহণ করা হয়েছে ✅\nতারিখ: {{date}}\nReceipt No: {{receipt_no}}\nMethod: {{method}}\nCase: {{case_no}} ({{case_name}})\n\nমোট পরিশোধ: ৳{{paid}}\nবর্তমান বকেয়া: ৳{{due}}\n\nধন্যবাদ স্যার।\n— {{business}}'},
+  {id:'tpl-stmt',type:'statement',name:'Monthly Statement',body:'📋 {{business}} — মাসিক হিসাব\nঅফিসার: {{officer}}\nমাস: {{month}}\n\n{{cases_block}}\n\n──────────────\nমোট ডিল: ৳{{total}}\nমোট পরিশোধ: ৳{{paid}}\nমোট বকেয়া: ৳{{due}}\n\n— {{business}}'}
+];}
+
+function defaultDb(){return{
+  schemaVersion:6,
+  users:[],officers:[],cases:[],expenses:[],recycleBin:[],
+  settings:{
+    businessName:'Case Writer Pro',
+    securityQuestion:'',securityAnswerHash:'',securitySalt:'',
+    autoLock:true,lastBackupDate:'',
+    dismissedDeadlines:{},
+    caseSeq:{},receiptSeq:{},
+    expenseCategories:['Transport','Paper','Ink','Photocopy','Court Fee','Stationery','Other'],
+    paymentMethods:['Cash','bKash','Nagad','Rocket','Bank','Cheque','Other'],
+    caseTypes:['GR','CR','UD','Civil','Criminal','Family','Appeal','Other'],
+    templates:defaultTemplates()
+  }
+};}
+
+function ensureDefaults(d){
+  const base=defaultDb();
+  Object.keys(base).forEach(k=>{if(d[k]===undefined)d[k]=base[k];});
+  if(!d.settings||typeof d.settings!=='object')d.settings={};
+  Object.keys(base.settings).forEach(k=>{if(d.settings[k]===undefined)d.settings[k]=base.settings[k];});
+  // upgrade old receipt templates: insert Method line (once) if missing
+  if(Array.isArray(d.settings.templates))d.settings.templates.forEach(function(t){
+    if(t.type==='receipt'&&t.body&&t.body.indexOf('{{method}}')<0){
+      t.body=t.body.replace('Receipt No: {{receipt_no}}','Receipt No: {{receipt_no}}\nMethod: {{method}}');
+    }
+  });
+  // v6.12: reorder default case types (GR, CR, UD first) — only if save still has the exact old default order
+  const OLD_CT=['GR','UD','CR','Civil','Criminal','Family','Appeal','Other'];
+  if(Array.isArray(d.settings.caseTypes)&&JSON.stringify(d.settings.caseTypes)===JSON.stringify(OLD_CT))d.settings.caseTypes=base.settings.caseTypes.slice();
+  // one-time upgrade: append 'Other' to payment methods saved by older version
+  if(!d.settings.pmOtherUpgraded){
+    if(Array.isArray(d.settings.paymentMethods)&&d.settings.paymentMethods.indexOf('Other')<0)d.settings.paymentMethods.push('Other');
+    d.settings.pmOtherUpgraded=true;
+  }
+  return d;
+}
+function saveDb(){storage.setItem(DB_KEY,JSON.stringify(db));}
+function nextCaseNoRaw(d){
+  const y=new Date().getFullYear();
+  if(!d.settings.caseSeq||d.settings.caseSeq.year!==y)d.settings.caseSeq={year:y,n:1};
+  else d.settings.caseSeq.n++;
+  return 'CASE-'+y+'-'+String(d.settings.caseSeq.n).padStart(5,'0');
+}
+function nextCaseNo(){return nextCaseNoRaw(db);}
+function nextReceiptNo(){
+  const y=new Date().getFullYear();
+  if(!db.settings.receiptSeq||db.settings.receiptSeq.year!==y)db.settings.receiptSeq={year:y,n:1};
+  else db.settings.receiptSeq.n++;
+  return 'RCP-'+y+'-'+String(db.settings.receiptSeq.n).padStart(4,'0');
+}
+function migrateV5(old){
+  const d=defaultDb();
+  const oldPin=storage.getItem(OLD_PIN_KEY);
+  const salt=uid();
+  d.users.push({id:uid(),name:'Admin',role:'superadmin',pinHash:hashPin(String(oldPin||'0000'),salt),salt:salt,createdAt:Date.now()});
+  (old.officers||[]).forEach(function(o){
+    d.officers.push({id:o.id,name:o.name,phone:o.phone||'',address:'',note:'',createdAt:o.id||Date.now()});
+    (o.cases||[]).forEach(function(c){
+      d.cases.push({
+        id:c.id,caseNo:nextCaseNoRaw(d),name:c.name,officerId:o.id,client:'',caseType:'',
+        description:'',openingDate:dmyToIso(c.date)||isoOfTs(c.id||Date.now()),deadline:'',
+        status:c.status||'Running',priority:'Medium',dealAmount:+c.dealAmount||0,notes:'',
+        createdAt:c.id||Date.now(),
+        payments:(c.payments||[]).map(function(p){return{id:uid(),receiptNo:'',amount:+p.amount||0,date:dmyToIso(p.date)||todayISO(),note:''};})
+      });
+    });
+  });
+  (old.expenses||[]).forEach(function(e){d.expenses.push({id:e.id||uid(),caseId:'',category:e.category||'Other',amount:+e.amount||0,date:dmyToIso(e.date)||todayISO(),note:e.note||''});});
+  return d;
+}
+function loadDb(){
+  let raw=null;
+  try{raw=storage.getItem(DB_KEY);}catch(e){}
+  if(raw){try{db=JSON.parse(raw);}catch(e){db=null;}}
+  if(!db){
+    const old=storage.getItem(OLD_KEY);
+    if(old){try{const o=JSON.parse(old);db=migrateV5(o);window_migrated=true;}catch(e){db=defaultDb();}}
+    else db=defaultDb();
+    ensureDefaults(db);
+    saveDb();
+  }else{
+    ensureDefaults(db);
+  }
+}
+function purgeBin(){
+  if(!db.recycleBin||!db.recycleBin.length)return;
+  const cut=Date.now()-30*86400000;
+  const before=db.recycleBin.length;
+  db.recycleBin=db.recycleBin.filter(b=>b.deletedAt>=cut);
+  if(db.recycleBin.length!==before)saveDb();
+}
+
+/* ==================== roles & permissions ==================== */
+const ROLES={
+  superadmin:{label:'Super Admin',perms:['view','add','edit','delete','financial','settings','users']},
+  admin:{label:'Admin',perms:['view','add','edit','delete','financial','settings']},
+  manager:{label:'Manager',perms:['view','add','edit','financial']},
+  officer:{label:'Officer',perms:['view','add']},
+  viewer:{label:'Viewer',perms:['view']}
+};
+function can(p){return !!(currentUser&&ROLES[currentUser.role]&&ROLES[currentUser.role].perms.includes(p));}
+function roleLabel(r){return (ROLES[r]&&ROLES[r].label)||r;}
+function isSuperAdmin(){return !!currentUser&&currentUser.role==='superadmin';}
+
+/* ==================== auth ==================== */
+function initAuth(){
+  if(!db.users.length){$('setup-view').style.display='flex';return;}
+  $('login-biz').textContent=db.settings.businessName||'Case Writer Pro';
+  renderLoginUsers();
+  $('login-view').style.display='flex';
+  selectLoginUser(db.users[0].id);
+  $('pinInput').value='';
+}
+function renderLoginUsers(){
+  $('login-users').innerHTML=db.users.map(u=>'<button class="login-user" id="lu-'+u.id+'" onclick="selectLoginUser(\''+u.id+'\')">'+esc(u.name)+'<small>'+roleLabel(u.role)+'</small></button>').join('');
+}
+function selectLoginUser(id){
+  sess.loginUserId=id;
+  document.querySelectorAll('.login-user').forEach(b=>b.classList.remove('sel'));
+  const el=$('lu-'+id);if(el)el.classList.add('sel');
+  $('pinInput').value='';$('pinError').style.display='none';
+  try{$('pinInput').focus();}catch(e){}
+}
+function tryLogin(){
+  const u=db.users.find(x=>x.id===sess.loginUserId)||db.users[0];
+  const pin=$('pinInput').value;
+  if(!pin)return;
+  if(hashPin(pin,u.salt)===u.pinHash){
+    $('pinInput').value='';loginAs(u);
+  }else{
+    $('pinError').style.display='block';$('pinInput').value='';
+    setTimeout(()=>{try{$('pinError').style.display='none';}catch(e){}},2500);
+  }
+}
+function submitSetup(){
+  const name=$('su-name').value.trim(),biz=$('su-biz').value.trim();
+  const p1=$('su-pin').value,p2=$('su-pin2').value;
+  const q=$('su-secq').value.trim(),a=$('su-seca').value.trim();
+  if(!name)return toast('আপনার নাম লিখুন');
+  if(!/^\d{4,6}$/.test(p1))return toast('PIN অবশ্যই ৪–৬ ডিজিট হতে হবে');
+  if(p1!==p2)return toast('দুটি PIN মিলছে না');
+  if(!q||!a)return toast('নিরাপত্তা প্রশ্ন ও উত্তর দিন');
+  const salt=uid(),asalt=uid();
+  const u={id:uid(),name:name,role:'superadmin',pinHash:hashPin(p1,salt),salt:salt,createdAt:Date.now()};
+  db.users.push(u);
+  db.settings.businessName=biz||'Case Writer Pro';
+  db.settings.securityQuestion=q;
+  db.settings.securitySalt=asalt;
+  db.settings.securityAnswerHash=hashText(asalt+'::'+a);
+  saveDb();
+  $('setup-view').style.display='none';
+  loginAs(u);
+}
+function loginAs(u){
+  currentUser=u;
+  $('login-view').style.display='none';
+  $('app').style.display='block';
+  applyPerms();
+  go('dashboard');
+  resetIdleTimer();
+  toast('👋 Welcome, '+u.name+' — '+roleLabel(u.role));
+  if(window_migrated){setTimeout(()=>{toast('🔄 পুরনো v5-এর সব ডেটা স্বয়ংক্রিয়ভাবে এনে নেওয়া হয়েছে (পুরনো PIN-ই ব্যবহার করুন)');},800);window_migrated=false;}
+}
+function lockApp(){
+  currentUser=null;clearTimeout(idleT);
+  closeModal();closeMoreSheet();
+  $('app').style.display='none';
+  $('login-view').style.display='flex';
+  renderLoginUsers();
+  selectLoginUser(db.users[0].id);
+  $('pinInput').value='';
+}
+function forgotPin(){
+  if(!db.settings.securityQuestion){
+    openModal(modalHead('PIN Recovery')+
+      '<p>⚠️ নিরাপত্তা প্রশ্ন সেট করা নেই, তাই এখান থেকে PIN রিকভারি সম্ভব নয়।</p>'+
+      '<p class="small muted">বিকল্প পথ: ① পুরনো কোনো <b>Backup ফাইল Restore</b> করুন (Users সহ ফিরে আসে) — সেটিংস থেকে নিরাপত্তা প্রশ্ন সেট করা যায়। ② একদম শেষ উপায়: অ্যাপ রিসেট (সব ডেটা মুছে যাবে)।</p>'+
+      '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+    return;
+  }
+  openModal(modalHead('PIN Recovery')+
+    '<p>প্রশ্ন: <b>'+esc(db.settings.securityQuestion)+'</b></p>'+
+    '<label>উত্তর</label><input id="fp-ans" placeholder="আপনার উত্তর">'+
+    '<label>New PIN (৪–৬ ডিজিট)</label><input id="fp-pin" type="password" inputmode="numeric" maxlength="6">'+
+    '<label>New PIN আবার</label><input id="fp-pin2" type="password" inputmode="numeric" maxlength="6">'+
+    '<button class="btn btn-primary" onclick="doForgotPin()">Reset PIN</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function doForgotPin(){
+  const a=$('fp-ans').value.trim(),p1=$('fp-pin').value,p2=$('fp-pin2').value;
+  const u=db.users.find(x=>x.id===sess.loginUserId);
+  if(!u)return toast('User select করা হয়নি');
+  if(hashText(db.settings.securitySalt+'::'+a)!==db.settings.securityAnswerHash)return toast('❌ উত্তর ভুল');
+  if(!/^\d{4,6}$/.test(p1)||p1!==p2)return toast('❌ নতুন PIN সঠিক নয়');
+  u.salt=uid();u.pinHash=hashPin(p1,u.salt);saveDb();
+  closeModal();toast('✅ PIN রিসেট হয়েছে — নতুন PIN দিয়ে লগইন করুন');
+}
+
+/* ==================== router ==================== */
+const VIEWMETA={
+  dashboard:{title:'Dashboard',back:false},
+  cases:{title:'All Cases',back:false},
+  officers:{title:'Officers',back:false},
+  expenses:{title:'Expense Tracker',back:false},
+  profile:{title:'Officer Profile',back:true},
+  search:{title:'Global Search',back:true},
+  templates:{title:'WhatsApp Templates',back:true},
+  recycle:{title:'Recycle Bin',back:true},
+  settings:{title:'Settings',back:true},
+  users:{title:'Users & Roles',back:true}
+};
+function go(v){
+  sess.view=v;
+  closeModal();closeMoreSheet();
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  const el=$('view-'+v);if(el)el.classList.add('active');
+  const m=VIEWMETA[v]||{title:'',back:true};
+  $('header-title').textContent=m.title;
+  $('backBtn').style.display=m.back?'block':'none';
+  document.querySelectorAll('#bottom-nav button[data-v], #sidebar button[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  window.scrollTo(0,0);
+  refreshCurrentView();
+  renderBanners();
+}
+function goBack(){go(sess.view==='profile'?'officers':'dashboard');}
+function refreshCurrentView(){
+  const R={dashboard:renderDashboard,cases:renderCases,officers:renderOfficers,profile:renderProfile,expenses:renderExpenses,search:renderSearchView,templates:renderTemplates,recycle:renderRecycle,settings:renderSettings,users:renderUsers};
+  if(R[sess.view])R[sess.view]();
+}
+
+/* ==================== modal / toast / sheet ==================== */
+function modalHead(title){return '<div class="modal-head"><b>'+title+'</b><button class="icon-btn" onclick="closeModal()">✖</button></div>';}
+function openModal(html){
+  const r=$('modal-root');
+  r.innerHTML='<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal-card">'+html+'</div></div>';
+  r.style.display='block';
+}
+function closeModal(){const r=$('modal-root');r.innerHTML='';r.style.display='none';}
+let pendingConfirm=null;
+function askConfirm(title,msg,yesLabel,onYes){
+  pendingConfirm=onYes;
+  openModal(modalHead(title)+
+    '<p style="font-size:14px;line-height:1.5">'+msg+'</p>'+
+    '<div class="flex-row"><button class="btn btn-ghost" style="margin-top:0" onclick="closeModal()">Cancel</button>'+
+    '<button class="btn btn-danger" style="margin-top:0" onclick="runConfirm()">'+(yesLabel||'Confirm')+'</button></div>');
+}
+function runConfirm(){const f=pendingConfirm;pendingConfirm=null;closeModal();if(f)f();}
+function toast(msg,opts){
+  opts=opts||{};
+  const r=$('toast-root');
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML='<span>'+msg+'</span>'+(opts.action?'<button class="toast-act">'+esc(opts.action)+'</button>':'');
+  if(opts.action){const btn=el.querySelector('.toast-act');if(btn)btn.onclick=function(){if(opts.onAction)opts.onAction();el.remove();};}
+  r.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},opts.duration||3500);
+}
+function openMoreSheet(){
+  $('more-me').innerHTML=currentUser?('👤 '+esc(currentUser.name)+' · '+roleLabel(currentUser.role)):'';
+  $('more-sheet').classList.add('open');
+}
+function closeMoreSheet(){$('more-sheet').classList.remove('open');}
+
+/* ==================== banners ==================== */
+function renderBanners(){
+  let html='';
+  if(!PERSIST){
+    html+='<div class="banner banner-warn"><span>⚠️ Preview মোড — এখানে ডেটা সেভ হবে না। ফাইলটি ডাউনলোড করে ব্রাউজারে খুললে সব সেভ হবে।</span><button class="banner-x" onclick="this.parentElement.remove()">✖</button></div>';
+  }else if(currentUser&&can('settings')&&db.cases.length&&daysBetween(db.settings.lastBackupDate||'2000-01-01',todayISO())>=7){
+    html+='<div class="banner banner-info"><span>💾 শেষ ব্যাকআপ: '+(db.settings.lastBackupDate?fmtD(db.settings.lastBackupDate):'কখনো হয়নি')+' — এখনই ব্যাকআপ নিন।</span><button class="banner-btn" onclick="backupNow()">Backup</button><button class="banner-x" onclick="this.parentElement.remove()">✖</button></div>';
+  }
+  $('banner-root').innerHTML=html;
+}
+
+/* ==================== auto-lock ==================== */
+let idleT=null;
+function resetIdleTimer(){
+  clearTimeout(idleT);
+  if(db&&db.settings&&db.settings.autoLock&&currentUser){
+    idleT=setTimeout(function(){if(currentUser){lockApp();toast('🔒 অটো-লক হয়েছে (৫ মিনিট নিষ্ক্রিয়তা)');}},5*60*1000);
+  }
+}
+['click','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,resetIdleTimer,{passive:true}));
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeMoreSheet();}});
+
+/* ==================== whatsapp / templates ==================== */
+function waHref(phone,text){
+  let p=String(phone||'').replace(/\D/g,'');
+  if(!p)return '';
+  if(p.length===11&&p.charAt(0)==='0')p='880'+p.slice(1);
+  else if(p.length===10&&p.charAt(0)==='1')p='880'+p;
+  return 'https://wa.me/'+p+'?text='+encodeURIComponent(text);
+}
+function fillTpl(body,ctx){return String(body||'').replace(/\{\{\s*(\w+)\s*\}\}/g,function(m,k){return ctx[k]!==undefined?ctx[k]:m;});}
+function tplById(id){return db.settings.templates.find(t=>t.id===id);}
+function builtinTpl(type){return defaultTemplates().find(t=>t.type===type);}
+let lastPreviewText='';
+function previewSendModal(title,text,phone){
+  lastPreviewText=text;
+  const href=phone?waHref(phone,text):'';
+  openModal(modalHead(title)+
+    '<textarea class="preview-box" readonly>'+esc(text)+'</textarea>'+
+    (href?'<a class="btn btn-wa" style="margin-top:10px" href="'+href+'" target="_blank" rel="noopener">📱 Send via WhatsApp</a>':'<p class="small muted" style="margin:8px 0 0">⚠️ এই অফিসারের WhatsApp নম্বর যোগ করা নেই — Copy করে নিজে পাঠান।</p>')+
+    '<button class="btn btn-ghost" onclick="copyPreview()">📋 Copy Text</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+}
+function copyPreview(){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(lastPreviewText).then(()=>toast('📋 Copied')).catch(()=>fallbackCopy());
+  }else fallbackCopy();
+}
+function fallbackCopy(){
+  const ta=document.createElement('textarea');ta.value=lastPreviewText;
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');toast('📋 Copied');}catch(e){toast('Copy করা গেল না');}
+  ta.remove();
+}
+
+/* ==================== recycle bin core ==================== */
+function restoreItem(binId){
+  const i=db.recycleBin.findIndex(b=>b.id===binId);
+  if(i<0)return toast('খুঁজে পাওয়া যায়নি');
+  const item=db.recycleBin[i];
+  db.recycleBin.splice(i,1);
+  if(item.type==='case')db.cases.push(item.data);
+  else if(item.type==='officer'){db.officers.push(item.data);(item.cases||[]).forEach(c=>db.cases.push(c));}
+  else if(item.type==='expense')db.expenses.push(item.data);
+  else if(item.type==='payment'){const c=db.cases.find(x=>x.id===item.data.caseId);if(c)c.payments.push(item.data);}
+  saveDb();
+  refreshCurrentView();
+  toast('✅ Restore সম্পন্ন');
+}
+
+/* ==================== print ==================== */
+function printDoc(title,innerHtml){
+  $('print-area').innerHTML='<div class="doc"><h2>⚖️ '+esc(db.settings.businessName)+'</h2><h3>'+title+'</h3>'+innerHtml+'<p class="doc-foot">Printed on '+fmtD(todayISO())+'</p></div>';
+  document.body.classList.add('printing');
+  setTimeout(function(){try{window.print();}catch(e){}},50);
+  setTimeout(function(){document.body.classList.remove('printing');$('print-area').innerHTML='';},1000);
+}
+
+/* ==================== shared render helpers ==================== */
+function statBox(icon,label,val,cls,onclick){return '<div class="stat '+cls+(onclick?' clickable':'')+'"'+(onclick?' title="বিস্তারিত দেখুন — ক্লিক করুন" onclick="'+onclick+'"':'')+'><span class="s-ic">'+icon+'</span><span class="s-v">'+val+'</span><span class="s-l">'+label+'</span></div>';}
+function casePaid(c){return (c.payments||[]).reduce((s,p)=>s+(+p.amount||0),0);}
+function caseDue(c){return (+c.dealAmount||0)-casePaid(c);}
+function officerById(id){return db.officers.find(o=>o.id===id);}
+function officerName(id){const o=officerById(id);return o?o.name:'—';}
+function normPhone(x){const d=String(x||'').replace(/\D/g,'');return d.length>10?d.slice(-10):d;}
+function findOfficersByPhone(ph){const n=normPhone(ph);return n?db.officers.filter(o=>normPhone(o.phone)===n):[];}
+function myOfficerId(){return (currentUser&&currentUser.role==='officer'&&currentUser.officerId)?currentUser.officerId:null;}
+function canFin(){return can('financial')||!!myOfficerId();}
+function visibleCases(){const oid=myOfficerId();return oid?db.cases.filter(c=>String(c.officerId)===String(oid)):db.cases;}
+function visibleOfficers(){const oid=myOfficerId();return oid?db.officers.filter(o=>String(o.id)===String(oid)):db.officers;}
+function prEmoji(p){return {Critical:'🔴',High:'🟠',Medium:'🟡',Low:'🟢'}[p]||'🟡';}
+const PRIO_ORDER={Critical:0,High:1,Medium:2,Low:3};
+function isUnderInvestigation(c){return c.status==='New'||c.status==='Running';}
+function isCDCase(c){return c.caseType==='GR'||c.caseType==='Unnatural Death'||c.caseType==='UD';}
+function lastCDDate(c){const cds=c.caseCDs||[];let d='';cds.forEach(x=>{if(x.date&&x.date>d)d=x.date;});return d||(c.openingDate||'');}
+function cdAgeDays(c){const ref=lastCDDate(c);if(!ref)return 0;return Math.max(0,daysBetween(ref,todayISO()));}
+function cdOverdue(c){return cdAgeDays(c)>15;}
+function activeOfficers(){return db.officers.filter(o=>o.active!==false);}
+function isActiveOfficer(id){const o=officerById(id);return !!o&&o.active!==false;}
+function dueAgeDays(c){
+  if(caseDue(c)<=0)return 0;
+  let ref='';
+  if(c.payments&&c.payments.length){ref=c.payments.map(p=>p.date||'').sort().pop();}
+  if(!ref)ref=c.openingDate||'';
+  if(!ref)return 0;
+  return Math.max(0,daysBetween(ref,todayISO()));
+}
+function deadlineChip(c){
+  if(!c.deadline)return '';
+  const t=todayISO();
+  if(c.status==='Completed'||c.status==='Closed')return ' · ⏰ '+fmtD(c.deadline);
+  const d=daysBetween(t,c.deadline);
+  if(d<0)return ' · <span class="dl-over">⏰ '+fmtD(c.deadline)+' ('+Math.abs(d)+'d overdue)</span>';
+  if(d<=7)return ' · <span class="dl-soon">⏰ '+fmtD(c.deadline)+' ('+d+'d left)</span>';
+  return ' · ⏰ '+fmtD(c.deadline);
+}
+function caseCtx(c){
+  const o=officerById(c.officerId);
+  return {officer:o?o.name:'',client:c.client||'',case_no:c.caseNo,case_name:c.name,
+    total:fmt(c.dealAmount),paid:fmt(casePaid(c)),due:fmt(caseDue(c)),
+    date:fmtD(todayISO()),business:db.settings.businessName||''};
+}
+function pagerHtml(pages,page,fn){
+  if(pages<=1)return '';
+  let h='<button class="btn-small btn-ghost"'+(page<=1?' disabled':'')+' onclick="'+fn+'('+(page-1)+')">‹ Prev</button>';
+  h+='<span class="pager-info">Page '+page+' / '+pages+'</span>';
+  h+='<button class="btn-small btn-ghost"'+(page>=pages?' disabled':'')+' onclick="'+fn+'('+(page+1)+')">Next ›</button>';
+  return h;
+}
+
+/* ==================== DASHBOARD ==================== */
+function setDashRange(mode){
+  sess.dashRange=mode;
+  document.querySelectorAll('#dash-chips .chip').forEach(b=>b.classList.toggle('active',b.dataset.r===mode));
+  $('dash-custom').classList.toggle('hidden',mode!=='custom');
+  renderDashboard();
+}
+function applyDashCustom(){
+  sess.dashFrom=$('dash-from').value;sess.dashTo=$('dash-to').value;
+  renderDashboard();
+}
+function dashRangeDates(){
+  const t=todayISO();
+  if(sess.dashRange==='today')return{from:t,to:t};
+  if(sess.dashRange==='week'){
+    const d=new Date();const start=new Date(d.getTime()-d.getDay()*86400000);
+    return{from:isoOfTs(start.getTime()),to:t};
+  }
+  if(sess.dashRange==='month'){
+    const last=new Date(+(t.slice(0,4)),+(t.slice(5,7)),0).getDate();
+    return{from:t.slice(0,8)+'01',to:t.slice(0,8)+String(last).padStart(2,'0')};
+  }
+  if(sess.dashRange==='custom'&&((sess.dashFrom&&sess.dashTo)||sess.dashFrom||sess.dashTo))return{from:sess.dashFrom,to:sess.dashTo};
+  return{from:'',to:''};
+}
+function inRange(iso,from,to){
+  if(!from&&!to)return true;
+  if(!iso)return false;
+  if(from&&iso<from)return false;
+  if(to&&iso>to)return false;
+  return true;
+}
+function dashScope(){
+  const rg=dashRangeDates();
+  const iso=!!myOfficerId();
+  const actIds=new Set(activeOfficers().map(o=>o.id));
+  const casesIn=visibleCases().filter(c=>(iso||actIds.has(c.officerId))&&inRange(c.openingDate,rg.from,rg.to));
+  return {rg:rg,actIds:actIds,casesIn:casesIn};
+}
+function renderDashboard(){
+  const S=dashScope();
+  const casesIn=S.casesIn,rg=S.rg;
+  const activeIn=casesIn.filter(isUnderInvestigation);
+  const doneIn=casesIn.filter(c=>c.status==='Completed'||c.status==='Closed');
+  const today=todayISO();
+  const dlExpired=casesIn.filter(c=>c.deadline&&c.deadline<today&&isUnderInvestigation(c));
+  const udArr=casesIn.filter(c=>(c.caseType==='Unnatural Death'||c.caseType==='UD')&&isUnderInvestigation(c));
+  const crArr=casesIn.filter(c=>c.caseType==='CR'&&isUnderInvestigation(c));
+  const cdArr=casesIn.filter(c=>isCDCase(c)&&isUnderInvestigation(c)&&cdOverdue(c));
+  const iso=!!myOfficerId();
+  const finCs=iso?casesIn.filter(c=>isUnderInvestigation(c)&&caseDue(c)>0):casesIn;
+  let paidIn=0;
+  const paySrc=iso?finCs:visibleCases();
+  paySrc.forEach(c=>{if(!iso&&!S.actIds.has(c.officerId))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))paidIn+=+p.amount||0;});});
+  let expIn=0;
+  db.expenses.forEach(e=>{if(inRange(e.date,rg.from,rg.to))expIn+=+e.amount||0;});
+  let dealIn=0,dueIn=0;
+  (iso?finCs:casesIn).forEach(c=>{dealIn+=+c.dealAmount||0;dueIn+=caseDue(c);});
+  const inactCount=db.officers.length-activeOfficers().length;
+  let h='<div class="stats">'+
+    statBox('📁','Total Cases',fmt(casesIn.length),'st-c',"openStatDetail('total')")+
+    statBox('⚙️','Active',fmt(activeIn.length),'st-y',"openStatDetail('active')")+
+    statBox('✅','Completed',fmt(doneIn.length),'st-g',"openStatDetail('completed')")+
+    '</div><div class="stats c4">'+
+    statBox('⏰','Deadline',fmt(dlExpired.length),dlExpired.length>0?'st-r':'st-c',"openStatDetail('deadline')")+
+    statBox('⚰️','UD Case',fmt(udArr.length),'st-p',"openStatDetail('ud')")+
+    statBox('📂','CR Case',fmt(crArr.length),'st-b',"openStatDetail('cr')")+
+    statBox('💿','Case CD',fmt(cdArr.length),cdArr.length>0?'st-r':'st-g',"openStatDetail('cd')")+
+    '</div>';
+  if(canFin()){
+    h+='<div class="stats">'+
+      statBox('🤝','Total Deal',tk(dealIn),'st-p',"openStatDetail('deal')")+
+      statBox('💰','Collected',tk(paidIn),'st-b',"openStatDetail('collected')")+
+      statBox('🧾','Total Due',tk(dueIn),'st-r',"openStatDetail('due')")+
+      '</div>';
+    if(can('financial'))h+='<div class="stats c2">'+
+      statBox('💸','Expense',tk(expIn),'st-y',"openStatDetail('expense')")+
+      statBox('📈','Net Income',tk(paidIn-expIn),(paidIn-expIn)>=0?'st-g':'st-r',"openStatDetail('net')")+
+      '</div>';
+  }
+  if(iso)h+='<div class="stat-note">💰 বিলের হিসাব — শুধুমাত্র বকেয়া আছে এমন চলমান মামলার (পরিশোধিত / Completed-Closed মামলা বাদ) — প্রতিটি মামলা খুলে পুরো হিসাব দেখতে পারবেন</div>';
+  if(inactCount>0&&!myOfficerId())h+='<div class="stat-note">⛔ '+inactCount+' জন Inactive Officer-এর মামলার হিসাব ড্যাশবোর্ডে বাদ আছে</div>';
+  $('dash-stats').innerHTML=h;
+  renderDeadlineAlarm();renderDashAlerts();renderRecent();
+}
+function statDetailData(type){
+  const S=dashScope();
+  const cs=S.casesIn,rg=S.rg,today=todayISO();
+  const dcs=myOfficerId()?cs.filter(c=>isUnderInvestigation(c)&&caseDue(c)>0):cs;
+  const fin=canFin();
+  const rangeNote=(rg.from||rg.to)?('সময়কাল: '+(rg.from?fmtD(rg.from):'শুরু')+' থেকে '+(rg.to?fmtD(rg.to):'আজ')):'সময়কাল: সব সময়';
+  const money=v=>'<b style="color:var(--navy)">'+tk(v)+'</b>';
+  const caseRow=(c,right)=>'<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span><b>'+esc(c.caseNo)+'</b> — '+esc(c.name)+'<br><small class="muted">👮 '+esc(officerName(c.officerId))+' · '+esc(c.status)+(c.caseType?' · '+esc(c.caseType):'')+' · 📅 '+fmtD(c.openingDate)+'</small></span>'+(right||'')+'</div>';
+  const cTr=(c,extra)=>'<tr><td>'+esc(c.caseNo)+'</td><td>'+esc(c.name)+'</td><td>'+esc(officerName(c.officerId))+'</td><td>'+esc(c.caseType||'—')+'</td><td>'+esc(c.status)+'</td><td>'+fmtD(c.openingDate)+'</td>'+(extra!==undefined?'<td>'+extra+'</td>':'')+'</tr>';
+  const TH6='<th>Case ID</th><th>Name</th><th>Officer</th><th>Type</th><th>Status</th><th>Opening</th>';
+  let title='',sumTxt='',list='',table='';
+  if(type==='total'){
+    title='📁 Total Cases';
+    sumTxt=cs.length+'টি মামলা'+(fin?(' · মোট Deal: '+tk(cs.reduce((a,c)=>a+(+c.dealAmount||0),0))):'');
+    list=cs.map(c=>caseRow(c,fin?money(c.dealAmount):'')).join('');
+    table='<table><tr>'+TH6+(fin?'<th>Deal</th>':'')+'</tr>'+cs.map(c=>cTr(c,fin?('৳'+fmt(c.dealAmount)):undefined)).join('')+'</table>';
+  }else if(type==='active'){
+    const arr=cs.filter(isUnderInvestigation);
+    title='⚙️ Active Cases (তদন্তাধীন)';
+    sumTxt=arr.length+'টি মামলা তদন্তাধীন';
+    list=arr.map(c=>caseRow(c,fin?money(caseDue(c)):'')).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='completed'){
+    const arr=cs.filter(c=>c.status==='Completed'||c.status==='Closed');
+    title='✅ Completed Cases';
+    sumTxt=arr.length+'টি মামলা শেষ';
+    list=arr.map(c=>caseRow(c)).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='deadline'){
+    const arr=cs.filter(c=>c.deadline&&c.deadline<today&&isUnderInvestigation(c)).sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)));
+    title='⏰ Deadline — মেয়াদ শেষ, তদন্তাধীন';
+    sumTxt=arr.length+'টি মামলার মেয়াদ শেষ';
+    list=arr.map(c=>caseRow(c,'<span class="dl-over">'+Math.abs(daysBetween(c.deadline,today))+' দিন পার ⛔</span>')).join('');
+    table='<table><tr>'+TH6+'<th>Deadline</th><th>পার হয়েছে</th></tr>'+arr.map(c=>cTr(c,fmtD(c.deadline),Math.abs(daysBetween(c.deadline,today))+' দিন')).join('')+'</table>';
+  }else if(type==='ud'){
+    const arr=cs.filter(c=>(c.caseType==='Unnatural Death'||c.caseType==='UD')&&isUnderInvestigation(c));
+    title='⚰️ UD — অপমৃত্যু (তদন্তাধীন)';
+    sumTxt=arr.length+'টি অপমৃত্যু মামলা তদন্তাধীন';
+    list=arr.map(c=>caseRow(c)).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='cr'){
+    const arr=cs.filter(c=>c.caseType==='CR'&&isUnderInvestigation(c));
+    title='📂 CR Cases (তদন্তাধীন)';
+    sumTxt=arr.length+'টি সিআর মামলা তদন্তাধীন';
+    list=arr.map(c=>caseRow(c)).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='cd'){
+    const arr=cs.filter(c=>isCDCase(c)&&isUnderInvestigation(c)&&cdOverdue(c)).sort((a,b)=>cdAgeDays(b)-cdAgeDays(a));
+    title='💿 Case CD বাকি (১৫+ দিন)';
+    sumTxt=arr.length+'টি মামলার Case CD ১৫ দিনের বেশি';
+    list=arr.map(c=>caseRow(c,'<span class="age-chip">💿 '+cdAgeDays(c)+'d</span>')).join('');
+    table='<table><tr>'+TH6+'<th>সর্বশেষ CD</th><th>CD বয়স</th></tr>'+arr.map(c=>cTr(c,fmtD(lastCDDate(c)),cdAgeDays(c)+' দিন')).join('')+'</table>';
+  }else if(type==='deal'){
+    title='🤝 Total Deal';
+    if(!fin)return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
+    const tot=dcs.reduce((a,c)=>a+(+c.dealAmount||0),0);
+    sumTxt=dcs.length+'টি মামলা · মোট Deal: '+tk(tot);
+    list=dcs.map(c=>caseRow(c,money(c.dealAmount))).join('');
+    table='<table><tr>'+TH6+'<th>Deal</th></tr>'+dcs.map(c=>cTr(c,'৳'+fmt(c.dealAmount))).join('')+'<tr><th colspan="6">মোট Deal</th><th>৳'+fmt(tot)+'</th></tr></table>';
+  }else if(type==='due'){
+    title='🧾 Due Cases (বকেয়া)';
+    if(!fin)return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
+    const arr=dcs.filter(c=>caseDue(c)>0);
+    const tot=arr.reduce((a,c)=>a+caseDue(c),0);
+    sumTxt=arr.length+'টি মামলায় বকেয়া · মোট: '+tk(tot);
+    list=arr.map(c=>caseRow(c,'<b class="red">'+tk(caseDue(c))+'</b>')).join('');
+    table='<table><tr>'+TH6+'<th>Due</th></tr>'+arr.map(c=>cTr(c,'৳'+fmt(caseDue(c)))).join('')+'<tr><th colspan="6">মোট বকেয়া</th><th>৳'+fmt(tot)+'</th></tr></table>';
+  }else if(type==='collected'){
+    title='💰 Collected (গৃহীত পেমেন্ট)';
+    if(!fin)return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
+    const pays=[];
+    const cSrc=myOfficerId()?dcs:visibleCases();
+    cSrc.forEach(c=>{if(!myOfficerId()&&!S.actIds.has(c.officerId))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))pays.push({c:c,p:p});});});
+    pays.sort((a,b)=>String(b.p.date||'').localeCompare(String(a.p.date||'')));
+    const tot=pays.reduce((a,x)=>a+(+x.p.amount||0),0);
+    sumTxt=pays.length+'টি পেমেন্ট · মোট: '+tk(tot);
+    list=pays.map(x=>'<div class="gs-row" onclick="openCaseModal(\''+x.c.id+'\')"><span>💰 <b>'+esc(x.p.receiptNo||'Payment')+'</b> · '+esc(x.c.caseNo)+'<br><small class="muted">'+fmtD(x.p.date)+' · '+esc(officerName(x.c.officerId))+(x.p.method?' · '+esc(x.p.method):'')+'</small></span>'+money(x.p.amount)+'</div>').join('');
+    table='<table><tr><th>Date</th><th>Receipt</th><th>Case</th><th>Officer</th><th>Method</th><th>Amount</th></tr>'+pays.map(x=>'<tr><td>'+fmtD(x.p.date)+'</td><td>'+esc(x.p.receiptNo||'—')+'</td><td>'+esc(x.c.caseNo)+'</td><td>'+esc(officerName(x.c.officerId))+'</td><td>'+esc(x.p.method||'—')+'</td><td style="text-align:right">৳'+fmt(x.p.amount)+'</td></tr>').join('')+'<tr><th colspan="5">মোট গৃহীত</th><th style="text-align:right">৳'+fmt(tot)+'</th></tr></table>';
+  }else if(type==='expense'){
+    title='💸 Expenses (খরচ)';
+    if(!can('financial'))return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
+    const arr=db.expenses.filter(e=>inRange(e.date,rg.from,rg.to)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+    const tot=arr.reduce((a,e)=>a+(+e.amount||0),0);
+    sumTxt=arr.length+'টি খরচ · মোট: '+tk(tot);
+    list=arr.map(e=>{const c=e.caseId?db.cases.find(x=>x.id===e.caseId):null;return '<div class="gs-row"><span>💸 <b>'+esc(e.category)+'</b> ('+fmtD(e.date)+')'+(c?' · 📁 '+esc(c.caseNo):'')+(e.note?'<br><small class="muted">'+esc(e.note)+'</small>':'')+'</span><b class="red">−'+tk(e.amount)+'</b></div>';}).join('');
+    table='<table><tr><th>Date</th><th>Category</th><th>Case</th><th>Note</th><th>Amount</th></tr>'+arr.map(e=>{const c=e.caseId?db.cases.find(x=>x.id===e.caseId):null;return '<tr><td>'+fmtD(e.date)+'</td><td>'+esc(e.category)+'</td><td>'+(c?esc(c.caseNo):'—')+'</td><td>'+esc(e.note||'')+'</td><td style="text-align:right">৳'+fmt(e.amount)+'</td></tr>';}).join('')+'<tr><th colspan="4">মোট খরচ</th><th style="text-align:right">৳'+fmt(tot)+'</th></tr></table>';
+  }else if(type==='net'){
+    title='📈 Net Income (নিট আয়)';
+    if(!can('financial'))return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
+    let paid=0;
+    db.cases.forEach(c=>{if(!S.actIds.has(c.officerId))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))paid+=+p.amount||0;});});
+    let exp=0;
+    db.expenses.forEach(e=>{if(inRange(e.date,rg.from,rg.to))exp+=+e.amount||0;});
+    const net=paid-exp;
+    sumTxt='গৃহীত: '+tk(paid)+' − খরচ: '+tk(exp)+' = নিট: '+tk(net);
+    list='<div class="list-item"><span>💰 মোট গৃহীত (Collected)</span><b class="green">+'+tk(paid)+'</b></div>'+
+      '<div class="list-item"><span>💸 মোট খরচ (Expense)</span><b class="red">−'+tk(exp)+'</b></div>'+
+      '<div class="list-item"><span>📈 নিট আয় (Net Income)</span><b style="color:'+(net>=0?'var(--green)':'var(--red)')+'">= '+tk(net)+'</b></div>';
+    table='<table><tr><th>বিবরণ</th><th>পরিমাণ</th></tr><tr><td>মোট গৃহীত (Collected)</td><td style="text-align:right">৳'+fmt(paid)+'</td></tr><tr><td>মোট খরচ (Expense)</td><td style="text-align:right">৳'+fmt(exp)+'</td></tr><tr><th>নিট আয় (Net Income)</th><th style="text-align:right">৳'+fmt(net)+'</th></tr></table>';
+  }
+  return {title:title,rangeNote:rangeNote,sumTxt:sumTxt,list:list,table:table};
+}
+function openStatDetail(type){
+  const D=statDetailData(type);
+  openModal(modalHead(D.title)+
+    '<p class="small muted" style="margin:2px 0 8px">'+D.rangeNote+(D.sumTxt?' · '+D.sumTxt:'')+'</p>'+
+    (D.list||'<p class="small muted">কোনো এন্ট্রি নেই।</p>')+
+    (D.table?'<button class="btn btn-primary" onclick="printStatDetail(\''+type+'\')">🖨️ Print</button>':'')+
+    '<button class="btn btn-ghost" onclick="closeModal()">✖ Close</button>');
+}
+function printStatDetail(type){
+  const D=statDetailData(type);
+  if(!D.table)return toast('প্রিন্ট করার মতো কিছু নেই');
+  printDoc(D.title,D.table+'<p class="doc-foot">'+esc(D.rangeNote)+(D.sumTxt?' · '+D.sumTxt:'')+'</p>');
+}
+function renderDashAlerts(){
+  let html='';
+  if(!db.officers.length){
+    html+='<div class="card center"><p style="margin:0 0 4px">👋 শুরু করুন — প্রথম Officer (ক্লায়েন্ট) যোগ করুন</p><button class="btn btn-primary" onclick="go(\'officers\')">＋ Add Officer</button></div>';
+  }
+  const today=todayISO();
+  const actIdsA=new Set(activeOfficers().map(o=>o.id));
+  const open=visibleCases().filter(c=>c.deadline&&c.status!=='Completed'&&c.status!=='Closed'&&(myOfficerId()||actIdsA.has(c.officerId)));
+  const soon=open.filter(c=>{const d=daysBetween(today,c.deadline);return d>7&&d<=30;}).sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,5);
+  if(soon.length){
+    html+='<div class="card"><h3>📅 Upcoming Deadlines (৮–৩০ দিন)</h3>'+
+      soon.map(c=>'<div class="list-item"><span>📅 <b>'+esc(c.caseNo)+'</b> '+esc(c.name)+' <small class="muted">('+esc(officerName(c.officerId))+')</small></span><span class="dl-soon">'+fmtD(c.deadline)+' · '+daysBetween(today,c.deadline)+'d</span></div>').join('')+
+      '</div>';
+  }
+  if(canFin()){
+    const isoZ=!!myOfficerId();
+    const aged=visibleCases().filter(c=>caseDue(c)>0&&(isoZ?isUnderInvestigation(c):isActiveOfficer(c.officerId))).map(c=>({c:c,age:dueAgeDays(c)})).sort((a,b)=>b.age-a.age).filter(x=>x.age>0).slice(0,5);
+    if(aged.length){
+      html+='<div class="card"><h3>🔥 Old Dues (Aging)</h3>'+
+        aged.map(x=>'<div class="list-item"><span><b>'+esc(officerName(x.c.officerId))+'</b> — '+esc(x.c.caseNo)+' <small class="muted">'+esc(x.c.name)+'</small></span><span><b class="red">'+tk(caseDue(x.c))+'</b> <span class="age-chip">'+x.age+'d</span></span></div>').join('')+
+        '</div>';
+    }
+  }
+  $('dash-alerts').innerHTML=html;
+}
+
+/* ==================== DEADLINE ALARM (big red, ≤7 days + overdue) ==================== */
+function renderDeadlineAlarm(){
+  const root=$('deadline-alarm-root');
+  if(!root)return;
+  const today=todayISO();
+  const dismissed=db.settings.dismissedDeadlines||{};
+  const urgent=visibleCases().filter(function(c){
+    if(!c.deadline)return false;
+    if(!myOfficerId()&&!isActiveOfficer(c.officerId))return false;
+    if(c.status==='Completed'||c.status==='Closed')return false;
+    if(daysBetween(today,c.deadline)>7)return false;
+    if(dismissed[c.id]===today)return false;
+    return true;
+  }).sort(function(a,b){return String(a.deadline).localeCompare(String(b.deadline));});
+  const homeBtn=document.querySelector('#bottom-nav button[data-v="dashboard"]');
+  if(homeBtn)homeBtn.classList.toggle('nav-alert',urgent.length>0);
+  if(!urgent.length){root.innerHTML='';return;}
+  const shown=urgent.slice(0,10);
+  let h='<div class="deadline-alarm">'+
+    '<div class="da-head"><span class="da-bell">🔔</span> মেয়াদ শেষ পর্যায়ে — '+urgent.length+'টি মামলার ডেডলাইন কাছাকাছি!</div>';
+  shown.forEach(function(c){
+    const d=daysBetween(today,c.deadline);
+    let daysTxt;
+    if(d<0)daysTxt='<div class="da-days over">'+Math.abs(d)+' দিন পার! ⛔</div>';
+    else if(d===0)daysTxt='<div class="da-days over">আজই শেষ দিন! 🚨</div>';
+    else daysTxt='<div class="da-days">মাত্র '+d+' দিন বাকি ⏳</div>';
+    h+='<div class="da-row">'+
+      '<div class="da-open" onclick="openCaseModal(\''+c.id+'\')">'+
+        '<div class="da-t">📁 '+esc(c.caseNo)+' — '+esc(c.name)+'</div>'+
+        '<div class="da-s">👮 '+esc(officerName(c.officerId))+' · ⏰ '+fmtD(c.deadline)+' · '+esc(c.status)+'</div>'+
+      '</div>'+
+      '<div class="da-right">'+daysTxt+
+        '<button class="da-link" onclick="dismissDeadline(\''+c.id+'\')">আজকে লুকান ✖</button>'+
+      '</div>'+
+    '</div>';
+  });
+  if(urgent.length>shown.length)h+='<div class="da-more">+ আরও '+(urgent.length-shown.length)+'টি মামলা — কেস তালিকায় দেখুন</div>';
+  h+='</div>';
+  root.innerHTML=h;
+}
+function dismissDeadline(id){
+  if(!db.settings.dismissedDeadlines)db.settings.dismissedDeadlines={};
+  db.settings.dismissedDeadlines[id]=todayISO();
+  saveDb();
+  renderDeadlineAlarm();
+  toast('🔕 আজকের জন্য লুকানো হলো — কাল আবার দেখাবে');
+}
+
+function renderRecent(){
+  const el=$('dash-recent');
+  if(!canFin()){el.innerHTML='<p class="small muted">Financial data — permission নেই।</p>';return;}
+  const rows=[];
+  visibleCases().forEach(c=>{if(!myOfficerId()&&!isActiveOfficer(c.officerId))return;(c.payments||[]).forEach(p=>rows.push({o:officerName(c.officerId),cno:c.caseNo,p:p}));});
+  rows.sort((a,b)=>String(b.p.date||'').localeCompare(String(a.p.date||'')));
+  if(!rows.length){el.innerHTML='<p class="small muted">এখনো কোনো পেমেন্ট এন্ট্রি হয়নি।</p>';return;}
+  el.innerHTML=rows.slice(0,5).map(r=>'<div class="list-item"><span><b>'+esc(r.o)+'</b> · '+esc(r.cno)+'<br><small class="muted">'+fmtD(r.p.date)+(r.p.method?' · '+esc(r.p.method):'')+'</small></span><span><b class="green">+'+tk(r.p.amount)+'</b>'+(r.p.method?' <span class="pm-chip">'+esc(r.p.method)+'</span>':'')+'</span></div>').join('');
+}
+
+/* ==================== CASES LIST ==================== */
+function renderCases(){
+  const q=($('cf-q').value||'').trim().toLowerCase();
+  const status=$('cf-status').value,off=$('cf-officer').value,prio=$('cf-priority').value,sort=$('cf-sort').value;
+  const from=$('cf-from').value,to=$('cf-to').value;
+  const oSel=$('cf-officer');const curOff=oSel.value;
+  oSel.innerHTML='<option value="">All Officers</option>'+visibleOfficers().map(o=>'<option value="'+o.id+'">'+esc(o.name)+(o.active===false?' (Inactive)':'')+'</option>').join('');
+  if(curOff&&db.officers.find(o=>String(o.id)===String(curOff)))oSel.value=curOff;
+  let arr=visibleCases().filter(c=>{
+    if(q&&![c.caseNo,c.name,c.client,c.caseType,c.description].some(s=>s&&String(s).toLowerCase().includes(q)))return false;
+    if(status&&c.status!==status)return false;
+    if(off&&String(c.officerId)!==String(off))return false;
+    if(prio&&c.priority!==prio)return false;
+    if(sess.caseFilters.unpaid&&caseDue(c)<=0)return false;
+    if(from&&(c.openingDate||'9999')<from)return false;
+    if(to&&(c.openingDate||'0000')>to)return false;
+    return true;
+  });
+  if(sort==='newest')arr.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  else if(sort==='oldest')arr.sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+  else if(sort==='due')arr.sort((a,b)=>caseDue(b)-caseDue(a));
+  else if(sort==='priority')arr.sort((a,b)=>PRIO_ORDER[a.priority||'Medium']-PRIO_ORDER[b.priority||'Medium']);
+  else if(sort==='deal')arr.sort((a,b)=>(+b.dealAmount||0)-(+a.dealAmount||0));
+  else if(sort==='deadline')arr.sort((a,b)=>String(a.deadline||'9999').localeCompare(String(b.deadline||'9999')));
+  else if(sort==='aging')arr.sort((a,b)=>dueAgeDays(b)-dueAgeDays(a));
+  let deal=0,due=0;arr.forEach(c=>{deal+=+c.dealAmount||0;due+=caseDue(c);});
+  $('cases-summary').innerHTML='<b>'+arr.length+'</b> case(s) found'+(canFin()?' · Deal '+tk(deal)+' · Due <span class="red">'+tk(due)+'</span>':'');
+  const per=8,pages=Math.max(1,Math.ceil(arr.length/per));
+  if(sess.caseFilters.page>pages)sess.caseFilters.page=1;
+  const page=sess.caseFilters.page;
+  $('cases-list').innerHTML=arr.slice((page-1)*per,page*per).map(caseCardHTML).join('')||'<p class="small muted center" style="margin-top:16px">কোনো কেস পাওয়া যায়নি।</p>';
+  $('cases-pager').innerHTML=pagerHtml(pages,page,'casesGoPage');
+  $('add-case-btn').style.display=can('add')?'block':'none';
+  $('btn-unpaid').classList.toggle('btn-red',sess.caseFilters.unpaid);
+}
+function casesGoPage(p){sess.caseFilters.page=Math.max(1,p);renderCases();}
+function toggleUnpaid(){sess.caseFilters.unpaid=!sess.caseFilters.unpaid;sess.caseFilters.page=1;renderCases();}
+function clearCaseFilters(){
+  $('cf-q').value='';$('cf-status').value='';$('cf-officer').value='';$('cf-priority').value='';$('cf-sort').value='newest';
+  $('cf-from').value='';$('cf-to').value='';
+  sess.caseFilters.unpaid=false;sess.caseFilters.page=1;renderCases();
+}
+function caseCardHTML(c){
+  const paid=casePaid(c),due=caseDue(c);
+  const pct=(+c.dealAmount||0)>0?Math.min(100,Math.round(paid*100/(+c.dealAmount))):0;
+  const age=dueAgeDays(c);
+  return '<div class="case-card '+(due>0?'alert-red':'')+'">'+
+    '<div class="case-head"><div><span class="case-no">'+esc(c.caseNo)+'</span> '+prEmoji(c.priority||'Medium')+'<br><b>'+esc(c.name)+'</b></div><span class="badge st-'+String(c.status||'running').toLowerCase()+'">'+esc(c.status)+'</span></div>'+
+    '<div class="case-meta">👮 '+esc(officerName(c.officerId))+(c.client?' · 👤 '+esc(c.client):'')+(c.caseType?' · 📂 '+esc(c.caseType):'')+'</div>'+
+    '<div class="case-meta">📅 '+fmtD(c.openingDate)+deadlineChip(c)+(isCDCase(c)&&isUnderInvestigation(c)?(cdOverdue(c)?' · <span class="age-chip">💿 CD '+cdAgeDays(c)+'d — লিখতে হবে</span>':' · <span class="pm-chip">💿 CD '+cdAgeDays(c)+'d</span>'):'')+'</div>'+
+    (canFin()?
+      '<div class="progress"><div style="width:'+pct+'%"></div></div>'+
+      '<div class="case-fin"><span>Deal <b>'+tk(c.dealAmount)+'</b></span><span>Paid <b class="green">'+tk(paid)+'</b></span><span>Due <b class="red">'+tk(due)+'</b></span>'+(due>0&&age>0?'<span class="age-chip">⏳ '+age+'d</span>':'')+(due<=0?'<span class="paid-chip">✅ Paid</span>':'')+'</div>'
+      :'<div class="case-meta">🔒 Financial data — permission নেই</div>')+
+    '<div class="case-actions">'+
+      '<button class="btn-small" onclick="openCaseModal(\''+c.id+'\')">Open</button>'+
+      (can('financial')&&due>0?'<button class="btn-small btn-wa" onclick="openReminderPicker(\''+c.id+'\')">📱 Remind</button>':'')+
+    '</div></div>';
+}
+
+/* ==================== CASE FORM (add/edit) ==================== */
+function caseTypeOptions(c){
+  const types=(db.settings.caseTypes&&db.settings.caseTypes.length?db.settings.caseTypes:['GR','CR','UD','Civil','Criminal','Family','Appeal','Other']).slice();
+  if(c){const cur=(c.caseType==='Unnatural Death')?'UD':(c.caseType||'');if(cur&&!types.includes(cur))types.push(cur);}
+  return types;
+}
+function openCaseForm(caseId,presetOfficerId){
+  if(!can(caseId?'edit':'add'))return toast('⛔ Permission নেই');
+  if(!db.officers.length)return toast('আগে একজন Officer যোগ করুন');
+  const c=caseId?db.cases.find(x=>x.id===caseId):null;
+  if(caseId&&!c)return;
+  const offVal=c?c.officerId:(presetOfficerId||db.officers[0].id);
+  openModal(modalHead(c?'✏️ Edit Case':'＋ New Case')+
+    '<label>Case Name / Title *</label><input id="cfm-name" value="'+(c?esc(c.name):'')+'" placeholder="e.g. State vs. Karim">'+
+    '<div class="two">'+
+      '<div><label>Officer *</label><select id="cfm-officer">'+visibleOfficers().map(o=>'<option value="'+o.id+'"'+(String(o.id)===String(offVal)?' selected':'')+'>'+esc(o.name)+'</option>').join('')+'</select></div>'+
+      '<div><label>Client</label><input id="cfm-client" value="'+(c?esc(c.client||''):'')+'" placeholder="Client name"></div>'+
+      '<div><label>Case Type</label><select id="cfm-type">'+caseTypeOptions(c).map(t=>'<option'+(((c?((c.caseType==='Unnatural Death')?'UD':c.caseType):'')===t)?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'+
+      '<div><label>Deal Amount (৳) *</label><input id="cfm-deal" type="number" value="'+(c?c.dealAmount:'')+'"></div>'+
+      '<div><label>Opening Date *</label><input id="cfm-open" type="date" value="'+(c?(c.openingDate||todayISO()):todayISO())+'"></div>'+
+      '<div><label>Deadline (শুনানি/ডেলিভারি)</label><input id="cfm-deadline" type="date" value="'+(c?(c.deadline||''):'')+'"></div>'+
+      '<div><label>Status</label><select id="cfm-status">'+['New','Running','Completed','Closed'].map(s=>'<option'+((c&&c.status===s)?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+      '<div><label>Priority</label><select id="cfm-priority">'+['Critical','High','Medium','Low'].map(s=>'<option'+(((c?c.priority:'Medium')===s)?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '</div>'+
+    '<label>Description</label><textarea id="cfm-desc" style="min-height:56px">'+(c?esc(c.description||''):'')+'</textarea>'+
+    '<label>Notes</label><textarea id="cfm-notes" style="min-height:56px">'+(c?esc(c.notes||''):'')+'</textarea>'+
+    '<button class="btn btn-primary" onclick="submitCaseForm('+(c?"'"+c.id+"'":"''")+')">💾 Save Case</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function submitCaseForm(id){
+  const name=$('cfm-name').value.trim(),officer=$('cfm-officer').value;
+  const deal=Math.round(+$('cfm-deal').value||0),open=$('cfm-open').value||todayISO();
+  if(!name)return toast('কেসের নাম দিন');
+  if(!officer)return toast('Officer select করুন');
+  if(deal<=0)return toast('সঠিক Deal Amount দিন');
+  const vals={name:name,officerId:officer,client:$('cfm-client').value.trim(),caseType:$('cfm-type').value,
+    dealAmount:deal,openingDate:open,deadline:$('cfm-deadline').value,status:$('cfm-status').value,
+    priority:$('cfm-priority').value,description:$('cfm-desc').value.trim(),notes:$('cfm-notes').value.trim()};
+  if(id){
+    const c=db.cases.find(x=>x.id===id);
+    if(!c)return;
+    Object.assign(c,vals);
+    toast('✅ Case updated');
+  }else{
+    const no=nextCaseNo();
+    db.cases.push(Object.assign({id:uid(),caseNo:no,createdAt:Date.now(),payments:[]},vals));
+    toast('✅ Case added: '+no);
+  }
+  saveDb();closeModal();refreshCurrentView();
+}
+
+/* ==================== CASE DETAIL MODAL ==================== */
+function openCaseModal(id){
+  const c=db.cases.find(x=>x.id===id);if(!c)return;
+  if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ এই মামলাটি দেখার অনুমতি নেই');
+  const o=officerById(c.officerId);
+  const paid=casePaid(c),due=caseDue(c);
+  const pct=(+c.dealAmount||0)>0?Math.min(100,Math.round(paid*100/(+c.dealAmount))):0;
+  const pays=(c.payments||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  const payHtml=pays.map(p=>'<div class="list-item"><span>'+fmtD(p.date)+(p.receiptNo?' · <small class="muted">'+esc(p.receiptNo)+'</small>':'')+(p.method?' <span class="pm-chip">'+esc(p.method)+'</span>':'')+(p.note?'<br><small class="muted">'+esc(p.note)+'</small>':'')+'</span><span><b class="green">+'+tk(p.amount)+'</b> <button class="icon-btn" title="Resend receipt" onclick="sendReceipt(\''+c.id+'\',\''+p.id+'\')">🧾</button>'+(can('edit')?'<button class="icon-btn" title="Edit Payment" onclick="editPayment(\''+c.id+'\',\''+p.id+'\')">✏️</button><button class="icon-btn" title="Delete" onclick="deletePayment(\''+c.id+'\',\''+p.id+'\')">❌</button>':'')+'</span></div>').join('');
+  const cds=(c.caseCDs||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  const cdAge=cdAgeDays(c);
+  let cdSection='';
+  if(isCDCase(c)){
+    const cdList=cds.map(x=>'<div class="list-item"><span><b>💿 '+esc(x.cdNo)+'</b> · '+fmtD(x.date)+(x.note?'<br><small class="muted">'+esc(x.note)+'</small>':'')+'</span>'+(can('edit')?'<button class="icon-btn" title="Edit CD" onclick="editCaseCD(\''+c.id+'\',\''+x.id+'\')">✏️</button><button class="icon-btn" title="Delete CD" onclick="deleteCaseCD(\''+c.id+'\',\''+x.id+'\')">❌</button>':'')+'</div>').join('');
+    cdSection='<div class="cm-sec"><b>💿 Case CD Entries ('+cds.length+')</b>'+
+      '<p class="small muted" style="margin:6px 0 0">প্রতি ১৫ দিনে একটি Case CD লিখতে হয় · '+(cds.length?('সর্বশেষ CD: '+fmtD(lastCDDate(c))+' ('+cdAge+' দিন আগে)'):'এখনো কোনো CD লেখা হয়নি')+
+      (isUnderInvestigation(c)&&cdOverdue(c)?' <span class="age-chip">⚠️ ১৫+ দিন — CD লিখতে হবে!</span>':'')+'</p>'+
+      (cdList||'')+
+      (can('edit')?
+        '<div class="flex-row"><input id="cd-no" placeholder="Case CD No *"><input type="date" id="cd-date" value="'+todayISO()+'"><button class="btn-small" onclick="addCaseCD(\''+c.id+'\')">Add</button></div>'+
+        '<input id="cd-note" placeholder="মন্তব্য (optional)" style="margin-top:6px">':'')+
+      '</div>';
+  }
+  const statusSel=can('edit')?
+    '<select onchange="updateCaseField(\''+c.id+'\',\'status\',this.value)">'+['New','Running','Completed','Closed'].map(s=>'<option'+(c.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select>'
+    :'<span class="badge st-'+String(c.status||'').toLowerCase()+'">'+esc(c.status)+'</span>';
+  const prioSel=can('edit')?
+    '<select onchange="updateCaseField(\''+c.id+'\',\'priority\',this.value)">'+['Critical','High','Medium','Low'].map(s=>'<option'+((c.priority||'Medium')===s?' selected':'')+'>'+s+'</option>').join('')+'</select>'
+    :'<span class="prl">'+prEmoji(c.priority)+' '+esc(c.priority)+'</span>';
+  openModal(modalHead('📁 '+esc(c.caseNo))+
+    '<h4 class="cm-title">'+esc(c.name)+'</h4>'+
+    '<div class="cm-grid">'+
+      '<div><small>Officer</small><b class="link" onclick="openProfile(\''+c.officerId+'\')">👮 '+esc(o?o.name:'—')+'</b></div>'+
+      '<div><small>Client</small><b>'+(esc(c.client)||'—')+'</b></div>'+
+      '<div><small>Type</small><b>'+(esc(c.caseType)||'—')+'</b></div>'+
+      '<div><small>Priority</small>'+prioSel+'</div>'+
+      '<div><small>Opening Date</small><b>'+fmtD(c.openingDate)+'</b></div>'+
+      '<div><small>Deadline</small><b>'+(c.deadline?fmtD(c.deadline):'—')+'</b></div>'+
+      '<div><small>Status</small>'+statusSel+'</div>'+
+      '<div><small>Due Age</small><b>'+(due>0&&dueAgeDays(c)>0?dueAgeDays(c)+' days':'—')+'</b></div>'+
+    '</div>'+
+    (canFin()?
+      '<div class="cm-fin"><div class="fin-b">Deal<b>'+tk(c.dealAmount)+'</b></div><div class="fin-b">Paid<b class="green">'+tk(paid)+'</b></div><div class="fin-b">Due<b class="red">'+tk(due)+'</b></div></div>'+
+      '<div class="progress"><div style="width:'+pct+'%"></div></div>':'')+
+    (c.description?'<div class="cm-sec"><b>📝 Description</b><p class="small" style="margin:6px 0 0;white-space:pre-wrap">'+esc(c.description)+'</p></div>':'')+
+    (c.notes?'<div class="cm-sec"><b>🗒️ Notes</b><p class="small" style="margin:6px 0 0;white-space:pre-wrap">'+esc(c.notes)+'</p></div>':'')+
+    (can('edit')&&due>0?
+      '<div class="cm-sec"><b>➕ Add Payment</b>'+
+      '<div class="flex-row"><input type="date" id="pm-date" value="'+todayISO()+'"><input type="number" id="pm-amt" placeholder="Amount ৳"><button class="btn-small" onclick="addPayment(\''+c.id+'\')">Add</button></div>'+
+      '<div class="flex-row"><select id="pm-method">'+db.settings.paymentMethods.map(m=>'<option'+(m==='Cash'?' selected':'')+'>'+esc(m)+'</option>').join('')+'</select><input id="pm-note" placeholder="Note (optional)"></div></div>':'')+
+    (canFin()?'<div class="cm-sec"><b>🧾 Payments ('+(c.payments||[]).length+')</b>'+(payHtml||'<p class="small muted" style="margin:6px 0 0">কোনো পেমেন্ট নেই।</p>')+'</div>':'')+
+    cdSection+
+    '<div class="case-actions">'+
+      (can('edit')?'<button class="btn-small btn-ghost" onclick="openCaseForm(\''+c.id+'\')">✏️ Edit</button>':'')+
+      (can('financial')&&due>0?'<button class="btn-small btn-wa" onclick="openReminderPicker(\''+c.id+'\')">📱 Remind</button>':'')+
+      '<button class="btn-small btn-ghost" onclick="printCase(\''+c.id+'\')">🖨️ Print</button>'+
+      (can('delete')?'<button class="btn-small btn-red" onclick="deleteCase(\''+c.id+'\')">🗑️ Delete</button>':'')+
+    '</div>');
+}
+function updateCaseField(id,field,val){
+  const c=db.cases.find(x=>x.id===id);if(!c)return;
+  c[field]=val;saveDb();
+  openCaseModal(id);refreshCurrentView();
+}
+function deleteCase(id){
+  const c=db.cases.find(x=>x.id===id);if(!c)return;
+  if(!can('delete'))return toast('⛔ Permission নেই');
+  askConfirm('Delete Case','<b>'+esc(c.caseNo)+'</b> — '+esc(c.name)+' মুছে যাবে (৩০ দিনের মধ্যে Recycle Bin থেকে ফেরানো যাবে)।','Delete',function(){
+    const binId=uid();
+    db.recycleBin.push({id:binId,type:'case',data:c,deletedAt:Date.now()});
+    db.cases=db.cases.filter(x=>x.id!==id);
+    saveDb();closeModal();refreshCurrentView();
+    toast('🗑️ Case deleted',{action:'Undo',duration:6000,onAction:function(){restoreItem(binId);}});
+  });
+}
+function addPayment(caseId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const amt=Math.round(+$('pm-amt').value||0);
+  const date=$('pm-date').value||todayISO();
+  const note=($('pm-note').value||'').trim();
+  const pmSel=$('pm-method');
+  const method=(pmSel&&pmSel.value)?pmSel.value:'Cash';
+  if(amt<=0)return toast('সঠিক অংক লিখুন');
+  if(casePaid(c)+amt>(+c.dealAmount||0))return toast('❌ ডিলের পরিমাণের বেশি হয়ে যাচ্ছে!');
+  const p={id:uid(),receiptNo:nextReceiptNo(),amount:amt,date:date,method:method,note:note};
+  c.payments.push(p);saveDb();
+  toast('✅ '+tk(amt)+' ('+method+') added — Receipt: '+p.receiptNo,{action:'🧾 Receipt',duration:7000,onAction:function(){sendReceipt(caseId,p.id);}});
+  openCaseModal(caseId);
+  refreshCurrentView();
+}
+function deletePayment(caseId,payId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const i=(c.payments||[]).findIndex(p=>p.id===payId);if(i<0)return;
+  const p=c.payments[i];
+  askConfirm('Delete Payment','৳'+fmt(p.amount)+' ('+fmtD(p.date)+') পেমেন্টটি মুছে যাবে।','Delete',function(){
+    c.payments.splice(i,1);
+    db.recycleBin.push({id:uid(),type:'payment',data:Object.assign({caseId:caseId},p),deletedAt:Date.now()});
+    saveDb();openCaseModal(caseId);refreshCurrentView();
+    toast('🗑️ Payment deleted');
+  });
+}
+function editPayment(caseId,payId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const p=(c.payments||[]).find(x=>x.id===payId);if(!p)return;
+  openModal(modalHead('✏️ Edit Payment — '+esc(c.caseNo))+
+    '<p class="small muted" style="margin:2px 0 6px">ভুল এন্ট্রি সংশোধন করুন — রসিদ নম্বর অপরিবর্তিত থাকবে ('+esc(p.receiptNo||'—')+')</p>'+
+    '<label>Amount (৳) *</label><input type="number" id="ep-amt" value="'+p.amount+'">'+
+    '<label>তারিখ *</label><input type="date" id="ep-date" value="'+esc(p.date||todayISO())+'">'+
+    '<label>Method</label><select id="ep-method">'+db.settings.paymentMethods.map(m=>'<option'+(m===(p.method||'Cash')?' selected':'')+'>'+esc(m)+'</option>').join('')+'</select>'+
+    '<label>Note</label><input id="ep-note" value="'+esc(p.note||'')+'">'+
+    '<button class="btn btn-primary" onclick="submitPaymentEdit(\''+caseId+'\',\''+payId+'\')">💾 Save</button>'+
+    '<button class="btn btn-ghost" onclick="openCaseModal(\''+caseId+'\')">Cancel</button>');
+}
+function submitPaymentEdit(caseId,payId){
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const p=(c.payments||[]).find(x=>x.id===payId);if(!p)return;
+  const amt=Math.round(+$('ep-amt').value||0);
+  const date=$('ep-date').value||todayISO();
+  if(amt<=0)return toast('সঠিক অংক লিখুন');
+  const others=casePaid(c)-(+p.amount||0);
+  if(others+amt>(+c.dealAmount||0))return toast('❌ ডিলের পরিমাণের বেশি হয়ে যাচ্ছে!');
+  p.amount=amt;p.date=date;p.method=$('ep-method').value||'Cash';p.note=$('ep-note').value.trim();
+  saveDb();openCaseModal(caseId);refreshCurrentView();
+  toast('✅ Payment সংশোধিত হয়েছে');
+}
+function addCaseCD(caseId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  if(!isCDCase(c))return toast('শুধুমাত্র GR ও UD মামলায় Case CD হয়');
+  const no=$('cd-no').value.trim();
+  const date=$('cd-date').value||todayISO();
+  const note=($('cd-note').value||'').trim();
+  if(!no)return toast('Case CD নম্বর লিখুন');
+  if(!c.caseCDs)c.caseCDs=[];
+  c.caseCDs.push({id:uid(),cdNo:no,date:date,note:note});
+  saveDb();openCaseModal(caseId);refreshCurrentView();
+  toast('💿 Case CD সেভ হয়েছে');
+}
+function deleteCaseCD(caseId,cdId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const i=(c.caseCDs||[]).findIndex(x=>x.id===cdId);
+  if(i<0)return;
+  askConfirm('Delete Case CD','Case CD <b>'+esc(c.caseCDs[i].cdNo)+'</b> ('+fmtD(c.caseCDs[i].date)+') মুছে যাবে।','Delete',function(){
+    c.caseCDs.splice(i,1);saveDb();openCaseModal(caseId);refreshCurrentView();
+    toast('🗑️ Case CD deleted');
+  });
+}
+function editCaseCD(caseId,cdId){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const x=(c.caseCDs||[]).find(y=>y.id===cdId);if(!x)return;
+  openModal(modalHead('✏️ Edit Case CD — '+esc(c.caseNo))+
+    '<p class="small muted" style="margin:2px 0 6px">ভুল এন্ট্রি সংশোধন করুন</p>'+
+    '<label>Case CD No *</label><input id="ecd-no" value="'+esc(x.cdNo)+'">'+
+    '<label>তারিখ *</label><input type="date" id="ecd-date" value="'+esc(x.date||todayISO())+'">'+
+    '<label>মন্তব্য (optional)</label><input id="ecd-note" value="'+esc(x.note||'')+'">'+
+    '<button class="btn btn-primary" onclick="submitCaseCDEdit(\''+caseId+'\',\''+cdId+'\')">💾 Save</button>'+
+    '<button class="btn btn-ghost" onclick="openCaseModal(\''+caseId+'\')">Cancel</button>');
+}
+function submitCaseCDEdit(caseId,cdId){
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const x=(c.caseCDs||[]).find(y=>y.id===cdId);if(!x)return;
+  const no=$('ecd-no').value.trim();
+  const date=$('ecd-date').value||todayISO();
+  if(!no)return toast('Case CD নম্বর লিখুন');
+  x.cdNo=no;x.date=date;x.note=$('ecd-note').value.trim();
+  saveDb();openCaseModal(caseId);refreshCurrentView();
+  toast('✅ Case CD সংশোধিত হয়েছে');
+}
+function printCase(id){
+  const c=db.cases.find(x=>x.id===id);if(!c)return;
+  const o=officerById(c.officerId);
+  const fin=canFin();
+  const rows=(c.payments||[]).map(p=>'<tr><td>'+fmtD(p.date)+'</td><td>'+esc(p.receiptNo||'—')+'</td><td>'+esc(p.method||'—')+'</td><td>'+esc(p.note||'')+'</td><td style="text-align:right">৳'+fmt(p.amount)+'</td></tr>').join('');
+  printDoc('Case Report — '+esc(c.caseNo),
+    '<table>'+
+    '<tr><th>Case Name</th><td>'+esc(c.name)+'</td><th>Officer</th><td>'+esc(o?o.name:'—')+'</td></tr>'+
+    '<tr><th>Client</th><td>'+esc(c.client||'—')+'</td><th>Type</th><td>'+esc(c.caseType||'—')+'</td></tr>'+
+    '<tr><th>Opening</th><td>'+fmtD(c.openingDate)+'</td><th>Deadline</th><td>'+(c.deadline?fmtD(c.deadline):'—')+'</td></tr>'+
+    '<tr><th>Status</th><td>'+esc(c.status)+'</td><th>Priority</th><td>'+esc(c.priority||'Medium')+'</td></tr>'+
+    (fin?
+    '<tr><th>Deal</th><td>৳'+fmt(c.dealAmount)+'</td><th>Paid</th><td>৳'+fmt(casePaid(c))+'</td></tr>'+
+    '<tr><th>Due</th><td>৳'+fmt(caseDue(c))+'</td><th>Payments</th><td>'+(c.payments||[]).length+'</td></tr>':'')+
+    '</table>'+
+    (fin?'<h4>Payment History</h4>'+
+    '<table><tr><th>Date</th><th>Receipt</th><th>Method</th><th>Note</th><th>Amount</th></tr>'+(rows||'<tr><td colspan="5">No payments</td></tr>')+'</table>':''));
+}
+
+/* ==================== WHATSAPP: reminder / receipt ==================== */
+function openReminderPicker(caseId){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const tpls=db.settings.templates.filter(t=>t.type==='reminder');
+  if(!tpls.length)return toast('কোনো Reminder Template নেই');
+  openModal(modalHead('📱 WhatsApp Reminder')+
+    '<p class="small muted">'+esc(c.caseNo)+' · '+esc(officerName(c.officerId))+' · Due '+tk(caseDue(c))+'</p>'+
+    tpls.map(t=>'<button class="btn btn-wa" onclick="sendCaseReminder(\''+caseId+'\',\''+t.id+'\')">📱 '+esc(t.name)+'</button>').join('')+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function sendCaseReminder(caseId,tplId){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  const t=tplById(tplId);if(!t)return;
+  const o=officerById(c.officerId);
+  const ctx=caseCtx(c);
+  ctx.cases_block='• '+c.caseNo+' | '+c.name+' | Due ৳'+fmt(caseDue(c));
+  previewSendModal('📱 '+esc(t.name),fillTpl(t.body,ctx),o&&o.phone);
+}
+function sendReceipt(caseId,payId){
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  if(!canFin())return toast('⛔ Financial permission নেই');
+  if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  const p=(c.payments||[]).find(x=>x.id===payId);if(!p)return;
+  const o=officerById(c.officerId);
+  const tpl=db.settings.templates.find(x=>x.type==='receipt')||builtinTpl('receipt');
+  const ctx={officer:o?o.name:'',case_no:c.caseNo,case_name:c.name,amount:fmt(p.amount),
+    paid:fmt(casePaid(c)),due:fmt(caseDue(c)),date:fmtD(p.date),receipt_no:p.receiptNo||'—',method:p.method||'Cash',business:db.settings.businessName||''};
+  previewSendModal('🧾 Payment Receipt',fillTpl(tpl.body,ctx),o&&o.phone);
+}
+
+/* ==================== OFFICERS ==================== */
+function renderOfficers(){
+  const q=($('officer-q').value||'').trim().toLowerCase();
+  const arr=visibleOfficers().filter(o=>!q||String(o.name).toLowerCase().includes(q)||String(o.phone||'').includes(q));
+  $('officers-list').innerHTML=arr.map(o=>{
+    const cs=db.cases.filter(c=>c.officerId===o.id);
+    let due=0;cs.forEach(c=>due+=caseDue(c));
+    const inactive=o.active===false;
+    return '<div class="officer-card '+(due>0?'alert-red':'')+(inactive?' inactive':'')+'" onclick="openProfile(\''+o.id+'\')">'+
+      '<div class="off-avatar">'+esc(initials(o.name))+'</div>'+
+      '<div class="off-info"><b>'+esc(o.name)+'</b> '+(inactive?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+'<small>'+esc(o.phone||'নম্বর নেই')+' · '+cs.length+' cases</small></div>'+
+      '<div class="off-due">'+(canFin()?(due>0?'<span class="red">'+tk(due)+'</span>':'<span class="green">✓ Clear</span>'):'')+' <span class="chev">›</span></div>'+
+    '</div>';
+  }).join('')||'<p class="small muted">কোনো অফিসার পাওয়া যায়নি।</p>';
+  $('add-officer-btn').style.display=(can('add')&&!myOfficerId())?'block':'none';
+  if(myOfficerId())$('officers-list').innerHTML+='<p class="small muted">🔒 আপনি শুধুমাত্র নিজের প্রোফাইল দেখতে পারবেন</p>';
+}
+function openOfficerForm(id){
+  if(!can(id?'edit':'add'))return toast('⛔ Permission নেই');
+  if(myOfficerId())return toast('⛔ আপনি নতুন Officer যোগ করতে পারবেন না');
+  const o=id?officerById(id):null;
+  if(id&&!o)return;
+  openModal(modalHead(o?'✏️ Edit Officer':'＋ New Officer')+
+    '<label>Officer Name *</label><input id="of-name" value="'+(o?esc(o.name):'')+'" placeholder="e.g. SI Kawsar">'+
+    '<label>WhatsApp Number</label><input id="of-phone" value="'+(o?esc(o.phone||''):'+880')+'" placeholder="+8801XXXXXXXXX">'+
+    '<label>Address</label><input id="of-addr" value="'+(o?esc(o.address||''):'')+'">'+
+    '<label>Note</label><input id="of-note" value="'+(o?esc(o.note||''):'')+'">'+
+    '<label>Status</label><select id="of-active"><option value="active"'+(!o||o.active!==false?' selected':'')+'>🟢 Active — ড্যাশবোর্ডে হিসাব দেখাবে</option><option value="inactive"'+(o&&o.active===false?' selected':'')+'>⛔ Inactive — ড্যাশবোর্ডে হিসাব বাদ</option></select>'+
+    '<button class="btn btn-primary" onclick="submitOfficerForm('+(o?"'"+o.id+"'":"''")+')">💾 Save Officer</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function submitOfficerForm(id){
+  const name=$('of-name').value.trim();
+  if(!name)return toast('নাম লিখুন');
+  const phone=$('of-phone').value.trim(),addr=$('of-addr').value.trim(),note=$('of-note').value.trim();
+  const active=$('of-active')?($('of-active').value!=='inactive'):true;
+  if(id){
+    const o=officerById(id);if(!o)return;
+    o.name=name;o.phone=phone;o.address=addr;o.note=note;o.active=active;
+    toast('✅ Officer updated');
+  }else{
+    db.officers.push({id:uid(),name:name,phone:phone,address:addr,note:note,active:active,createdAt:Date.now()});
+    toast('✅ Officer added');
+  }
+  saveDb();closeModal();refreshCurrentView();
+}
+function toggleOfficerActive(id){
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  const o=officerById(id);if(!o)return;
+  o.active=(o.active===false);
+  saveDb();
+  if(sess.view==='profile')renderProfile();else refreshCurrentView();
+  toast(o.active?'✅ Officer Active — ড্যাশবোর্ডে হিসাব দেখাবে':'⛔ Officer Inactive — ড্যাশবোর্ডে হিসাব বাদ দেওয়া হলো');
+}
+function deleteOfficer(id){
+  if(!can('delete'))return toast('⛔ Permission নেই');
+  const o=officerById(id);if(!o)return;
+  const cases=db.cases.filter(c=>c.officerId===id);
+  askConfirm('Delete Officer','<b>'+esc(o.name)+'</b> ও তাঁর '+cases.length+'টি কেস মুছে যাবে (Recycle Bin থেকে ফেরানো যাবে)।','Delete',function(){
+    const binId=uid();
+    db.recycleBin.push({id:binId,type:'officer',data:o,cases:cases,deletedAt:Date.now()});
+    db.officers=db.officers.filter(x=>x.id!==id);
+    db.cases=db.cases.filter(c=>c.officerId!==id);
+    saveDb();closeModal();go('officers');
+    toast('🗑️ Officer deleted',{action:'Undo',duration:6000,onAction:function(){restoreItem(binId);}});
+  });
+}
+
+/* ==================== OFFICER PROFILE ==================== */
+function openProfile(id){
+  if(myOfficerId()&&String(id)!==String(myOfficerId()))return toast('⛔ অন্য অফিসারের প্রোফাইল দেখার অনুমতি নেই');
+  sess.profileOfficerId=id;go('profile');
+}
+function renderProfile(){
+  const o=officerById(sess.profileOfficerId);
+  if(!o){go('officers');return;}
+  if(myOfficerId()&&String(o.id)!==String(myOfficerId())){go('officers');return;}
+  $('header-title').textContent=o.name;
+  const cs=db.cases.filter(c=>c.officerId===o.id);
+  let tot=0,paid=0;cs.forEach(c=>{tot+=+c.dealAmount||0;paid+=casePaid(c);});
+  const due=tot-paid;
+  const active=cs.filter(c=>c.status==='New'||c.status==='Running').length;
+  let h='<div class="pf-top"><div class="off-avatar big">'+esc(initials(o.name))+'</div>'+
+    '<div style="flex:1;min-width:0"><h3 style="margin:0;border:none;padding:0">'+esc(o.name)+' '+(o.active===false?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+'</h3>'+
+    '<small class="muted">📱 '+esc(o.phone||'নম্বর নেই')+' · 📋 '+cs.length+' cases ('+active+' active)</small></div></div>';
+  if(o.address)h+='<div class="case-meta">📍 '+esc(o.address)+'</div>';
+  if(o.note)h+='<div class="case-meta">🗒️ '+esc(o.note)+'</div>';
+  if(o.active===false)h+='<div class="case-meta" style="color:var(--red);font-weight:700">⛔ এই Officer Inactive — তাঁর মামলার হিসাব ড্যাশবোর্ডে যাবে না (এই প্রোফাইলে সব হিসাব দেখা যাবে)</div>';
+  if(canFin()){
+    h+='<div class="stats">'+statBox('🤝','Deal',tk(tot),'st-p')+statBox('💰','Paid',tk(paid),'st-b')+statBox('🧾','Due',tk(due),'st-r')+'</div>';
+  }
+  h+='<div class="case-actions">'+
+    (can('financial')&&due>0?'<button class="btn-small btn-wa" onclick="openOfficerReminder(\''+o.id+'\')">📱 Reminder</button>':'')+
+    (can('financial')?'<button class="btn-small" onclick="openStatementGen(\''+o.id+'\')">📋 Statement</button>':'')+
+    (can('add')?'<button class="btn-small" onclick="openCaseForm(null,\''+o.id+'\')">＋ Case</button>':'')+
+    (can('edit')?'<button class="btn-small btn-ghost" onclick="openOfficerForm(\''+o.id+'\')">✏️ Edit</button>':'')+
+    (can('edit')?(o.active===false?'<button class="btn-small" onclick="toggleOfficerActive(\''+o.id+'\')">✅ Make Active</button>':'<button class="btn-small btn-warn" onclick="toggleOfficerActive(\''+o.id+'\')">⛔ Make Inactive</button>'):'')+
+    (can('delete')?'<button class="btn-small btn-red" onclick="deleteOfficer(\''+o.id+'\')">🗑️</button>':'')+
+    '<button class="btn-small btn-ghost" onclick="window.print()">🖨️</button>'+
+    '</div>';
+  $('profile-head').innerHTML=h;
+  $('profile-cases').innerHTML=cs.map(caseCardHTML).join('')||'<p class="small muted">কোনো কেস নেই — উপরে ＋ Case বাটনে চাপুন।</p>';
+}
+function openOfficerReminder(oid){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const o=officerById(oid);if(!o)return;
+  const tpls=db.settings.templates.filter(t=>t.type==='reminder');
+  if(!tpls.length)return toast('কোনো Reminder Template নেই');
+  openModal(modalHead('📱 WhatsApp Reminder')+
+    '<p class="small muted">'+esc(o.name)+' — সব কেসের মোট হিসাবসহ</p>'+
+    tpls.map(t=>'<button class="btn btn-wa" onclick="sendOfficerReminder(\''+oid+'\',\''+t.id+'\')">📱 '+esc(t.name)+'</button>').join('')+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function sendOfficerReminder(oid,tplId){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const o=officerById(oid);if(!o)return;
+  const t=tplById(tplId);if(!t)return;
+  const cs=db.cases.filter(c=>c.officerId===oid);
+  let tot=0,paid=0;cs.forEach(c=>{tot+=+c.dealAmount||0;paid+=casePaid(c);});
+  const due=tot-paid;
+  const dueCases=cs.filter(c=>caseDue(c)>0);
+  const block=dueCases.map(c=>'• '+c.caseNo+' | '+c.name+' | Due ৳'+fmt(caseDue(c))).join('\n');
+  const ctx={officer:o.name,client:'',case_no:dueCases.length===1?dueCases[0].caseNo:'(সব কেস)',
+    case_name:dueCases.length===1?dueCases[0].name:'—',total:fmt(tot),paid:fmt(paid),due:fmt(due),
+    date:fmtD(todayISO()),business:db.settings.businessName||'',cases_block:block||'—'};
+  previewSendModal('📱 '+esc(t.name),fillTpl(t.body,ctx),o.phone);
+}
+
+/* ==================== MONTHLY STATEMENT ==================== */
+function openStatementGen(oid){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const o=officerById(oid);if(!o)return;
+  if(myOfficerId()&&String(oid)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  openModal(modalHead('📋 Monthly Statement — '+esc(o.name))+
+    '<label>Month</label><input type="month" id="stmt-m" value="'+todayISO().slice(0,7)+'">'+
+    '<button class="btn btn-primary" onclick="buildStatement(\''+oid+'\')">Generate Statement</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function buildStatement(oid){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const o=officerById(oid);if(!o)return;
+  if(myOfficerId()&&String(oid)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  const ym=$('stmt-m').value||todayISO().slice(0,7);
+  const cases=db.cases.filter(c=>c.officerId===oid).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
+  let tot=0,paid=0,monthCol=0;
+  const lines=cases.map(c=>{
+    const p=casePaid(c);tot+=+c.dealAmount||0;paid+=p;
+    (c.payments||[]).forEach(pp=>{if(String(pp.date||'').slice(0,7)===ym)monthCol+=+pp.amount||0;});
+    return '• '+c.caseNo+' | '+c.name+' | Deal ৳'+fmt(c.dealAmount)+' | Paid ৳'+fmt(p)+' | Due ৳'+fmt(caseDue(c));
+  }).join('\n')||'(কোনো কেস নেই)';
+  const tpl=db.settings.templates.find(t=>t.type==='statement')||builtinTpl('statement');
+  const text=fillTpl(tpl.body,{officer:o.name,month:monthLabel(ym),cases_block:lines,
+    total:fmt(tot),paid:fmt(paid),due:fmt(tot-paid),month_collected:fmt(monthCol),
+    business:db.settings.businessName||'',date:fmtD(todayISO())});
+  openModal(modalHead('📋 Statement — '+monthLabel(ym))+
+    '<p class="small muted">এই মাসে গৃহীত: <b>'+tk(monthCol)+'</b></p>'+
+    '<textarea class="preview-box" readonly>'+esc(text)+'</textarea>'+
+    (o.phone?'<a class="btn btn-wa" style="margin-top:10px" href="'+waHref(o.phone,text)+'" target="_blank" rel="noopener">📱 Send via WhatsApp</a>':'<p class="small muted">⚠️ WhatsApp নম্বর নেই — Copy করে পাঠান।</p>')+
+    '<button class="btn" onclick="printStatement(\''+oid+'\',\''+ym+'\')">🖨️ Print Statement</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+}
+function printStatement(oid,ym){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const o=officerById(oid);if(!o)return;
+  if(myOfficerId()&&String(oid)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  const cases=db.cases.filter(c=>c.officerId===oid).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
+  let tot=0,paid=0;
+  const rows=cases.map(c=>{const p=casePaid(c);tot+=+c.dealAmount||0;paid+=p;
+    return '<tr><td>'+esc(c.caseNo)+'</td><td>'+esc(c.name)+'</td><td style="text-align:right">৳'+fmt(c.dealAmount)+'</td><td style="text-align:right">৳'+fmt(p)+'</td><td style="text-align:right">৳'+fmt(caseDue(c))+'</td></tr>';}).join('');
+  printDoc('Monthly Statement — '+esc(o.name)+' ('+monthLabel(ym)+')',
+    '<table><tr><th>Case ID</th><th>Name</th><th>Deal</th><th>Paid</th><th>Due</th></tr>'+
+    (rows||'<tr><td colspan="5">No cases</td></tr>')+
+    '<tr><th colspan="2">Total</th><th style="text-align:right">৳'+fmt(tot)+'</th><th style="text-align:right">৳'+fmt(paid)+'</th><th style="text-align:right">৳'+fmt(tot-paid)+'</th></tr></table>');
+}
+
+/* ==================== EXPENSES ==================== */
+function fillCatSelect(id,allOption){
+  const s=$(id);if(!s)return;
+  const v=s.value;
+  s.innerHTML=(allOption?'<option value="">'+allOption+'</option>':'')+db.settings.expenseCategories.map(c=>'<option>'+esc(c)+'</option>').join('');
+  if(v&&db.settings.expenseCategories.includes(v))s.value=v;
+  else if(allOption)s.value='';
+}
+function renderExpenses(){
+  if(!can('financial')){go('dashboard');return;}
+  if(!$('ex-date').value)$('ex-date').value=todayISO();
+  fillCatSelect('ex-cat');fillCatSelect('exf-cat','📋 All Categories');
+  const csel=$('ex-case');const cv=csel.value;
+  csel.innerHTML='<option value="">— No case link —</option>'+db.cases.slice().sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo))).map(c=>'<option value="'+c.id+'">'+esc(c.caseNo)+' — '+esc(c.name)+'</option>').join('');
+  if(cv&&db.cases.find(c=>c.id===cv))csel.value=cv;
+  const from=$('exf-from').value,to=$('exf-to').value,cat=$('exf-cat').value;
+  let arr=db.expenses.filter(e=>(!from||e.date>=from)&&(!to||e.date<=to)&&(!cat||e.category===cat));
+  arr.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  let total=0;arr.forEach(e=>total+=+e.amount||0);
+  $('exp-total').textContent=tk(total);
+  const per=10,pages=Math.max(1,Math.ceil(arr.length/per));
+  if(sess.expFilters.page>pages)sess.expFilters.page=1;
+  const page=sess.expFilters.page;
+  $('exp-list').innerHTML=arr.slice((page-1)*per,page*per).map(e=>{
+    const c=e.caseId?db.cases.find(x=>x.id===e.caseId):null;
+    return '<div class="list-item"><span><b>'+esc(e.category)+'</b> <small class="muted">('+fmtD(e.date)+')</small>'+
+      (c?'<br><small class="muted">📁 '+esc(c.caseNo)+'</small>':'')+
+      (e.note?'<br><small class="muted">'+esc(e.note)+'</small>':'')+'</span>'+
+      '<span><b class="red">−'+tk(e.amount)+'</b>'+(can('delete')?' <button class="icon-btn" onclick="deleteExpense(\''+e.id+'\')">❌</button>':'')+'</span></div>';
+  }).join('')||'<p class="small muted">কোনো খরচ নেই।</p>';
+  $('exp-pager').innerHTML=pagerHtml(pages,page,'expGoPage');
+}
+function expGoPage(p){sess.expFilters.page=Math.max(1,p);renderExpenses();}
+function clearExpFilters(){$('exf-from').value='';$('exf-to').value='';$('exf-cat').value='';sess.expFilters.page=1;renderExpenses();}
+function addExpense(){
+  if(!can('financial'))return toast('⛔ Permission নেই');
+  const amt=Math.round(+$('ex-amt').value||0);
+  if(amt<=0)return toast('সঠিক অংক লিখুন');
+  db.expenses.push({id:uid(),caseId:$('ex-case').value||'',category:$('ex-cat').value,amount:amt,date:$('ex-date').value||todayISO(),note:$('ex-note').value.trim()});
+  saveDb();
+  $('ex-amt').value='';$('ex-note').value='';
+  renderExpenses();toast('💸 Expense added');
+}
+function deleteExpense(id){
+  if(!can('delete'))return toast('⛔ Permission নেই');
+  const e=db.expenses.find(x=>x.id===id);if(!e)return;
+  askConfirm('Delete Expense',esc(e.category)+' — ৳'+fmt(e.amount)+' মুছে যাবে।','Delete',function(){
+    const binId=uid();
+    db.recycleBin.push({id:binId,type:'expense',data:e,deletedAt:Date.now()});
+    db.expenses=db.expenses.filter(x=>x.id!==id);
+    saveDb();renderExpenses();
+    toast('🗑️ Expense deleted',{action:'Undo',duration:6000,onAction:function(){restoreItem(binId);renderExpenses();}});
+  });
+}
+
+/* ==================== GLOBAL SEARCH ==================== */
+function openSearchView(){go('search');setTimeout(function(){try{$('gs-q').focus();}catch(e){}},80);}
+function renderSearchView(){runGlobalSearch();}
+function runGlobalSearch(){
+  const q=($('gs-q').value||'').trim().toLowerCase();
+  const out=$('gs-results');
+  if(q.length<2){out.innerHTML='<p class="small muted" style="margin-top:10px">কমপক্ষে ২ অক্ষর লিখুন — Officer, Case ID, Case Name, Client, Phone, Payment, Note সব একসাথে খোঁজা হবে…</p>';return;}
+  const match=s=>s&&String(s).toLowerCase().includes(q);
+  let html='';
+  const offs=visibleOfficers().filter(o=>match(o.name)||match(o.phone)||match(o.address)||match(o.note)).slice(0,8);
+  if(offs.length){
+    html+='<div class="gs-head">👮 Officers</div>'+offs.map(o=>{
+      const cs=db.cases.filter(c=>c.officerId===o.id);let due=0;cs.forEach(c=>due+=caseDue(c));
+      return '<div class="gs-row" onclick="openProfile(\''+o.id+'\')"><span><b>'+esc(o.name)+'</b><br><small class="muted">'+esc(o.phone||'')+' · '+cs.length+' cases</small></span>'+(canFin()?'<b class="'+(due>0?'red':'green')+'">'+tk(due)+'</b>':'')+'</div>';
+    }).join('');
+  }
+  const cs=visibleCases().filter(c=>match(c.caseNo)||match(c.name)||match(c.client)||match(c.caseType)||match(c.description)||match(c.notes)).slice(0,10);
+  if(cs.length){
+    html+='<div class="gs-head">📁 Cases</div>'+cs.map(c=>'<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span><b>'+esc(c.caseNo)+'</b> — '+esc(c.name)+'<br><small class="muted">👮 '+esc(officerName(c.officerId))+' · '+esc(c.status)+'</small></span>'+(canFin()?'<b class="'+(caseDue(c)>0?'red':'green')+'">'+tk(caseDue(c))+'</b>':'')+'</div>').join('');
+  }
+  if(canFin()){
+    let ph='';
+    visibleCases().forEach(c=>(c.payments||[]).forEach(p=>{
+      if(match(p.note)||match(p.receiptNo)||match(p.method)||match(p.amount)||match(p.date)){
+        ph+='<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span>💰 '+esc(p.receiptNo||'Payment')+' <small>· '+esc(c.caseNo)+'</small><br><small class="muted">'+fmtD(p.date)+(p.method?' · '+esc(p.method):'')+'</small></span><b class="green">+'+tk(p.amount)+'</b></div>';
+      }
+    }));
+    if(ph)html+='<div class="gs-head">💰 Payments</div>'+ph;
+    if(can('financial')){
+      const eh=db.expenses.filter(e=>match(e.category)||match(e.note)||match(e.amount)||match(e.date)).slice(0,8);
+      if(eh.length){
+        html+='<div class="gs-head">💸 Expenses</div>'+eh.map(e=>{
+          const c=e.caseId?db.cases.find(x=>x.id===e.caseId):null;
+          return '<div class="gs-row" onclick="go(\'expenses\')"><span>'+esc(e.category)+(c?' · 📁 '+esc(c.caseNo):'')+'<br><small class="muted">'+fmtD(e.date)+(e.note?' · '+esc(e.note):'')+'</small></span><b class="red">−'+tk(e.amount)+'</b></div>';
+        }).join('');
+      }
+    }
+  }
+  $('gs-results').innerHTML=html||'<p class="small muted" style="margin-top:10px">😕 কিছু পাওয়া যায়নি — অন্য কিছু লিখে দেখুন।</p>';
+}
+
+/* ==================== TEMPLATES ==================== */
+function renderTemplates(){
+  const groups=[['reminder','📱 Reminder Templates'],['receipt','🧾 Receipt Templates'],['statement','📋 Statement Templates']];
+  const editable=can('settings');
+  const roNote=(!editable&&db.settings.templates.length)?'<p class="small muted" style="margin:4px 0 0">👁️ শুধু দেখার অনুমতি আছে — এডিট করতে Settings permission দরকার।</p>':'';
+  $('tpl-list').innerHTML=roNote+groups.map(g=>{
+    const items=db.settings.templates.filter(x=>x.type===g[0]);
+    if(!items.length)return '';
+    return '<div class="gs-head">'+g[1]+'</div>'+items.map(x=>'<div class="tpl-item"><div class="tpl-top"><b>'+esc(x.name)+'</b><span>'+
+      (editable?'<button class="icon-btn" title="Edit" onclick="openTemplateForm(\''+x.id+'\')">✏️</button><button class="icon-btn" title="Delete" onclick="deleteTemplate(\''+x.id+'\')">🗑️</button>':'')+
+      '</span></div><pre class="tpl-pre">'+esc(x.body)+'</pre></div>').join('');
+  }).join('')||'<p class="small muted">কোনো template নেই।</p>';
+  $('add-template-btn').style.display=editable?'block':'none';
+}
+function openTemplateForm(id){
+  if(!can('settings'))return toast('⛔ Permission নেই');
+  const t=id?tplById(id):null;
+  openModal(modalHead(t?'✏️ Edit Template':'＋ New Template')+
+    '<label>Template Name *</label><input id="tf-name" value="'+(t?esc(t.name):'')+'" placeholder="e.g. Polite Reminder">'+
+    '<label>Type</label><select id="tf-type">'+
+      ['reminder','receipt','statement'].map(x=>'<option value="'+x+'"'+((t&&t.type===x)?' selected':'')+'>'+({reminder:'Reminder',receipt:'Receipt',statement:'Statement'})[x]+'</option>').join('')+
+    '</select>'+
+    '<label>Message Body *</label><textarea id="tf-body" style="min-height:150px">'+(t?esc(t.body):'')+'</textarea>'+
+    '<p class="small muted" style="margin:6px 0 0">বসানোর জন্য চাপুন:</p><div class="chips" style="margin-top:4px">'+
+      ['officer','client','case_no','case_name','total','paid','due','amount','date','receipt_no','method','month','cases_block','business'].map(k=>'<button class="chip" onclick="insPh(\'{{'+k+'}}\')">{{'+k+'}}</button>').join('')+
+    '</div>'+
+    '<button class="btn btn-primary" onclick="submitTemplateForm('+(t?"'"+t.id+"'":"''")+')">💾 Save Template</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function insPh(tok){const ta=$('tf-body');ta.value+=tok;ta.focus();}
+function submitTemplateForm(id){
+  const name=$('tf-name').value.trim(),body=$('tf-body').value,type=$('tf-type').value;
+  if(!name||!body)return toast('নাম ও Message Body দিন');
+  if(id){
+    const t=tplById(id);if(!t)return;
+    t.name=name;t.body=body;t.type=type;
+  }else{
+    db.settings.templates.push({id:uid(),name:name,type:type,body:body});
+  }
+  saveDb();closeModal();renderTemplates();toast('✅ Template saved');
+}
+function deleteTemplate(id){
+  if(!can('settings'))return toast('⛔ Permission নেই');
+  const t=tplById(id);if(!t)return;
+  askConfirm('Delete Template','“'+esc(t.name)+'” template মুছে যাবে।','Delete',function(){
+    db.settings.templates=db.settings.templates.filter(x=>x.id!==id);
+    saveDb();renderTemplates();toast('🗑️ Template deleted');
+  });
+}
+
+/* ==================== RECYCLE BIN ==================== */
+function renderRecycle(){
+  if(!can('delete')){go('dashboard');return;}
+  const items=(db.recycleBin||[]).slice().sort((a,b)=>b.deletedAt-a.deletedAt);
+  const IC={case:'📁',officer:'👮',expense:'💸',payment:'💰'};
+  $('bin-list').innerHTML=items.map(b=>{
+    let title='';
+    if(b.type==='case')title=(b.data.caseNo||'')+' — '+(b.data.name||'');
+    else if(b.type==='officer')title=(b.data.name||'')+((b.cases&&b.cases.length)?' (+'+b.cases.length+' cases)':'');
+    else if(b.type==='expense')title=(b.data.category||'')+' — ৳'+fmt(b.data.amount);
+    else if(b.type==='payment')title='Payment ৳'+fmt(b.data.amount)+' ('+fmtD(b.data.date)+')';
+    return '<div class="list-item"><span>'+(IC[b.type]||'•')+' <b>'+esc(title)+'</b><br><small class="muted">deleted '+fmtD(isoOfTs(b.deletedAt))+'</small></span>'+
+      '<span><button class="btn-small" onclick="restoreItem(\''+b.id+'\')">↩ Restore</button> '+(isSuperAdmin()?'<button class="icon-btn" title="Delete Forever (Super Admin only)" onclick="purgeBinItem(\''+b.id+'\')">❌</button>':'')+'</span></div>';
+  }).join('')||'<p class="small muted">Recycle Bin খালি — সব পরিষ্কার! ✨</p>';
+  $('empty-bin-btn').style.display=(items.length&&isSuperAdmin())?'block':'none';
+}
+function purgeBinItem(id){
+  if(!isSuperAdmin())return toast('⛔ শুধুমাত্র Super Admin চিরতরে মুছতে পারবেন');
+  askConfirm('Delete Forever','এটি চিরতরে মুছে যাবে, আর ফেরানো যাবে না।','Delete Forever',function(){
+    db.recycleBin=db.recycleBin.filter(b=>b.id!==id);
+    saveDb();renderRecycle();
+  });
+}
+function emptyBin(){
+  if(!isSuperAdmin())return toast('⛔ শুধুমাত্র Super Admin Recycle Bin খালি করতে পারবেন');
+  askConfirm('Empty Recycle Bin','সব deleted item চিরতরে মুছে যাবে।','Empty Bin',function(){
+    db.recycleBin=[];saveDb();renderRecycle();toast('♻️ Recycle Bin খালি করা হলো');
+  });
+}
+
+/* ==================== SETTINGS ==================== */
+function renderSettings(){
+  if(!can('settings')){go('dashboard');return;}
+  $('st-biz').value=db.settings.businessName||'';
+  $('st-autolock').checked=!!db.settings.autoLock;
+  $('st-me').innerHTML='👤 <b>'+esc(currentUser.name)+'</b> · '+roleLabel(currentUser.role);
+  $('st-secq-btn').style.display=can('users')?'block':'none';
+  $('st-lastbackup').textContent=db.settings.lastBackupDate?('শেষ ব্যাকআপ: '+fmtD(db.settings.lastBackupDate)):'⚠️ এখনো কোনো ব্যাকআপ নেই — নিয়মিত ব্যাকআপ নিন!';
+  $('st-cats').innerHTML=db.settings.expenseCategories.map(c=>'<span class="chip">'+esc(c)+' <button class="icon-btn" onclick="removeCategory(\''+esc(c)+'\')" title="Remove">✖</button></span>').join('');
+  $('st-pms').innerHTML=db.settings.paymentMethods.map(m=>'<span class="chip">'+esc(m)+' <button class="icon-btn" onclick="removePayMethod(\''+esc(m)+'\')" title="Remove">✖</button></span>').join('');
+  $('st-ctypes').innerHTML=db.settings.caseTypes.map(t=>'<span class="chip">'+esc(t)+' <button class="icon-btn" onclick="removeCaseType(\''+esc(t)+'\')" title="Remove">✖</button></span>').join('');
+}
+function saveBiz(){
+  db.settings.businessName=$('st-biz').value.trim()||'Case Writer Pro';
+  saveDb();toast('✅ Business Name saved');
+}
+function toggleAutoLock(){
+  db.settings.autoLock=$('st-autolock').checked;
+  saveDb();resetIdleTimer();
+  toast(db.settings.autoLock?'🔒 অটো-লক চালু':'🔓 অটো-লক বন্ধ');
+}
+function addCategory(){
+  const v=$('st-newcat').value.trim().replace(/['"\\]/g,'');
+  if(!v)return toast('নাম লিখুন');
+  if(db.settings.expenseCategories.includes(v))return toast('এটা আগেই আছে');
+  db.settings.expenseCategories.push(v);
+  saveDb();$('st-newcat').value='';renderSettings();toast('✅ Category added');
+}
+function removeCategory(cat){
+  if(db.settings.expenseCategories.length<=1)return toast('অন্তত একটা Category থাকতে হবে');
+  db.settings.expenseCategories=db.settings.expenseCategories.filter(c=>c!==cat);
+  saveDb();renderSettings();
+}
+function addPayMethod(){
+  const v=$('st-newpm').value.trim().replace(/['"\\]/g,'');
+  if(!v)return toast('নাম লিখুন');
+  if(db.settings.paymentMethods.includes(v))return toast('এটা আগেই আছে');
+  db.settings.paymentMethods.push(v);
+  saveDb();$('st-newpm').value='';renderSettings();toast('✅ Payment Method added');
+}
+function removePayMethod(m){
+  if(db.settings.paymentMethods.length<=1)return toast('অন্তত একটা Method থাকতে হবে');
+  db.settings.paymentMethods=db.settings.paymentMethods.filter(x=>x!==m);
+  saveDb();renderSettings();
+}
+function addCaseType(){
+  const v=$('st-newctype').value.trim().replace(/['"\\]/g,'');
+  if(!v)return toast('নাম লিখুন');
+  if(db.settings.caseTypes.includes(v))return toast('এটা আগেই আছে');
+  db.settings.caseTypes.push(v);
+  saveDb();$('st-newctype').value='';renderSettings();toast('✅ Case Type added');
+}
+function removeCaseType(t){
+  if(db.settings.caseTypes.length<=1)return toast('অন্তত একটা Case Type থাকতে হবে');
+  db.settings.caseTypes=db.settings.caseTypes.filter(x=>x!==t);
+  saveDb();renderSettings();
+}
+function backupNow(){
+  const payload={app:'CaseWriterPro',schemaVersion:6,exportedAt:new Date().toISOString(),data:db};
+  let ok=false;
+  try{
+    const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='CaseLedger_v6_Backup_'+todayISO()+'.json';
+    document.body.appendChild(a);a.click();a.remove();
+    ok=true;
+  }catch(e){ok=false;}
+  if(!ok){
+    try{
+      const a2=document.createElement('a');
+      a2.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(payload));
+      a2.download='CaseLedger_v6_Backup_'+todayISO()+'.json';
+      document.body.appendChild(a2);a2.click();a2.remove();
+    }catch(e2){return toast('Backup নামানো গেল না');}
+  }
+  db.settings.lastBackupDate=todayISO();saveDb();
+  toast('📥 Backup downloaded');
+  renderBanners();
+  if(sess.view==='settings')renderSettings();
+}
+function openRestore(){
+  if(!can('settings'))return toast('⛔ Permission নেই');
+  openModal(modalHead('📤 Restore Backup')+
+    '<p class="small muted">আগের নেওয়া Backup JSON ফাইল সিলেক্ট করুন।</p>'+
+    '<label class="switch-row"><input type="radio" name="restmode" value="merge" checked> <span><b>Merge</b> — ব্যাকআপের নতুন জিনিস যোগ হবে, বর্তমান ডেটাও থাকবে (নিরাপদ)</span></label>'+
+    '<label class="switch-row"><input type="radio" name="restmode" value="replace"> <span><b>Replace</b> — বর্তমান সব ডেটা মুছে ব্যাকআপের ডেটা বসবে</span></label>'+
+    '<input type="file" id="rest-file" accept=".json" style="margin-top:10px">'+
+    '<button class="btn btn-warn" onclick="handleRestoreFile()">Restore Now</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function handleRestoreFile(){
+  const f=$('rest-file').files&&$('rest-file').files[0];
+  if(!f)return toast('ফাইল সিলেক্ট করুন');
+  const modeEl=document.querySelector('input[name=restmode]:checked');
+  const mode=modeEl?modeEl.value:'merge';
+  const r=new FileReader();
+  r.onload=function(e){
+    try{
+      let j=JSON.parse(e.target.result);
+      if(j&&!j.app&&j.officers){
+        const conv=migrateV5(j);
+        if(mode==='merge')conv.users=[];
+        j={app:'CaseWriterPro',schemaVersion:6,data:conv};
+      }
+      if(!j||j.app!=='CaseWriterPro'||!j.data)throw new Error('bad');
+      if(mode==='replace'){
+        db=ensureDefaults(j.data);
+        saveDb();
+        if(!currentUser||!db.users.find(u=>u.id===currentUser.id)){
+          closeModal();lockApp();
+        }else{
+          closeModal();refreshCurrentView();
+        }
+        toast('✅ Restore (Replace) সম্পন্ন');
+      }else{
+        const mergeBy=k=>{
+          const map=new Map();
+          (j.data[k]||[]).forEach(x=>map.set(x.id,x));
+          db[k].forEach(x=>map.set(x.id,x));
+          db[k]=Array.from(map.values());
+        };
+        mergeBy('officers');mergeBy('cases');mergeBy('expenses');mergeBy('users');
+        saveDb();closeModal();refreshCurrentView();
+        toast('✅ Restore (Merge) সম্পন্ন');
+      }
+      renderBanners();
+    }catch(err){toast('❌ ফাইলটি সঠিক Backup নয়');}
+  };
+  r.readAsText(f);
+}
+function openResetApp(){
+  if(!can('settings'))return toast('⛔ Permission নেই');
+  askConfirm('⚠️ Reset App','<b>সব ডেটা (কেস, পেমেন্ট, খরচ, ইউজার — সবকিছু) মুছে যাবে!</b> আগে Backup নিয়েছেন তো?','হ্যাঁ, সব মুছে দাও',function(){
+    storage.removeItem(DB_KEY);storage.removeItem(OLD_KEY);storage.removeItem(OLD_PIN_KEY);
+    try{location.reload();}catch(e){db=defaultDb();saveDb();lockApp();}
+  });
+}
+function openChangePin(){
+  openModal(modalHead('🔑 Change My PIN')+
+    '<label>Current PIN</label><input id="cp-cur" type="password" inputmode="numeric" maxlength="6">'+
+    '<label>New PIN (৪–৬ ডিজিট)</label><input id="cp-new" type="password" inputmode="numeric" maxlength="6">'+
+    '<label>New PIN আবার</label><input id="cp-new2" type="password" inputmode="numeric" maxlength="6">'+
+    '<button class="btn btn-primary" onclick="doChangePin()">Change PIN</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function doChangePin(){
+  const u=currentUser;
+  if(hashPin($('cp-cur').value,u.salt)!==u.pinHash)return toast('❌ বর্তমান PIN ভুল');
+  const n=$('cp-new').value;
+  if(!/^\d{4,6}$/.test(n)||n!==$('cp-new2').value)return toast('❌ নতুন PIN সঠিক নয় / মিলছে না');
+  u.salt=uid();u.pinHash=hashPin(n,u.salt);saveDb();
+  closeModal();toast('✅ PIN পরিবর্তন হয়েছে');
+}
+function openSecQ(){
+  if(!can('users'))return toast('⛔ Permission নেই');
+  openModal(modalHead('🛡️ Security Question')+
+    '<p class="small muted">PIN ভুলে গেলে এই প্রশ্নের উত্তর দিয়ে যেকোনো User-এর PIN রিসেট করা যাবে।</p>'+
+    '<label>Question</label><input id="sq-q" value="'+esc(db.settings.securityQuestion)+'" list="secq-list">'+
+    '<label>Answer</label><input id="sq-a" placeholder="নতুন উত্তর লিখুন">'+
+    '<button class="btn btn-primary" onclick="saveSecQ()">Save</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function saveSecQ(){
+  const q=$('sq-q').value.trim(),a=$('sq-a').value.trim();
+  if(!q||!a)return toast('প্রশ্ন ও উত্তর দিন');
+  const s=uid();
+  db.settings.securityQuestion=q;
+  db.settings.securitySalt=s;
+  db.settings.securityAnswerHash=hashText(s+'::'+a);
+  saveDb();closeModal();toast('✅ Security Question saved');
+}
+
+/* ==================== USERS & ROLES ==================== */
+function renderUsers(){
+  if(!can('users')){go('dashboard');return;}
+  $('users-list').innerHTML=db.users.map(u=>'<div class="list-item"><span><b>'+esc(u.name)+'</b> '+(u.id===currentUser.id?'<span class="badge st-running">You</span>':'')+
+    '<br><small class="muted">'+roleLabel(u.role)+(u.officerId?' · 🔗 '+esc(officerName(u.officerId)):'')+' · since '+fmtD(isoOfTs(u.createdAt||Date.now()))+'</small></span>'+
+    '<span>'+(u.id!==currentUser.id?'<button class="btn-small btn-ghost" title="Officer Link" onclick="openOfficerLink(\''+u.id+'\')">🔗</button> <button class="btn-small btn-ghost" title="Reset PIN" onclick="resetUserPin(\''+u.id+'\')">🔑</button> <button class="icon-btn" title="Delete" onclick="deleteUser(\''+u.id+'\')">🗑️</button>':'')+'</span></div>').join('');
+  $('perm-matrix').innerHTML=permMatrixHtml();
+  $('add-user-btn').style.display='block';
+}
+function permMatrixHtml(){
+  const rows=[['View','view'],['Add Case','add'],['Edit / Payments','edit'],['Delete','delete'],['Financial Data','financial'],['Settings','settings'],['Manage Users','users']];
+  const roles=['superadmin','admin','manager','officer','viewer'];
+  return '<table class="perm-t"><tr><th></th>'+roles.map(r=>'<th>'+roleLabel(r).replace(' ','<br>')+'</th>').join('')+'</tr>'+
+    rows.map(row=>'<tr><td>'+row[0]+'</td>'+roles.map(r=>'<td class="'+(ROLES[r].perms.includes(row[1])?'ok':'no')+'">'+(ROLES[r].perms.includes(row[1])?'✓':'—')+'</td>').join('')+'</tr>').join('')+'</table>';
+}
+function openUserForm(){
+  if(!can('users'))return toast('⛔ Permission নেই');
+  openModal(modalHead('＋ Add User')+
+    '<label>Name *</label><input id="uf-name" placeholder="e.g. Jahid (Manager)">'+
+    '<label>Role</label><select id="uf-role" onchange="toggleOfficerLinkRow()">'+['admin','manager','officer','viewer','superadmin'].map(r=>'<option value="'+r+'">'+roleLabel(r)+'</option>').join('')+'</select>'+
+    '<div id="uf-officer-row" style="display:none"><label>🔗 Officer-এর মোবাইল নম্বর *</label><input id="uf-officerphone" placeholder="+8801XXXXXXXXX"><p class="small muted" style="margin:2px 0 0">এই নম্বরে Officer প্রোফাইল খুঁজে আইডিটি লিংক হবে — লগইন করলে সে শুধু নিজের মামলা/ডেটা দেখবে</p></div>'+
+    '<label>PIN (৪–৬ ডিজিট) *</label><input id="uf-pin" type="password" inputmode="numeric" maxlength="6">'+
+    '<button class="btn btn-primary" onclick="submitUserForm()">Create User</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+  toggleOfficerLinkRow();
+}
+function toggleOfficerLinkRow(){const r=$('uf-officer-row');if(r)r.style.display=($('uf-role').value==='officer')?'block':'none';}
+function submitUserForm(){
+  const name=$('uf-name').value.trim(),role=$('uf-role').value,pin=$('uf-pin').value;
+  if(!name)return toast('নাম লিখুন');
+  if(!/^\d{4,6}$/.test(pin))return toast('PIN ৪–৬ ডিজিট হতে হবে');
+  let officerId=null;
+  if(role==='officer'){
+    const ph=$('uf-officerphone')?$('uf-officerphone').value.trim():'';
+    if(!ph)return toast('🔗 Officer-এর মোবাইল নম্বর দিন — আইডি লিংক করার জন্য');
+    const m=findOfficersByPhone(ph);
+    if(!m.length)return toast('এই নম্বরে কোনো Officer প্রোফাইল নেই — আগে Officers সেকশনে যোগ করুন');
+    if(m.length>1)return toast('এই নম্বরে একাধিক Officer — ইউনিক নম্বর দিন');
+    const dup=db.users.find(u=>u.officerId===m[0].id);
+    if(dup)return toast('এই Officer-এর সাথে আগেই আইডি লিংক করা আছে ('+dup.name+')');
+    officerId=m[0].id;
+  }
+  const salt=uid();
+  db.users.push({id:uid(),name:name,role:role,pinHash:hashPin(pin,salt),salt:salt,createdAt:Date.now(),officerId:officerId});
+  saveDb();closeModal();renderUsers();
+  toast('✅ User created — '+name+' ('+roleLabel(role)+')');
+}
+function resetUserPin(id){
+  if(!can('users'))return toast('⛔ Permission নেই');
+  const u=db.users.find(x=>x.id===id);if(!u)return;
+  sess.resetUserId=id;
+  openModal(modalHead('🔑 Reset PIN — '+esc(u.name))+
+    '<label>New PIN (৪–৬ ডিজিট)</label><input id="rup-pin" type="password" inputmode="numeric" maxlength="6">'+
+    '<button class="btn btn-primary" onclick="doResetUserPin()">Reset</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function doResetUserPin(){
+  const u=db.users.find(x=>x.id===sess.resetUserId);
+  if(!u)return toast('User পাওয়া যায়নি');
+  const p=$('rup-pin').value;
+  if(!/^\d{4,6}$/.test(p))return toast('PIN ৪–৬ ডিজিট হতে হবে');
+  u.salt=uid();u.pinHash=hashPin(p,u.salt);
+  saveDb();closeModal();renderUsers();
+  toast('✅ PIN reset — '+u.name);
+}
+function openOfficerLink(pid){
+  if(!can('users'))return toast('⛔ Permission নেই');
+  const u=db.users.find(x=>x.id===pid);if(!u)return;
+  const cur=u.officerId?officerById(u.officerId):null;
+  openModal(modalHead('🔗 Officer Link — '+esc(u.name))+
+    '<p class="small muted" style="margin:2px 0 8px">এই আইডি কোন Officer-এর সাথে যুক্ত হবে? যুক্ত করলে লগইন করে সে <b>শুধু নিজের</b> মামলা/ডেটা দেখবে (Officer রোলে কাজ করে)। নম্বরটি Officers সেকশনের প্রোফাইলের সাথে মিলবে।</p>'+
+    '<label>Officer-এর মোবাইল নম্বর</label><input id="ul-phone" value="'+(cur?esc(cur.phone||''):'')+'" placeholder="+8801XXXXXXXXX">'+
+    '<label>রোল: '+roleLabel(u.role)+'</label>'+
+    '<button class="btn btn-primary" onclick="saveOfficerLink(\''+pid+'\')">💾 Save Link</button>'+
+    (u.officerId?'<button class="btn btn-danger" onclick="clearOfficerLink(\''+pid+'\')">🔓 Unlink</button>':'')+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function saveOfficerLink(pid){
+  const u=db.users.find(x=>x.id===pid);if(!u)return;
+  const ph=$('ul-phone').value.trim();
+  if(!ph)return toast('নম্বর লিখুন');
+  const m=findOfficersByPhone(ph);
+  if(!m.length)return toast('এই নম্বরে কোনো Officer প্রোফাইল নেই');
+  if(m.length>1)return toast('এই নম্বরে একাধিক Officer — ইউনিক নম্বর দিন');
+  const dup=db.users.find(x=>x.officerId===m[0].id&&x.id!==pid);
+  if(dup)return toast('এই Officer-এর সাথে আগেই আইডি লিংক করা আছে ('+dup.name+')');
+  u.officerId=m[0].id;
+  saveDb();closeModal();renderUsers();
+  toast('🔗 Linked — '+u.name+' → '+m[0].name+' (এখন সে শুধু নিজের ডেটা দেখবে)');
+}
+function clearOfficerLink(pid){
+  const u=db.users.find(x=>x.id===pid);if(!u)return;
+  u.officerId=null;
+  saveDb();closeModal();renderUsers();
+  toast('🔓 Unlinked — '+u.name+' এখন সব ডেটা দেখতে পারবে');
+}
+function deleteUser(id){
+  if(!can('users'))return toast('⛔ Permission নেই');
+  if(id===currentUser.id)return toast('নিজেকে ডিলিট করা যায় না');
+  const u=db.users.find(x=>x.id===id);if(!u)return;
+  askConfirm('Delete User','<b>'+esc(u.name)+'</b> ('+roleLabel(u.role)+') আর লগইন করতে পারবে না।','Delete',function(){
+    db.users=db.users.filter(x=>x.id!==id);
+    saveDb();renderUsers();toast('🗑️ User deleted');
+  });
+}
+
+/* ==================== permissions UI ==================== */
+function applyPerms(){
+  const ex=document.querySelector('#bottom-nav button[data-v="expenses"]');
+  if(ex)ex.style.display=can('financial')?'flex':'none';
+  const sx=document.querySelector('#sidebar button[data-v="expenses"]');
+  if(sx)sx.style.display=can('financial')?'flex':'none';
+  const ids={ 'ms-search':true,'sb-search':true,
+    'ms-templates':(can('financial')||can('settings')),'sb-templates':(can('financial')||can('settings')),
+    'ms-recycle':can('delete'),'sb-recycle':can('delete'),
+    'ms-settings':can('settings'),'sb-settings':can('settings'),
+    'ms-users':can('users'),'sb-users':can('users') };
+  Object.keys(ids).forEach(k=>{const el=$(k);if(el)el.style.display=ids[k]?'flex':'none';});
+  const me=$('sb-me');
+  if(me&&currentUser)me.innerHTML='👤 '+esc(currentUser.name)+'<br><small class="muted">'+roleLabel(currentUser.role)+'</small>';
+  renderBanners();
+}
+
+/* ==================== boot ==================== */
+function boot(){
+  loadDb();
+  purgeBin();
+  initAuth();
+}
+boot();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d857d0b90ba721',t:'MTc4OTgxODMxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
