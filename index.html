@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.13</title>
+<title>Case Writer Pro v6.15</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -28,10 +28,7 @@ textarea{min-height:80px;resize:vertical}
 .logo-big{font-size:52px;line-height:1}
 .setup-box{width:100%;max-width:430px}
 .setup-box .card{text-align:left}
-.login-users{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:360px;margin:14px 0}
-.login-user{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.28);color:#fff;border-radius:12px;padding:8px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
-.login-user small{display:block;font-size:9px;opacity:.85;font-weight:600}
-.login-user.sel{background:#fff;color:var(--navy);border-color:#fff}
+#loginPhone{letter-spacing:2px;font-size:17px;width:230px;margin-bottom:8px}
 .pin-input{width:210px;text-align:center;font-size:24px;letter-spacing:10px;padding:13px;border-radius:12px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;outline:none}
 .pin-input::placeholder{letter-spacing:normal;font-size:14px;color:rgba(255,255,255,.6)}
 .pin-error{color:#ffb3b3;display:none;font-weight:700;font-size:13px;margin:12px 0 0}
@@ -286,11 +283,13 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.13</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.15</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
       <input id="su-name" placeholder="e.g. Adv. Rahim">
+      <label>মোবাইল নম্বর (লগইন আইডি) *</label>
+      <input id="su-phone" type="tel" inputmode="numeric" placeholder="01XXXXXXXXX">
       <label>ব্যবসার নাম (Business Name)</label>
       <input id="su-biz" placeholder="e.g. Rahman Case Writer">
       <label>Security PIN (৪–৬ ডিজিট) *</label>
@@ -316,9 +315,9 @@ textarea{min-height:80px;resize:vertical}
 <div id="login-view" class="fullscreen">
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
-  <p style="margin:0;font-size:12px;opacity:.8">আপনার নাম বেছে নিন, তারপর PIN দিন</p>
-  <p style="margin:3px 0 0;font-size:10px;opacity:.55">Case Writer Pro v6.13 (Final) · PC + Mobile</p>
-  <div id="login-users" class="login-users"></div>
+  <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.15 (Final) · PC + Mobile</p>
+  <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
   <p id="pinError" class="pin-error">❌ ভুল PIN — আবার চেষ্টা করুন</p>
@@ -538,7 +537,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.13 (Final) · PC + Mobile · 19 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.15 (Final) · PC + Mobile · 19 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -783,42 +782,73 @@ function isSuperAdmin(){return !!currentUser&&currentUser.role==='superadmin';}
 function initAuth(){
   if(!db.users.length){$('setup-view').style.display='flex';return;}
   $('login-biz').textContent=db.settings.businessName||'Case Writer Pro';
-  renderLoginUsers();
   $('login-view').style.display='flex';
-  selectLoginUser(db.users[0].id);
-  $('pinInput').value='';
+  $('loginPhone').value='';$('pinInput').value='';
+  try{$('pinError').style.display='none';}catch(e){}
+  try{$('loginPhone').focus();}catch(e){}
 }
-function renderLoginUsers(){
-  $('login-users').innerHTML=db.users.map(u=>'<button class="login-user" id="lu-'+u.id+'" onclick="selectLoginUser(\''+u.id+'\')">'+esc(u.name)+'<small>'+roleLabel(u.role)+'</small></button>').join('');
-}
-function selectLoginUser(id){
-  sess.loginUserId=id;
-  document.querySelectorAll('.login-user').forEach(b=>b.classList.remove('sel'));
-  const el=$('lu-'+id);if(el)el.classList.add('sel');
-  $('pinInput').value='';$('pinError').style.display='none';
-  try{$('pinInput').focus();}catch(e){}
+function findLoginUser(raw){
+  const n=normPhone(raw);
+  if(n){const byPh=db.users.find(x=>normPhone(x.phone)===n);if(byPh)return byPh;}
+  const nm=String(raw||'').trim().toLowerCase();
+  return db.users.find(x=>!x.phone&&String(x.name).toLowerCase()===nm)||null;
 }
 function tryLogin(){
-  const u=db.users.find(x=>x.id===sess.loginUserId)||db.users[0];
+  const raw=($('loginPhone').value||'').trim();
   const pin=$('pinInput').value;
-  if(!pin)return;
-  if(hashPin(pin,u.salt)===u.pinHash){
-    $('pinInput').value='';loginAs(u);
+  if(!raw||!pin)return;
+  const n=normPhone(raw);
+  let u=null;
+  if(n){
+    const byPh=db.users.find(x=>normPhone(x.phone)===n);
+    if(byPh&&hashPin(pin,byPh.salt)===byPh.pinHash)u=byPh;
+  }
+  if(!u){
+    const nm=raw.toLowerCase();
+    u=db.users.find(x=>!x.phone&&String(x.name).toLowerCase()===nm&&hashPin(pin,x.salt)===x.pinHash)||null;
+  }
+  if(u){
+    sess.loginUserId=u.id;
+    $('loginPhone').value='';$('pinInput').value='';
+    loginAs(u);
+    if(!u.phone)promptPhoneSetup(u.id);
   }else{
+    $('pinError').textContent='❌ ভুল নম্বর/নাম বা PIN — আবার চেষ্টা করুন';
     $('pinError').style.display='block';$('pinInput').value='';
     setTimeout(()=>{try{$('pinError').style.display='none';}catch(e){}},2500);
   }
+}
+function promptPhoneSetup(uid){
+  const u=db.users.find(x=>x.id===uid);if(!u)return;
+  sess.ppUserId=uid;
+  openModal(modalHead('📱 মোবাইল নম্বর সেট করুন')+
+    '<p class="small muted" style="margin:2px 0 8px">'+esc(u.name)+' — এখন থেকে এই নম্বরটিই হবে লগইন আইডি (শুধু নাম দিয়ে আর লগইন হবে না)।</p>'+
+    '<label>মোবাইল নম্বর *</label><input id="pp-phone" type="tel" inputmode="numeric" value="'+esc(u.phone||'')+'" placeholder="01XXXXXXXXX">'+
+    '<button class="btn btn-primary" onclick="savePhoneSetup()">💾 Save</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">পরে করবো</button>');
+}
+function savePhoneSetup(){
+  const u=db.users.find(x=>x.id===sess.ppUserId);if(!u)return;
+  const ph=($('pp-phone').value||'').trim();
+  if(normPhone(ph).length<10)return toast('সঠিক মোবাইল নম্বর দিন (১১ ডিজিট, যেমন 017XXXXXXXX)');
+  const dup=db.users.find(x=>x!==u&&normPhone(x.phone)===normPhone(ph));
+  if(dup)return toast('এই নম্বরে আরেকটি আইডি আছে ('+dup.name+')');
+  u.phone=ph;saveDb();closeModal();
+  if(u.role==='officer'&&!u.officerId){const m=findOfficersByPhone(ph);if(m.length===1&&!db.users.some(x=>x!==u&&x.officerId===m[0].id)){u.officerId=m[0].id;saveDb();}}
+  toast('✅ লগইন নম্বর সেট হয়েছে — এখন থেকে এই নম্বর ও PIN দিয়ে লগইন করুন');
 }
 function submitSetup(){
   const name=$('su-name').value.trim(),biz=$('su-biz').value.trim();
   const p1=$('su-pin').value,p2=$('su-pin2').value;
   const q=$('su-secq').value.trim(),a=$('su-seca').value.trim();
+  const ph=($('su-phone').value||'').trim();
   if(!name)return toast('আপনার নাম লিখুন');
+  if(normPhone(ph).length<10)return toast('মোবাইল নম্বর দিন — এটাই হবে আপনার লগইন আইডি');
   if(!/^\d{4,6}$/.test(p1))return toast('PIN অবশ্যই ৪–৬ ডিজিট হতে হবে');
   if(p1!==p2)return toast('দুটি PIN মিলছে না');
   if(!q||!a)return toast('নিরাপত্তা প্রশ্ন ও উত্তর দিন');
   const salt=uid(),asalt=uid();
-  const u={id:uid(),name:name,role:'superadmin',pinHash:hashPin(p1,salt),salt:salt,createdAt:Date.now()};
+  const u={id:uid(),name:name,role:'superadmin',phone:ph,pinHash:hashPin(p1,salt),salt:salt,createdAt:Date.now()};
   db.users.push(u);
   db.settings.businessName=biz||'Case Writer Pro';
   db.settings.securityQuestion=q;
@@ -843,9 +873,9 @@ function lockApp(){
   closeModal();closeMoreSheet();
   $('app').style.display='none';
   $('login-view').style.display='flex';
-  renderLoginUsers();
-  selectLoginUser(db.users[0].id);
-  $('pinInput').value='';
+  $('loginPhone').value='';$('pinInput').value='';
+  try{$('pinError').style.display='none';}catch(e){}
+  try{$('loginPhone').focus();}catch(e){}
 }
 function forgotPin(){
   if(!db.settings.securityQuestion){
@@ -856,6 +886,7 @@ function forgotPin(){
     return;
   }
   openModal(modalHead('PIN Recovery')+
+    '<label>মোবাইল নম্বর (বা ইউজার নাম)</label><input id="fp-user" placeholder="01XXXXXXXXX">'+
     '<p>প্রশ্ন: <b>'+esc(db.settings.securityQuestion)+'</b></p>'+
     '<label>উত্তর</label><input id="fp-ans" placeholder="আপনার উত্তর">'+
     '<label>New PIN (৪–৬ ডিজিট)</label><input id="fp-pin" type="password" inputmode="numeric" maxlength="6">'+
@@ -865,8 +896,8 @@ function forgotPin(){
 }
 function doForgotPin(){
   const a=$('fp-ans').value.trim(),p1=$('fp-pin').value,p2=$('fp-pin2').value;
-  const u=db.users.find(x=>x.id===sess.loginUserId);
-  if(!u)return toast('User select করা হয়নি');
+  const u=findLoginUser(($('fp-user').value||'').trim());
+  if(!u)return toast('এই নম্বর/নামে কোনো আইডি নেই');
   if(hashText(db.settings.securitySalt+'::'+a)!==db.settings.securityAnswerHash)return toast('❌ উত্তর ভুল');
   if(!/^\d{4,6}$/.test(p1)||p1!==p2)return toast('❌ নতুন PIN সঠিক নয়');
   u.salt=uid();u.pinHash=hashPin(p1,u.salt);saveDb();
@@ -2097,6 +2128,7 @@ function removeCaseType(t){
   saveDb();renderSettings();
 }
 function backupNow(){
+  if(db.users.length&&!can('settings'))return toast('⛔ Permission নেই');
   const payload={app:'CaseWriterPro',schemaVersion:6,exportedAt:new Date().toISOString(),data:db};
   let ok=false;
   try{
@@ -2131,6 +2163,7 @@ function openRestore(){
     '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
 }
 function handleRestoreFile(){
+  if(db.users.length&&!can('settings'))return toast('⛔ Permission নেই');
   const f=$('rest-file').files&&$('rest-file').files[0];
   if(!f)return toast('ফাইল সিলেক্ট করুন');
   const modeEl=document.querySelector('input[name=restmode]:checked');
@@ -2216,8 +2249,8 @@ function saveSecQ(){
 function renderUsers(){
   if(!can('users')){go('dashboard');return;}
   $('users-list').innerHTML=db.users.map(u=>'<div class="list-item"><span><b>'+esc(u.name)+'</b> '+(u.id===currentUser.id?'<span class="badge st-running">You</span>':'')+
-    '<br><small class="muted">'+roleLabel(u.role)+(u.officerId?' · 🔗 '+esc(officerName(u.officerId)):'')+' · since '+fmtD(isoOfTs(u.createdAt||Date.now()))+'</small></span>'+
-    '<span>'+(u.id!==currentUser.id?'<button class="btn-small btn-ghost" title="Officer Link" onclick="openOfficerLink(\''+u.id+'\')">🔗</button> <button class="btn-small btn-ghost" title="Reset PIN" onclick="resetUserPin(\''+u.id+'\')">🔑</button> <button class="icon-btn" title="Delete" onclick="deleteUser(\''+u.id+'\')">🗑️</button>':'')+'</span></div>').join('');
+    '<br><small class="muted">'+roleLabel(u.role)+' · 📱 '+(u.phone?esc(u.phone):'⚠️ নম্বর নেই')+(u.officerId?' · 🔗 '+esc(officerName(u.officerId)):'')+' · since '+fmtD(isoOfTs(u.createdAt||Date.now()))+'</small></span>'+
+    '<span><button class="btn-small btn-ghost" title="লগইন নম্বর সেট/বদল" onclick="promptPhoneSetup(\''+u.id+'\')">📱</button> '+(u.id!==currentUser.id?'<button class="btn-small btn-ghost" title="Officer Link" onclick="openOfficerLink(\''+u.id+'\')">🔗</button> <button class="btn-small btn-ghost" title="Reset PIN" onclick="resetUserPin(\''+u.id+'\')">🔑</button> <button class="icon-btn" title="Delete" onclick="deleteUser(\''+u.id+'\')">🗑️</button>':'')+'</span></div>').join('');
   $('perm-matrix').innerHTML=permMatrixHtml();
   $('add-user-btn').style.display='block';
 }
@@ -2231,22 +2264,22 @@ function openUserForm(){
   if(!can('users'))return toast('⛔ Permission নেই');
   openModal(modalHead('＋ Add User')+
     '<label>Name *</label><input id="uf-name" placeholder="e.g. Jahid (Manager)">'+
-    '<label>Role</label><select id="uf-role" onchange="toggleOfficerLinkRow()">'+['admin','manager','officer','viewer','superadmin'].map(r=>'<option value="'+r+'">'+roleLabel(r)+'</option>').join('')+'</select>'+
-    '<div id="uf-officer-row" style="display:none"><label>🔗 Officer-এর মোবাইল নম্বর *</label><input id="uf-officerphone" placeholder="+8801XXXXXXXXX"><p class="small muted" style="margin:2px 0 0">এই নম্বরে Officer প্রোফাইল খুঁজে আইডিটি লিংক হবে — লগইন করলে সে শুধু নিজের মামলা/ডেটা দেখবে</p></div>'+
+    '<label>মোবাইল নম্বর (লগইন আইডি) *</label><input id="uf-phone" type="tel" inputmode="numeric" placeholder="01XXXXXXXXX">'+
+    '<p class="small muted" style="margin:2px 0 6px">ইউজার এই নম্বর ও PIN দিয়ে লগইন করবে। Officer রোল হলে এই নম্বরেই তার Officer প্রোফাইল খুঁজে লিংক হবে — লগইন করলে সে শুধু নিজের মামলা/ডেটা দেখবে।</p>'+
+    '<label>Role</label><select id="uf-role">'+['admin','manager','officer','viewer','superadmin'].map(r=>'<option value="'+r+'">'+roleLabel(r)+'</option>').join('')+'</select>'+
     '<label>PIN (৪–৬ ডিজিট) *</label><input id="uf-pin" type="password" inputmode="numeric" maxlength="6">'+
     '<button class="btn btn-primary" onclick="submitUserForm()">Create User</button>'+
     '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
-  toggleOfficerLinkRow();
 }
-function toggleOfficerLinkRow(){const r=$('uf-officer-row');if(r)r.style.display=($('uf-role').value==='officer')?'block':'none';}
 function submitUserForm(){
   const name=$('uf-name').value.trim(),role=$('uf-role').value,pin=$('uf-pin').value;
   if(!name)return toast('নাম লিখুন');
   if(!/^\d{4,6}$/.test(pin))return toast('PIN ৪–৬ ডিজিট হতে হবে');
+  const ph=($('uf-phone').value||'').trim();
+  if(normPhone(ph).length<10)return toast('মোবাইল নম্বর দিন — এটাই লগইন আইডি হবে');
+  if(db.users.some(u=>normPhone(u.phone)===normPhone(ph)))return toast('এই নম্বরে আগেই একটি আইডি আছে');
   let officerId=null;
   if(role==='officer'){
-    const ph=$('uf-officerphone')?$('uf-officerphone').value.trim():'';
-    if(!ph)return toast('🔗 Officer-এর মোবাইল নম্বর দিন — আইডি লিংক করার জন্য');
     const m=findOfficersByPhone(ph);
     if(!m.length)return toast('এই নম্বরে কোনো Officer প্রোফাইল নেই — আগে Officers সেকশনে যোগ করুন');
     if(m.length>1)return toast('এই নম্বরে একাধিক Officer — ইউনিক নম্বর দিন');
@@ -2255,7 +2288,7 @@ function submitUserForm(){
     officerId=m[0].id;
   }
   const salt=uid();
-  db.users.push({id:uid(),name:name,role:role,pinHash:hashPin(pin,salt),salt:salt,createdAt:Date.now(),officerId:officerId});
+  db.users.push({id:uid(),name:name,role:role,phone:ph,pinHash:hashPin(pin,salt),salt:salt,createdAt:Date.now(),officerId:officerId});
   saveDb();closeModal();renderUsers();
   toast('✅ User created — '+name+' ('+roleLabel(role)+')');
 }
@@ -2283,7 +2316,7 @@ function openOfficerLink(pid){
   const cur=u.officerId?officerById(u.officerId):null;
   openModal(modalHead('🔗 Officer Link — '+esc(u.name))+
     '<p class="small muted" style="margin:2px 0 8px">এই আইডি কোন Officer-এর সাথে যুক্ত হবে? যুক্ত করলে লগইন করে সে <b>শুধু নিজের</b> মামলা/ডেটা দেখবে (Officer রোলে কাজ করে)। নম্বরটি Officers সেকশনের প্রোফাইলের সাথে মিলবে।</p>'+
-    '<label>Officer-এর মোবাইল নম্বর</label><input id="ul-phone" value="'+(cur?esc(cur.phone||''):'')+'" placeholder="+8801XXXXXXXXX">'+
+    '<label>Officer-এর মোবাইল নম্বর (লগইন আইডি)</label><input id="ul-phone" value="'+esc(u.phone||'')+'" placeholder="+8801XXXXXXXXX">'+
     '<label>রোল: '+roleLabel(u.role)+'</label>'+
     '<button class="btn btn-primary" onclick="saveOfficerLink(\''+pid+'\')">💾 Save Link</button>'+
     (u.officerId?'<button class="btn btn-danger" onclick="clearOfficerLink(\''+pid+'\')">🔓 Unlink</button>':'')+
@@ -2298,7 +2331,10 @@ function saveOfficerLink(pid){
   if(m.length>1)return toast('এই নম্বরে একাধিক Officer — ইউনিক নম্বর দিন');
   const dup=db.users.find(x=>x.officerId===m[0].id&&x.id!==pid);
   if(dup)return toast('এই Officer-এর সাথে আগেই আইডি লিংক করা আছে ('+dup.name+')');
+  const pdup=db.users.find(x=>x.id!==pid&&normPhone(x.phone)===normPhone(m[0].phone));
+  if(pdup)return toast('এই নম্বরে আরেকটি আইডি আছে ('+pdup.name+')');
   u.officerId=m[0].id;
+  if(m[0].phone)u.phone=m[0].phone;
   saveDb();closeModal();renderUsers();
   toast('🔗 Linked — '+u.name+' → '+m[0].name+' (এখন সে শুধু নিজের ডেটা দেখবে)');
 }
@@ -2343,5 +2379,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d857d0b90ba721',t:'MTc4OTgxODMxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3dabf5debce7b77',t:'MTc4OTg0MzUyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
