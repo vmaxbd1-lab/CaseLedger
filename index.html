@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.15</title>
+<title>Case Writer Pro v6.16</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -283,7 +283,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.15</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.16</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -307,6 +307,7 @@ textarea{min-height:80px;resize:vertical}
       <label>উত্তর *</label>
       <input id="su-seca" placeholder="গোপন উত্তর">
       <button class="btn btn-primary" onclick="submitSetup()">Create Admin &amp; Start ➜</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="openCloudConnect(true)">☁️ ক্লাউড থেকে ডেটা আনুন (Team)</button>
     </div>
   </div>
 </div>
@@ -316,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.15 (Final) · PC + Mobile</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.16 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -533,11 +534,19 @@ textarea{min-height:80px;resize:vertical}
         <button class="btn btn-info" onclick="backupNow()">📥 Backup (JSON file)</button>
         <button class="btn btn-warn" onclick="openRestore()">📤 Restore from Backup…</button>
       </div>
+      <div class="card">
+        <h3>☁️ Cloud Sync (GitHub) — Team ডেটা</h3>
+        <p class="small muted" style="margin:0 0 6px">সবাই একই ডেটা দেখবে — ডেটা থাকবে আপনার GitHub অ্যাকাউন্টের প্রাইভেট রিপোজিটরিতে (db.json)। মূল ডিভাইস থেকে কানেক্ট করুন।</p>
+        <div id="cloud-st" class="small muted" style="margin:0 0 6px"></div>
+        <button class="btn btn-info" onclick="openCloudConnect(false)">🔌 Connect / Setup</button>
+        <button class="btn" onclick="cloudPullNow(null)">🔄 Refresh Now</button>
+        <button class="btn btn-ghost" id="cloud-off-btn" onclick="disconnectCloud()" style="display:none">🔌 Disconnect</button>
+      </div>
       <div class="card" id="danger-card">
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.15 (Final) · PC + Mobile · 19 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.16 · PC + Mobile · Cloud Sync · 20 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -710,7 +719,8 @@ function ensureDefaults(d){
   }
   return d;
 }
-function saveDb(){storage.setItem(DB_KEY,JSON.stringify(db));}
+function saveLocal(){storage.setItem(DB_KEY,JSON.stringify(db));}
+function saveDb(){saveLocal();scheduleCloudPush();}
 function nextCaseNoRaw(d){
   const y=new Date().getFullYear();
   if(!d.settings.caseSeq||d.settings.caseSeq.year!==y)d.settings.caseSeq={year:y,n:1};
@@ -764,6 +774,197 @@ function purgeBin(){
   const before=db.recycleBin.length;
   db.recycleBin=db.recycleBin.filter(b=>b.deletedAt>=cut);
   if(db.recycleBin.length!==before)saveDb();
+}
+
+/* ==================== cloud sync (GitHub) ==================== */
+const CLOUD_KEY='caseLedgerCloudV6';
+let cloudDirty=false,cloudTimer=null,cloudPullTimer=null,cloudLastStatus='';
+function cloudCfg(){try{const r=storage.getItem(CLOUD_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+function cloudSet(c){try{storage.setItem(CLOUD_KEY,JSON.stringify(c));}catch(e){}}
+function cloudClear(){try{storage.removeItem(CLOUD_KEY);}catch(e){}}
+function cloudCancelTimers(){try{clearTimeout(cloudTimer);}catch(e){}try{clearInterval(cloudPullTimer);}catch(e){}cloudTimer=null;cloudPullTimer=null;}
+function b64e(t){return btoa(unescape(encodeURIComponent(t)));}
+function b64d(b){return decodeURIComponent(escape(atob(b)));}
+function ghHeaders(c){return {'Authorization':'Bearer '+c.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};}
+function cloudStatus(t){cloudLastStatus=t;try{const el=$('cloud-st');if(el)el.textContent=t;}catch(e){}}
+function cloudStatusRender(){
+  const el=$('cloud-st');if(!el)return;
+  const c=cloudCfg();
+  el.textContent=cloudLastStatus||(c?('✅ কানেক্টেড · '+(c.lastSync?('শেষ সিঙ্ক '+new Date(c.lastSync).toLocaleTimeString()):'এখনো সিঙ্ক হয়নি')+(c.readOnly?' · 👁️ শুধু-পড়া':'')):'⛔ কানেক্ট করা নেই');
+  const off=$('cloud-off-btn');if(off)off.style.display=c?'inline-block':'none';
+}
+function cloudGetRemote(cb){
+  const c=cloudCfg();if(!c)return cb({network:true});
+  try{
+    fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json?_='+Date.now(),{headers:ghHeaders(c),cache:'no-store'})
+      .then(function(r){
+        if(r.status===404)return cb(null,{empty:true});
+        if(!r.ok)return cb({status:r.status});
+        return r.json().then(function(j){
+          let d=null;
+          try{d=JSON.parse(b64d(String(j.content||'').replace(/\n/g,'')));}catch(e){}
+          if(!d||!d.settings||!Array.isArray(d.users))return cb({status:0});
+          cb(null,{db:d,sha:j.sha});
+        });
+      })
+      .catch(function(){cb({network:true});});
+  }catch(e){cb({network:true});}
+}
+function mergeCloudDb(remote){
+  const merged=JSON.parse(JSON.stringify(db));
+  const idsOf=function(a){const m={};(a||[]).forEach(function(x){if(x&&x.id!==undefined)m[x.id]=x;});return m;};
+  ['officers','cases','expenses','users','recycleBin'].forEach(function(k){
+    const lm=idsOf(db[k]);(remote[k]||[]).forEach(function(x){if(x&&x.id!==undefined&&!lm[x.id])merged[k].push(x);});
+  });
+  return merged;
+}
+function cloudApplyRemote(rdb){
+  try{if($('modal-root').innerHTML)return false;}catch(e){}
+  const keepId=currentUser&&currentUser.id;
+  db=rdb;ensureDefaults(db);saveLocal();
+  const still=keepId&&db.users.some(function(u){return u.id===keepId;});
+  if(keepId&&!still){lockApp();return true;}
+  if(currentUser){refreshCurrentView();renderBanners();}
+  return true;
+}
+function scheduleCloudPush(){
+  const c=cloudCfg();
+  if(!c||c.readOnly||!PERSIST)return;
+  cloudDirty=true;
+  try{clearTimeout(cloudTimer);}catch(e){}
+  cloudTimer=setTimeout(function(){cloudTimer=null;cloudPushNow(null);},4000);
+}
+function cloudPullNow(cb){
+  const c=cloudCfg();if(!c)return cb&&cb('nocfg');
+  cloudGetRemote(function(err,r){
+    if(err){cloudStatus('⚠️ ক্লাউড থেকে আনা গেল না — নেটওয়ার্ক দেখুন');return cb&&cb(err);}
+    if(r.empty){cloudStatus('☁️ ক্লাউড খালি — এখনো কোনো ডেটা পাঠানো হয়নি');return cb&&cb('empty');}
+    if(cloudDirty)return cb&&cb('dirty');
+    window.__cloudOffline=false;
+    cloudApplyRemote(r.db);
+    c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
+    cloudStatus('☁️ সিঙ্কড · '+new Date().toLocaleTimeString());
+    cb&&cb(null,r);
+  });
+}
+function cloudPushNow(cb){
+  const c=cloudCfg();if(!c)return cb&&cb('nocfg');
+  if(c.readOnly)return cb&&cb('ro');
+  cloudStatus('⏳ ক্লাউডে সেভ হচ্ছে…');
+  cloudGetRemote(function(err,r){
+    if(err&&err.network){cloudDirty=true;window.__cloudOffline=true;cloudStatus('⚠️ অফলাইন — সংযোগ ফিরলে সেভ হবে');renderBanners();return cb&&cb(err);}
+    let payloadDb=db;
+    if(r&&r.db){payloadDb=mergeCloudDb(r.db);db=payloadDb;saveLocal();}
+    const attempt=function(sha){
+      const body={message:'CaseLedger update '+new Date().toISOString(),content:b64e(JSON.stringify(payloadDb))};
+      if(sha)body.sha=sha;
+      try{
+        fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json',{method:'PUT',headers:ghHeaders(c),body:JSON.stringify(body)})
+          .then(function(res){return res.json().catch(function(){return {};}).then(function(j){j.__status=res.status;return j;});})
+          .then(function(j){
+            if(j.__status===409){
+              cloudGetRemote(function(e2,r2){
+                if(r2&&r2.db){payloadDb=mergeCloudDb(r2.db);db=payloadDb;saveLocal();}
+                attempt(r2&&r2.sha);
+              });
+            }else if(j.__status===403){
+              c.readOnly=true;cloudSet(c);cloudDirty=false;
+              cloudStatus('👁️ শুধু-পড়া কানেকশন — এই ডিভাইস থেকে সেভ হবে না');
+              cb&&cb('ro');
+            }else if(j&&j.content&&j.content.sha){
+              cloudDirty=false;window.__cloudOffline=false;
+              c.sha=j.content.sha;c.lastSync=Date.now();cloudSet(c);
+              cloudStatus('☁️ সেভ হয়েছে · '+new Date().toLocaleTimeString());
+              renderBanners();
+              cb&&cb(null,j);
+            }else{
+              cloudDirty=true;cloudStatus('⚠️ সেভ ব্যর্থ (HTTP '+(j.__status||'?')+') — আবার চেষ্টা হবে');
+              cb&&cb({status:j.__status});
+            }
+          })
+          .catch(function(){cloudDirty=true;cloudStatus('⚠️ সেভ ব্যর্থ — নেটওয়ার্ক দেখুন');cb&&cb({network:true});});
+      }catch(e){cloudDirty=true;cb&&cb({network:true});}
+    };
+    attempt(r&&r.sha);
+  });
+}
+function cloudStartTimers(){
+  if(!PERSIST)return;
+  try{clearInterval(cloudPullTimer);}catch(e){}
+  const c=cloudCfg();if(!c)return;
+  cloudPullTimer=setInterval(function(){
+    if(!currentUser||cloudDirty)return;
+    try{if($('modal-root').innerHTML)return;}catch(e){}
+    cloudPullNow(null);
+  },45000);
+}
+function openCloudConnect(fromSetup){
+  sess.cloudFromSetup=!!fromSetup;
+  const c=cloudCfg()||{};
+  openModal(modalHead('☁️ Cloud Connect — GitHub')+
+    '<p class="small muted" style="margin:2px 0 8px">ডেটা থাকবে আপনার GitHub অ্যাকাউন্টের <b>প্রাইভেট রিপোজিটরি</b>-তে (db.json ফাইল হিসেবে)। নিচের ৩টি তথ্য দিন — বানানোর নিয়ম রিলিজ নোটে আছে।</p>'+
+    '<label>GitHub Username *</label><input id="cc-owner" value="'+esc(c.owner||'')+'" placeholder="যেমন vmaxbd1-lab">'+
+    '<label>প্রাইভেট রিপোর নাম *</label><input id="cc-repo" value="'+esc(c.repo||'')+'" placeholder="যেমন caseledger-data">'+
+    '<label>Access Token * (github_pat_ দিয়ে শুরু)</label><input id="cc-token" value="'+esc(c.token||'')+'" placeholder="github_pat_…">'+
+    '<button class="btn btn-primary" onclick="doCloudConnect()">🔌 Test &amp; Connect</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function doCloudConnect(){
+  const owner=($('cc-owner').value||'').trim(),repo=($('cc-repo').value||'').trim(),token=($('cc-token').value||'').trim();
+  if(!owner||!repo||!token)return toast('তিনটি ঘরই পূরণ করুন');
+  const c={owner:owner,repo:repo,token:token,readOnly:false};
+  cloudStatus('⏳ যাচাই করা হচ্ছে…');
+  try{
+    fetch('https://api.github.com/repos/'+owner+'/'+repo,{headers:ghHeaders(c)})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){j.__status=r.status;return j;});})
+      .then(function(x){
+        if(x.__status===404||x.__status===401)return cloudStatus('❌ যাচাই হয়নি — Username/রিপোর নাম/Token আবার দেখুন (টোকেনে ওই রিপোর Contents অনুমতি থাকতে হবে)');
+        if(x.__status!==200)return cloudStatus('❌ সমস্যা: HTTP '+x.__status);
+        cloudSet(c);
+        cloudGetRemote(function(err,r){
+          if(err)return cloudStatus('❌ db.json পড়া গেল না — Token-এ Contents অনুমতি আছে তো?');
+          closeModal();
+          if(r&&r.db){
+            openModal(modalHead('☁️ কানেক্ট হয়েছে — ক্লাউডে ডেটা আছে')+
+              '<p class="small muted" style="margin:2px 0 8px">ক্লাউডে Users: '+r.db.users.length+'টি, Cases: '+r.db.cases.length+'টি। এখন কী করবেন?</p>'+
+              '<button class="btn btn-primary" onclick="cloudPullReplace()">⬇️ ক্লাউডের ডেটা এই ডিভাইসে আনুন (নতুন ডিভাইসে এটাই করুন)</button>'+
+              (can('settings')&&db.users.length?'<button class="btn btn-warn" style="margin-top:6px" onclick="cloudPushInitial()">⬆️ এই ডিভাইসের ডেটা ক্লাউডে পাঠান (মূল ডিভাইসে)</button>':'')+
+              '<button class="btn btn-ghost" style="margin-top:6px" onclick="closeModal()">পরে করবো</button>');
+          }else{
+            if(!db.users.length){cloudStatusRender();toast('✅ কানেক্ট হয়েছে — তবে ক্লাউড খালি ও এই ডিভাইসেও কোনো ইউজার নেই');return;}
+            openModal(modalHead('☁️ কানেক্ট হয়েছে — ক্লাউড খালি')+
+              '<p class="small muted" style="margin:2px 0 8px">এই ডিভাইসের ডেটা ক্লাউডে পাঠিয়ে দিন — এরপর বাকি ডিভাইস এই কানেক্ট দিয়ে ডেটা টানে আনবে।</p>'+
+              '<button class="btn btn-primary" onclick="cloudPushInitial()">⬆️ এই ডিভাইসের ডেটা ক্লাউডে পাঠান</button>'+
+              '<button class="btn btn-ghost" style="margin-top:6px" onclick="closeModal()">পরে করবো</button>');
+          }
+        });
+      })
+      .catch(function(){cloudStatus('❌ নেটওয়ার্ক সমস্যা');});
+  }catch(e){cloudStatus('❌ নেটওয়ার্ক সমস্যা');}
+}
+function cloudPullReplace(){
+  cloudGetRemote(function(err,r){
+    if(err||!r||!r.db)return cloudStatus('❌ ডেটা আনা গেল না');
+    db=r.db;ensureDefaults(db);saveLocal();
+    const c=cloudCfg();c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
+    window.__cloudOffline=false;
+    closeModal();
+    if(!currentUser){try{$('setup-view').style.display='none';}catch(e){}initAuth();}
+    else refreshCurrentView();
+    cloudStartTimers();
+    cloudStatus('☁️ ক্লাউডের ডেটা এসে গেছে · '+new Date().toLocaleTimeString());
+    toast('✅ ক্লাউড থেকে ডেটা এসে গেছে');
+  });
+}
+function cloudPushInitial(){
+  cloudPushNow(function(e){
+    if(!e){closeModal();cloudStartTimers();toast('✅ ক্লাউডে পাঠানো হয়েছে — এখন বাকি ডিভাইস কানেক্ট করুন');}
+  });
+}
+function disconnectCloud(){
+  askConfirm('Disconnect Cloud','এই ব্রাউজার আর ক্লাউডে সিঙ্ক হবে না। ডেটা মুছবে না — শুধু সংযোগ বিচ্ছিন্ন হবে।','Disconnect',function(){
+    cloudClear();cloudCancelTimers();cloudLastStatus='';cloudDirty=false;cloudStatusRender();renderBanners();toast('🔌 ক্লাউড বিচ্ছিন্ন হয়েছে');
+  });
 }
 
 /* ==================== roles & permissions ==================== */
@@ -977,6 +1178,8 @@ function renderBanners(){
     html+='<div class="banner banner-warn"><span>⚠️ Preview মোড — এখানে ডেটা সেভ হবে না। ফাইলটি ডাউনলোড করে ব্রাউজারে খুললে সব সেভ হবে।</span><button class="banner-x" onclick="this.parentElement.remove()">✖</button></div>';
   }else if(currentUser&&can('settings')&&db.cases.length&&daysBetween(db.settings.lastBackupDate||'2000-01-01',todayISO())>=7){
     html+='<div class="banner banner-info"><span>💾 শেষ ব্যাকআপ: '+(db.settings.lastBackupDate?fmtD(db.settings.lastBackupDate):'কখনো হয়নি')+' — এখনই ব্যাকআপ নিন।</span><button class="banner-btn" onclick="backupNow()">Backup</button><button class="banner-x" onclick="this.parentElement.remove()">✖</button></div>';
+  }else if(currentUser&&cloudCfg()&&window.__cloudOffline){
+    html+='<div class="banner banner-warn"><span>⚠️ ক্লাউড সংযোগ নেই — এই ডিভাইসের লোকাল কপি দেখানো হচ্ছে। সংযোগ ফিরলে নিজে থেকেই সিঙ্ক হবে।</span></div>';
   }
   $('banner-root').innerHTML=html;
 }
@@ -2081,6 +2284,7 @@ function renderSettings(){
   $('st-cats').innerHTML=db.settings.expenseCategories.map(c=>'<span class="chip">'+esc(c)+' <button class="icon-btn" onclick="removeCategory(\''+esc(c)+'\')" title="Remove">✖</button></span>').join('');
   $('st-pms').innerHTML=db.settings.paymentMethods.map(m=>'<span class="chip">'+esc(m)+' <button class="icon-btn" onclick="removePayMethod(\''+esc(m)+'\')" title="Remove">✖</button></span>').join('');
   $('st-ctypes').innerHTML=db.settings.caseTypes.map(t=>'<span class="chip">'+esc(t)+' <button class="icon-btn" onclick="removeCaseType(\''+esc(t)+'\')" title="Remove">✖</button></span>').join('');
+  cloudStatusRender();
 }
 function saveBiz(){
   db.settings.businessName=$('st-biz').value.trim()||'Case Writer Pro';
@@ -2375,9 +2579,26 @@ function applyPerms(){
 function boot(){
   loadDb();
   purgeBin();
-  initAuth();
+  if(PERSIST&&cloudCfg()){
+    cloudStatus('⏳ ক্লাউড থেকে ডেটা আনা হচ্ছে…');
+    cloudGetRemote(function(err,r){
+      if(!err&&r&&r.db){
+        db=r.db;ensureDefaults(db);saveLocal();
+        const c=cloudCfg();c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
+      }else if(err&&err.network){
+        window.__cloudOffline=true;
+      }else if(err&&err.status===403){
+        const c=cloudCfg();if(c){c.readOnly=true;cloudSet(c);}
+      }
+      purgeBin();
+      initAuth();
+      cloudStartTimers();
+    });
+  }else{
+    initAuth();
+  }
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3dabf5debce7b77',t:'MTc4OTg0MzUyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e031974bc332d0',t:'MTc4OTkwMDYzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
