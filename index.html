@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.16</title>
+<title>Case Writer Pro v6.19</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -283,7 +283,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.16</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.19</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -317,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.16 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.19 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -540,13 +540,14 @@ textarea{min-height:80px;resize:vertical}
         <div id="cloud-st" class="small muted" style="margin:0 0 6px"></div>
         <button class="btn btn-info" onclick="openCloudConnect(false)">🔌 Connect / Setup</button>
         <button class="btn" onclick="cloudPullNow(null)">🔄 Refresh Now</button>
+        <button class="btn" onclick="openGuestLink()">🔗 গেস্ট লিংক (শুধু পড়া)</button>
         <button class="btn btn-ghost" id="cloud-off-btn" onclick="disconnectCloud()" style="display:none">🔌 Disconnect</button>
       </div>
       <div class="card" id="danger-card">
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.16 · PC + Mobile · Cloud Sync · 20 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.19 (Final) · PC + Mobile · Cloud Sync · 20 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -646,8 +647,19 @@ function sha256Sync(ascii){
   for(i=0;i<8;i++){for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}}
   return result;
 }
-function hashText(s){return sha256Sync(unescape(encodeURIComponent(String(s))));}
-function hashPin(pin,salt){return hashText(salt+'::'+pin);}
+function hashText(s,rounds){let h=sha256Sync(unescape(encodeURIComponent(String(s))));const n=(rounds&&rounds>1)?Math.floor(rounds):1;for(let i=1;i<n;i++)h=sha256Sync(h);return h;}
+function hashPin(pin,salt,rounds){return hashText(salt+'::'+pin,rounds);}
+/* ---- v6.18: PIN হার্ডেনিং — key-stretching (৫০০০ রাউন্ড) + লগইন থ্রটল ---- */
+const KDF_ROUNDS=5000;
+function hashPinHard(pin,salt){return hashPin(pin,salt,KDF_ROUNDS);}
+function verifyPin(u,pin){return !!(u&&hashPin(pin,u.salt,u.kdf||1)===u.pinHash);}
+function upgradePinIfLegacy(u,pin){try{if(u&&pin&&(!u.kdf||u.kdf<KDF_ROUNDS)){u.pinHash=hashPin(pin,u.salt,KDF_ROUNDS);u.kdf=KDF_ROUNDS;saveDb();}}catch(e){}}
+let loginFailCount=0,loginLockUntil=0,LOGIN_LOCK_MS=30000;
+function loginLocked(){return Date.now()<loginLockUntil;}
+function noteLoginFail(){loginFailCount++;if(loginFailCount>=5){loginLockUntil=Date.now()+LOGIN_LOCK_MS;loginFailCount=0;}}
+function noteLoginSuccess(){loginFailCount=0;}
+function __setLoginLockMs(ms){LOGIN_LOCK_MS=ms;}
+function __resetLoginThrottle(){loginFailCount=0;loginLockUntil=0;}
 
 /* ==================== storage (with preview fallback) ==================== */
 let PERSIST=true;
@@ -738,7 +750,7 @@ function migrateV5(old){
   const d=defaultDb();
   const oldPin=storage.getItem(OLD_PIN_KEY);
   const salt=uid();
-  d.users.push({id:uid(),name:'Admin',role:'superadmin',pinHash:hashPin(String(oldPin||'0000'),salt),salt:salt,createdAt:Date.now()});
+  d.users.push({id:uid(),name:'Admin',role:'superadmin',pinHash:hashPinHard(String(oldPin||'0000'),salt),kdf:KDF_ROUNDS,salt:salt,createdAt:Date.now()});
   (old.officers||[]).forEach(function(o){
     d.officers.push({id:o.id,name:o.name,phone:o.phone||'',address:'',note:'',createdAt:o.id||Date.now()});
     (o.cases||[]).forEach(function(c){
@@ -782,21 +794,87 @@ let cloudDirty=false,cloudTimer=null,cloudPullTimer=null,cloudLastStatus='';
 function cloudCfg(){try{const r=storage.getItem(CLOUD_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function cloudSet(c){try{storage.setItem(CLOUD_KEY,JSON.stringify(c));}catch(e){}}
 function cloudClear(){try{storage.removeItem(CLOUD_KEY);}catch(e){}}
+/* ---- v6.17: গেস্ট রিড-অ্যাক্সেস (#guest=owner/repo/read-only-token লিংক) ---- */
+function parseGuestHash(){
+  try{
+    const h=String(location.hash||'');
+    if(h.indexOf('#guest=')!==0)return null;
+    const parts=h.slice(7).split('/');
+    if(parts.length<3)return null;
+    const owner=decodeURIComponent(parts[0]||'').trim(),repo=decodeURIComponent(parts[1]||'').trim(),token=parts.slice(2).join('/');
+    if(!owner||!repo||token.length<10)return null;
+    return {owner:owner,repo:repo,token:token};
+  }catch(e){return null;}
+}
+function adoptGuestCfg(){
+  const g=parseGuestHash();if(!g)return false;
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){try{location.hash='';}catch(e2){}}
+  const ex=cloudCfg();
+  if(ex&&!ex.guest)return false; /* অ্যাডমিন-সেট করা কানেকশন লিংক দিয়ে বদলাবে না */
+  cloudSet({owner:g.owner,repo:g.repo,token:g.token,readOnly:true,guest:true,sha:(ex&&ex.sha)||'',lastSync:(ex&&ex.lastSync)||0});
+  return true;
+}
+function guestGate(){try{return !!(PERSIST&&cloudCfg()&&cloudCfg().guest&&!db.users.length);}catch(e){return false;}}
+function guestLoginFail(msg){
+  try{
+    $('pinError').textContent=msg;$('pinError').style.display='block';$('pinInput').value='';
+    setTimeout(function(){try{$('pinError').style.display='none';}catch(e){}},3000);
+  }catch(e){}
+}
+function guestLinkBase(){try{return location.origin+location.pathname;}catch(e){return '';}}
+function makeGuestLink(owner,repo,token){return guestLinkBase()+'#guest='+encodeURIComponent(owner)+'/'+encodeURIComponent(repo)+'/'+token;}
+function openGuestLink(){
+  const c=cloudCfg();
+  if(!c)return toast('⛔ আগে ক্লাউড কানেক্ট করুন');
+  if(c.readOnly)return toast('⛔ শুধু-পড়া কানেকশন থেকে গেস্ট লিংক বানানো যায় না');
+  openModal(modalHead('🔗 গেস্ট লিংক — শুধু পড়ার প্রবেশ')+
+    '<p class="small muted" style="margin:2px 0 8px">যাকে শুধু <b>পড়তে</b> দিতে চান তাকে এই লিংকটি পাঠান — সে লিংকটি খুলে আপনার দেওয়া <b>মোবাইল নম্বর + PIN</b> দিয়ে লগইন করবে, তার ডিভাইসে আর কোনো সেটআপ লাগবে না। লিংকপ্রাপ্ত ব্যক্তি Viewer রোলে থাকলে কিছুই বদলাতে পারবে না এবং টাকার হিসাবও দেখতে পাবে না।</p>'+
+    '<label>শুধু-পড়ার টোকেন (Read-only Token) পেস্ট করুন *</label><input id="gl-token" placeholder="github_pat_…">'+
+    '<button class="btn btn-primary" onclick="buildGuestLink()">🔗 লিংক বানান</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+}
+function buildGuestLink(){
+  const c=cloudCfg();if(!c)return;
+  const tok=($('gl-token').value||'').trim();
+  if(tok.length<10)return toast('শুধু-পড়ার টোকেন পেস্ট করুন (github_pat_ দিয়ে শুরু)');
+  const link=makeGuestLink(c.owner,c.repo,tok);
+  openModal(modalHead('🔗 গেস্ট লিংক তৈরি হয়েছে')+
+    '<p class="small muted" style="margin:2px 0 8px">লিংকটি কপি করে যাকে পড়তে দিতে চান তাকে পাঠান। <b>সাবধান:</b> লিংকটি যার কাছে থাকবে তার ব্রাউজারে ডেটা এসে জমতে পারে, তবে মোবাইল নম্বর + PIN ছাড়া অ্যাপে ঢুকতে পারবে না। লিংক ফাঁস হলে GitHub-এ টোকেনটি বাতিল (Revoke) করে নতুন বানিয়ে নিন।</p>'+
+    '<textarea id="gl-out" readonly style="width:100%;min-height:64px;font-size:11px">'+esc(link)+'</textarea>'+
+    '<button class="btn btn-primary" onclick="copyGuestLink()">📋 কপি করুন</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+}
+function copyGuestLink(){
+  try{
+    const el=$('gl-out');if(el.select)el.select();
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.value).then(function(){toast('✅ কপি হয়েছে');},function(){toast('নিচের বক্স থেকে হাতে কপি করুন');});}
+    else{try{document.execCommand('copy');toast('✅ কপি হয়েছে');}catch(e){toast('নিচের বক্স থেকে হাতে কপি করুন');}}
+  }catch(e){toast('নিচের বক্স থেকে হাতে কপি করুন');}
+}
 function cloudCancelTimers(){try{clearTimeout(cloudTimer);}catch(e){}try{clearInterval(cloudPullTimer);}catch(e){}cloudTimer=null;cloudPullTimer=null;}
 function b64e(t){return btoa(unescape(encodeURIComponent(t)));}
 function b64d(b){return decodeURIComponent(escape(atob(b)));}
 function ghHeaders(c){return {'Authorization':'Bearer '+c.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};}
+/* ---- v6.19: GitHub ফেচে ১০ সেকেন্ড টাইমআউট (নেটওয়ার্ক ঝুলে থাকলে বুট/সেভ আটকে থাকবে না) ---- */
+function ghFetch(url,opts){
+  try{
+    if(typeof AbortController==='undefined')return fetch(url,opts);
+    const ctl=new AbortController();
+    const t=setTimeout(function(){try{ctl.abort();}catch(e){}},10000);
+    return fetch(url,Object.assign({},opts||{},{signal:ctl.signal})).then(function(r){clearTimeout(t);return r;},function(e){clearTimeout(t);throw e;});
+  }catch(e){return fetch(url,opts);}
+}
 function cloudStatus(t){cloudLastStatus=t;try{const el=$('cloud-st');if(el)el.textContent=t;}catch(e){}}
 function cloudStatusRender(){
   const el=$('cloud-st');if(!el)return;
   const c=cloudCfg();
-  el.textContent=cloudLastStatus||(c?('✅ কানেক্টেড · '+(c.lastSync?('শেষ সিঙ্ক '+new Date(c.lastSync).toLocaleTimeString()):'এখনো সিঙ্ক হয়নি')+(c.readOnly?' · 👁️ শুধু-পড়া':'')):'⛔ কানেক্ট করা নেই');
+  el.textContent=cloudLastStatus||(c?((c.guest?'👤 গেস্ট-সংযোগ':'✅ কানেক্টেড')+' · '+(c.lastSync?('শেষ সিঙ্ক '+new Date(c.lastSync).toLocaleTimeString()):'এখনো সিঙ্ক হয়নি')+(c.readOnly?' · 👁️ শুধু-পড়া':'')):'⛔ কানেক্ট করা নেই');
   const off=$('cloud-off-btn');if(off)off.style.display=c?'inline-block':'none';
 }
 function cloudGetRemote(cb){
   const c=cloudCfg();if(!c)return cb({network:true});
   try{
-    fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json?_='+Date.now(),{headers:ghHeaders(c),cache:'no-store'})
+    ghFetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json?_='+Date.now(),{headers:ghHeaders(c),cache:'no-store'})
       .then(function(r){
         if(r.status===404)return cb(null,{empty:true});
         if(!r.ok)return cb({status:r.status});
@@ -816,6 +894,13 @@ function mergeCloudDb(remote){
   ['officers','cases','expenses','users','recycleBin'].forEach(function(k){
     const lm=idsOf(db[k]);(remote[k]||[]).forEach(function(x){if(x&&x.id!==undefined&&!lm[x.id])merged[k].push(x);});
   });
+  /* v6.19: মামলা/রশিদ নম্বর ডাবল না হতে দুই দিকের কাউন্টারের বড়টি রাখা হয় */
+  try{
+    ['caseSeq','receiptSeq'].forEach(function(k){
+      const rs=remote&&remote.settings&&remote.settings[k],ms=merged.settings&&merged.settings[k];
+      if(rs&&ms&&String(rs.year)===String(ms.year)&&Number(rs.n)>Number(ms.n))ms.n=rs.n;
+    });
+  }catch(e){}
   return merged;
 }
 function cloudApplyRemote(rdb){
@@ -824,6 +909,7 @@ function cloudApplyRemote(rdb){
   db=rdb;ensureDefaults(db);saveLocal();
   const still=keepId&&db.users.some(function(u){return u.id===keepId;});
   if(keepId&&!still){lockApp();return true;}
+  if(still&&currentUser)currentUser=db.users.find(function(u){return u.id===keepId;});
   if(currentUser){refreshCurrentView();renderBanners();}
   return true;
 }
@@ -837,7 +923,7 @@ function scheduleCloudPush(){
 function cloudPullNow(cb){
   const c=cloudCfg();if(!c)return cb&&cb('nocfg');
   cloudGetRemote(function(err,r){
-    if(err){cloudStatus('⚠️ ক্লাউড থেকে আনা গেল না — নেটওয়ার্ক দেখুন');return cb&&cb(err);}
+    if(err){cloudStatus(err&&err.status===403?'⛔ টোকেন বাতিল বা পড়ার অনুমতি নেই — নতুন টোকেন দিয়ে আবার Connect করুন':'⚠️ ক্লাউড থেকে আনা গেল না — নেটওয়ার্ক দেখুন');return cb&&cb(err);}
     if(r.empty){cloudStatus('☁️ ক্লাউড খালি — এখনো কোনো ডেটা পাঠানো হয়নি');return cb&&cb('empty');}
     if(cloudDirty)return cb&&cb('dirty');
     window.__cloudOffline=false;
@@ -854,12 +940,15 @@ function cloudPushNow(cb){
   cloudGetRemote(function(err,r){
     if(err&&err.network){cloudDirty=true;window.__cloudOffline=true;cloudStatus('⚠️ অফলাইন — সংযোগ ফিরলে সেভ হবে');renderBanners();return cb&&cb(err);}
     let payloadDb=db;
-    if(r&&r.db){payloadDb=mergeCloudDb(r.db);db=payloadDb;saveLocal();}
+    if(r&&r.db&&!window.__forceCloudPush){
+      payloadDb=mergeCloudDb(r.db);db=payloadDb;saveLocal();
+      if(currentUser){const ku=db.users.find(function(u){return u.id===currentUser.id;});if(ku)currentUser=ku;}
+    }
     const attempt=function(sha){
       const body={message:'CaseLedger update '+new Date().toISOString(),content:b64e(JSON.stringify(payloadDb))};
       if(sha)body.sha=sha;
       try{
-        fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json',{method:'PUT',headers:ghHeaders(c),body:JSON.stringify(body)})
+        ghFetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json',{method:'PUT',headers:ghHeaders(c),body:JSON.stringify(body)})
           .then(function(res){return res.json().catch(function(){return {};}).then(function(j){j.__status=res.status;return j;});})
           .then(function(j){
             if(j.__status===409){
@@ -872,7 +961,7 @@ function cloudPushNow(cb){
               cloudStatus('👁️ শুধু-পড়া কানেকশন — এই ডিভাইস থেকে সেভ হবে না');
               cb&&cb('ro');
             }else if(j&&j.content&&j.content.sha){
-              cloudDirty=false;window.__cloudOffline=false;
+              cloudDirty=false;window.__cloudOffline=false;window.__forceCloudPush=false;
               c.sha=j.content.sha;c.lastSync=Date.now();cloudSet(c);
               cloudStatus('☁️ সেভ হয়েছে · '+new Date().toLocaleTimeString());
               renderBanners();
@@ -915,7 +1004,7 @@ function doCloudConnect(){
   const c={owner:owner,repo:repo,token:token,readOnly:false};
   cloudStatus('⏳ যাচাই করা হচ্ছে…');
   try{
-    fetch('https://api.github.com/repos/'+owner+'/'+repo,{headers:ghHeaders(c)})
+    ghFetch('https://api.github.com/repos/'+owner+'/'+repo,{headers:ghHeaders(c)})
       .then(function(r){return r.json().catch(function(){return {};}).then(function(j){j.__status=r.status;return j;});})
       .then(function(x){
         if(x.__status===404||x.__status===401)return cloudStatus('❌ যাচাই হয়নি — Username/রিপোর নাম/Token আবার দেখুন (টোকেনে ওই রিপোর Contents অনুমতি থাকতে হবে)');
@@ -950,7 +1039,7 @@ function cloudPullReplace(){
     window.__cloudOffline=false;
     closeModal();
     if(!currentUser){try{$('setup-view').style.display='none';}catch(e){}initAuth();}
-    else refreshCurrentView();
+    else{const kp=currentUser.id,nu=db.users.find(function(u){return u.id===kp;});if(nu)currentUser=nu;refreshCurrentView();}
     cloudStartTimers();
     cloudStatus('☁️ ক্লাউডের ডেটা এসে গেছে · '+new Date().toLocaleTimeString());
     toast('✅ ক্লাউড থেকে ডেটা এসে গেছে');
@@ -981,7 +1070,15 @@ function isSuperAdmin(){return !!currentUser&&currentUser.role==='superadmin';}
 
 /* ==================== auth ==================== */
 function initAuth(){
-  if(!db.users.length){$('setup-view').style.display='flex';return;}
+  if(!db.users.length){
+    if(guestGate()){
+      try{$('setup-view').style.display='none';}catch(e){}
+      $('login-biz').textContent=db.settings.businessName||'Case Writer Pro';
+      $('login-view').style.display='flex';
+      try{$('loginPhone').focus();}catch(e){}
+    }else{$('setup-view').style.display='flex';}
+    return;
+  }
   $('login-biz').textContent=db.settings.businessName||'Case Writer Pro';
   $('login-view').style.display='flex';
   $('loginPhone').value='';$('pinInput').value='';
@@ -998,22 +1095,55 @@ function tryLogin(){
   const raw=($('loginPhone').value||'').trim();
   const pin=$('pinInput').value;
   if(!raw||!pin)return;
+  if(loginLocked()){
+    $('pinError').textContent='⛔ অনেকবার ভুল চেষ্টা হয়েছে — ৩০ সেকেন্ড অপেক্ষা করে আবার চেষ্টা করুন';
+    $('pinError').style.display='block';$('pinInput').value='';
+    setTimeout(()=>{try{$('pinError').style.display='none';}catch(e){}},2500);
+    return;
+  }
+  if(guestGate()){
+    try{$('pinError').textContent='⏳ যাচাই করা হচ্ছে…';$('pinError').style.display='block';}catch(e){}
+    cloudGetRemote(function(err,r){
+      if(err&&err.network)return guestLoginFail('⚠️ ইন্টারনেট সংযোগ নেই — আবার চেষ্টা করুন');
+      if(err&&err.status===403)return guestLoginFail('⛔ প্রবেশ-চাবি বাতিল হয়েছে — নতুন গেস্ট লিংকের জন্য অনুরোধ করুন');
+      if(err)return guestLoginFail('⚠️ ক্লাউড থেকে ডেটা আনা গেল না — একটু পরে আবার চেষ্টা করুন');
+      if(!r||!r.db)return guestLoginFail('⚠️ ক্লাউডে এখনো কোনো ডেটা নেই');
+      const gn=normPhone(raw);
+      let gu=null;
+      if(gn){const byPh=r.db.users.find(x=>normPhone(x.phone)===gn);if(byPh&&verifyPin(byPh,pin))gu=byPh;}
+      if(!gu){noteLoginFail();return guestLoginFail('❌ ভুল নম্বর বা PIN — আবার চেষ্টা করুন');}
+      db=r.db;ensureDefaults(db);saveLocal();
+      const gc=cloudCfg();if(gc){gc.sha=r.sha;gc.lastSync=Date.now();cloudSet(gc);}
+      window.__cloudOffline=false;
+      sess.loginUserId=gu.id;
+      $('loginPhone').value='';$('pinInput').value='';
+      try{$('pinError').style.display='none';}catch(e){}
+      loginAs(gu);
+      noteLoginSuccess();
+      cloudStartTimers();
+      cloudStatus('☁️ গেস্ট-মোড · শুধু পড়া · সিঙ্কড '+new Date().toLocaleTimeString());
+    });
+    return;
+  }
   const n=normPhone(raw);
   let u=null;
   if(n){
     const byPh=db.users.find(x=>normPhone(x.phone)===n);
-    if(byPh&&hashPin(pin,byPh.salt)===byPh.pinHash)u=byPh;
+    if(byPh&&verifyPin(byPh,pin))u=byPh;
   }
   if(!u){
     const nm=raw.toLowerCase();
-    u=db.users.find(x=>!x.phone&&String(x.name).toLowerCase()===nm&&hashPin(pin,x.salt)===x.pinHash)||null;
+    u=db.users.find(x=>!x.phone&&String(x.name).toLowerCase()===nm&&verifyPin(x,pin))||null;
   }
   if(u){
+    noteLoginSuccess();
+    upgradePinIfLegacy(u,pin);
     sess.loginUserId=u.id;
     $('loginPhone').value='';$('pinInput').value='';
     loginAs(u);
     if(!u.phone)promptPhoneSetup(u.id);
   }else{
+    noteLoginFail();
     $('pinError').textContent='❌ ভুল নম্বর/নাম বা PIN — আবার চেষ্টা করুন';
     $('pinError').style.display='block';$('pinInput').value='';
     setTimeout(()=>{try{$('pinError').style.display='none';}catch(e){}},2500);
@@ -1049,12 +1179,13 @@ function submitSetup(){
   if(p1!==p2)return toast('দুটি PIN মিলছে না');
   if(!q||!a)return toast('নিরাপত্তা প্রশ্ন ও উত্তর দিন');
   const salt=uid(),asalt=uid();
-  const u={id:uid(),name:name,role:'superadmin',phone:ph,pinHash:hashPin(p1,salt),salt:salt,createdAt:Date.now()};
+  const u={id:uid(),name:name,role:'superadmin',phone:ph,pinHash:hashPinHard(p1,salt),kdf:KDF_ROUNDS,salt:salt,createdAt:Date.now()};
   db.users.push(u);
   db.settings.businessName=biz||'Case Writer Pro';
   db.settings.securityQuestion=q;
   db.settings.securitySalt=asalt;
-  db.settings.securityAnswerHash=hashText(asalt+'::'+a);
+  db.settings.securityAnswerHash=hashText(asalt+'::'+a,KDF_ROUNDS);
+  db.settings.secAnsKdf=KDF_ROUNDS;
   saveDb();
   $('setup-view').style.display='none';
   loginAs(u);
@@ -1099,9 +1230,10 @@ function doForgotPin(){
   const a=$('fp-ans').value.trim(),p1=$('fp-pin').value,p2=$('fp-pin2').value;
   const u=findLoginUser(($('fp-user').value||'').trim());
   if(!u)return toast('এই নম্বর/নামে কোনো আইডি নেই');
-  if(hashText(db.settings.securitySalt+'::'+a)!==db.settings.securityAnswerHash)return toast('❌ উত্তর ভুল');
+  if(hashText(db.settings.securitySalt+'::'+a,db.settings.secAnsKdf||1)!==db.settings.securityAnswerHash)return toast('❌ উত্তর ভুল');
+  if(!db.settings.secAnsKdf||db.settings.secAnsKdf<KDF_ROUNDS){db.settings.securityAnswerHash=hashText(db.settings.securitySalt+'::'+a,KDF_ROUNDS);db.settings.secAnsKdf=KDF_ROUNDS;}
   if(!/^\d{4,6}$/.test(p1)||p1!==p2)return toast('❌ নতুন PIN সঠিক নয়');
-  u.salt=uid();u.pinHash=hashPin(p1,u.salt);saveDb();
+  u.salt=uid();u.pinHash=hashPinHard(p1,u.salt);u.kdf=KDF_ROUNDS;saveDb();
   closeModal();toast('✅ PIN রিসেট হয়েছে — নতুন PIN দিয়ে লগইন করুন');
 }
 
@@ -1759,6 +1891,8 @@ function openCaseModal(id){
 }
 function updateCaseField(id,field,val){
   const c=db.cases.find(x=>x.id===id);if(!c)return;
+  if(!can('edit'))return toast('⛔ Permission নেই');
+  if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
   c[field]=val;saveDb();
   openCaseModal(id);refreshCurrentView();
 }
@@ -1873,6 +2007,7 @@ function submitCaseCDEdit(caseId,cdId){
 }
 function printCase(id){
   const c=db.cases.find(x=>x.id===id);if(!c)return;
+  if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
   const o=officerById(c.officerId);
   const fin=canFin();
   const rows=(c.payments||[]).map(p=>'<tr><td>'+fmtD(p.date)+'</td><td>'+esc(p.receiptNo||'—')+'</td><td>'+esc(p.method||'—')+'</td><td>'+esc(p.note||'')+'</td><td style="text-align:right">৳'+fmt(p.amount)+'</td></tr>').join('');
@@ -2385,6 +2520,8 @@ function handleRestoreFile(){
       if(mode==='replace'){
         db=ensureDefaults(j.data);
         saveDb();
+        window.__forceCloudPush=true;
+        if(currentUser){const rv=db.users.find(u=>u.id===currentUser.id);if(rv)currentUser=rv;}
         if(!currentUser||!db.users.find(u=>u.id===currentUser.id)){
           closeModal();lockApp();
         }else{
@@ -2424,10 +2561,10 @@ function openChangePin(){
 }
 function doChangePin(){
   const u=currentUser;
-  if(hashPin($('cp-cur').value,u.salt)!==u.pinHash)return toast('❌ বর্তমান PIN ভুল');
+  if(!verifyPin(u,$('cp-cur').value))return toast('❌ বর্তমান PIN ভুল');
   const n=$('cp-new').value;
   if(!/^\d{4,6}$/.test(n)||n!==$('cp-new2').value)return toast('❌ নতুন PIN সঠিক নয় / মিলছে না');
-  u.salt=uid();u.pinHash=hashPin(n,u.salt);saveDb();
+  u.salt=uid();u.pinHash=hashPinHard(n,u.salt);u.kdf=KDF_ROUNDS;saveDb();
   closeModal();toast('✅ PIN পরিবর্তন হয়েছে');
 }
 function openSecQ(){
@@ -2445,7 +2582,8 @@ function saveSecQ(){
   const s=uid();
   db.settings.securityQuestion=q;
   db.settings.securitySalt=s;
-  db.settings.securityAnswerHash=hashText(s+'::'+a);
+  db.settings.securityAnswerHash=hashText(s+'::'+a,KDF_ROUNDS);
+  db.settings.secAnsKdf=KDF_ROUNDS;
   saveDb();closeModal();toast('✅ Security Question saved');
 }
 
@@ -2492,7 +2630,7 @@ function submitUserForm(){
     officerId=m[0].id;
   }
   const salt=uid();
-  db.users.push({id:uid(),name:name,role:role,phone:ph,pinHash:hashPin(pin,salt),salt:salt,createdAt:Date.now(),officerId:officerId});
+  db.users.push({id:uid(),name:name,role:role,phone:ph,pinHash:hashPinHard(pin,salt),kdf:KDF_ROUNDS,salt:salt,createdAt:Date.now(),officerId:officerId});
   saveDb();closeModal();renderUsers();
   toast('✅ User created — '+name+' ('+roleLabel(role)+')');
 }
@@ -2510,7 +2648,7 @@ function doResetUserPin(){
   if(!u)return toast('User পাওয়া যায়নি');
   const p=$('rup-pin').value;
   if(!/^\d{4,6}$/.test(p))return toast('PIN ৪–৬ ডিজিট হতে হবে');
-  u.salt=uid();u.pinHash=hashPin(p,u.salt);
+  u.salt=uid();u.pinHash=hashPinHard(p,u.salt);u.kdf=KDF_ROUNDS;
   saveDb();closeModal();renderUsers();
   toast('✅ PIN reset — '+u.name);
 }
@@ -2578,8 +2716,9 @@ function applyPerms(){
 /* ==================== boot ==================== */
 function boot(){
   loadDb();
+  adoptGuestCfg();
   purgeBin();
-  if(PERSIST&&cloudCfg()){
+  if(PERSIST&&cloudCfg()&&!guestGate()){
     cloudStatus('⏳ ক্লাউড থেকে ডেটা আনা হচ্ছে…');
     cloudGetRemote(function(err,r){
       if(!err&&r&&r.db){
@@ -2595,10 +2734,11 @@ function boot(){
       cloudStartTimers();
     });
   }else{
+    if(guestGate()){try{$('setup-view').style.display='none';}catch(e){}}
     initAuth();
   }
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e031974bc332d0',t:'MTc4OTkwMDYzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e190326f6b48ff',t:'MTc4OTkxNDk5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
