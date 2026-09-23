@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.22</title>
+<title>Case Writer Pro v6.23</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -283,7 +283,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.22</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.23</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -317,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.22 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.23 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -405,6 +405,7 @@ textarea{min-height:80px;resize:vertical}
         <div id="cases-summary" class="small muted" style="margin-top:8px"></div>
       </div>
       <button class="btn btn-primary" id="add-case-btn" onclick="openCaseForm()">＋ Add New Case</button>
+      <div id="draft-note"></div>
       <div id="cases-list"></div>
       <div id="cases-pager" class="pager"></div>
     </div>
@@ -496,6 +497,11 @@ textarea{min-height:80px;resize:vertical}
           <button class="btn-small" style="flex:none" onclick="saveBiz()">Save</button>
         </div>
         <label class="switch-row"><input type="checkbox" id="st-autolock" onchange="toggleAutoLock()"> 🔒 অটো-লক (৫ মিনিট চুপচাপ থাকলে নিজে থেকে লক)</label>
+        <label>📮 অফিসার-ড্রাফট গ্রহণের WhatsApp নম্বর (শুধু-পড়া সংযোগের অফিসারদের অনুরোধ এই নম্বরে যাবে)</label>
+        <div class="flex-row" style="flex-wrap:nowrap">
+          <input id="st-adminwa" placeholder="01XXXXXXXXX">
+          <button class="btn-small" style="flex:none" onclick="saveAdminWa()">Save</button>
+        </div>
       </div>
       <div class="card">
         <h3>👤 My Account</h3>
@@ -548,7 +554,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.22 · PC + Mobile · Smart Cloud Sync · 23 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.23 (Final) · PC + Mobile · Smart Cloud Sync · 24 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -843,6 +849,7 @@ function buildGuestLink(){
     '<p class="small muted" style="margin:2px 0 8px">লিংকটি কপি করে যাকে পড়তে দিতে চান তাকে পাঠান। <b>সাবধান:</b> লিংকটি যার কাছে থাকবে তার ব্রাউজারে ডেটা এসে জমতে পারে, তবে মোবাইল নম্বর + PIN ছাড়া অ্যাপে ঢুকতে পারবে না। লিংক ফাঁস হলে GitHub-এ টোকেনটি বাতিল (Revoke) করে নতুন বানিয়ে নিন।</p>'+
     '<textarea id="gl-out" readonly style="width:100%;min-height:64px;font-size:11px">'+esc(link)+'</textarea>'+
     '<button class="btn btn-primary" onclick="copyGuestLink()">📋 কপি করুন</button>'+
+    '<button class="btn" onclick="openQrModal(document.getElementById(\'gl-out\').value,\'গেস্ট লিংক\')">📱 QR কোড</button>'+
     '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
 }
 function copyGuestLink(){
@@ -851,6 +858,251 @@ function copyGuestLink(){
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.value).then(function(){toast('✅ কপি হয়েছে');},function(){toast('নিচের বক্স থেকে হাতে কপি করুন');});}
     else{try{document.execCommand('copy');toast('✅ কপি হয়েছে');}catch(e){toast('নিচের বক্স থেকে হাতে কপি করুন');}}
   }catch(e){toast('নিচের বক্স থেকে হাতে কপি করুন');}
+}
+/* ==================== v6.23: QR কোড জেনারেটর (অফলাইন, অ্যাপের ভেতরে সম্পূর্ণ এমবেডেড) ====================
+   বাইট-মোড · ECC লেভেল L · ভার্সন ১–১০ (২৭১ বাইট পর্যন্ত) · মাস্ক ০ — ISO/IEC 18004 অনুসরণে */
+const QR_ECC_PER_BLOCK=[7,10,15,20,26,18,20,24,30,18];
+const QR_NUM_BLOCKS=[1,1,1,1,1,2,2,2,2,4];
+const QR_TOTAL_CODEWORDS=[26,44,70,100,134,172,196,242,292,346];
+const QR_CAP_L=[17,32,53,78,106,134,154,192,230,271];
+const QR_ALIGN={2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+function qrBytes(str){const out=[];const s=unescape(encodeURIComponent(String(str)));for(let i=0;i<s.length;i++)out.push(s.charCodeAt(i)&0xFF);return out;}
+function qrGetBit(x,i){return ((x>>>i)&1)!==0;}
+function qrRsMul(x,y){let z=0;for(let i=7;i>=0;i--){z=((z<<1)^((z>>>7)*0x11D));z^=((y>>>i)&1)*x;}return z&0xFF;}
+function qrRsDivisor(degree){
+  const result=new Array(degree).fill(0);result[degree-1]=1;
+  let root=1;
+  for(let i=0;i<degree;i++){
+    for(let j=0;j<degree;j++){
+      result[j]=qrRsMul(result[j],root);
+      if(j+1<degree)result[j]^=result[j+1];
+    }
+    root=qrRsMul(root,0x02);
+  }
+  return result;
+}
+function qrRsRemainder(data,divisor){
+  const result=new Array(divisor.length).fill(0);
+  for(let k=0;k<data.length;k++){
+    const factor=data[k]^result.shift();
+    result.push(0);
+    for(let i=0;i<divisor.length;i++)result[i]^=qrRsMul(divisor[i],factor);
+  }
+  return result;
+}
+function qrMakeMatrix(text){
+  const bytes=qrBytes(text);
+  let ver=0;
+  for(let i=0;i<10;i++){if(bytes.length<=QR_CAP_L[i]){ver=i+1;break;}}
+  if(!ver)return null;
+  const size=ver*4+17;
+  const modules=[];const isFunction=[];
+  for(let y=0;y<size;y++){modules.push(new Array(size).fill(false));isFunction.push(new Array(size).fill(false));}
+  function setFn(x,y,dark){if(x<0||x>=size||y<0||y>=size)return;modules[y][x]=dark;isFunction[y][x]=true;}
+  /* টাইমিং */
+  for(let i=0;i<size;i++){setFn(6,i,i%2===0);setFn(i,6,i%2===0);}
+  /* ফাইন্ডার + সেপারেটর (৯x৯ এলাকা) */
+  function finder(cx,cy){
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+      const dist=Math.max(Math.abs(dx),Math.abs(dy));
+      setFn(cx+dx,cy+dy,dist!==2&&dist!==4);
+    }
+  }
+  finder(3,3);finder(size-4,3);finder(3,size-4);
+  /* অ্যালাইনমেন্ট */
+  if(ver>=2){
+    const pos=QR_ALIGN[ver],last=pos[pos.length-1];
+    for(let ai=0;ai<pos.length;ai++)for(let aj=0;aj<pos.length;aj++){
+      const cx=pos[ai],cy=pos[aj];
+      if((cx===6&&cy===6)||(cx===6&&cy===last)||(cx===last&&cy===6))continue;
+      for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)setFn(cx+dx,cy+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1);
+    }
+  }
+  /* ফরম্যাট বিট (ECC L=01, মাস্ক ০) — দুই কপি */
+  (function(){
+    const data=(1<<3)|0;
+    let rem=data;
+    for(let i=0;i<10;i++)rem=(rem<<1)^((rem>>>9)*0x537);
+    const bits=((data<<10)|rem)^0x5412;
+    for(let i=0;i<=5;i++)setFn(8,i,qrGetBit(bits,i));
+    setFn(8,7,qrGetBit(bits,6));
+    setFn(8,8,qrGetBit(bits,7));
+    setFn(7,8,qrGetBit(bits,8));
+    for(let i=9;i<15;i++)setFn(14-i,8,qrGetBit(bits,i));
+    for(let i=0;i<8;i++)setFn(size-1-i,8,qrGetBit(bits,i));
+    for(let i=8;i<15;i++)setFn(8,size-15+i,qrGetBit(bits,i));
+    setFn(8,size-8,true);
+  })();
+  /* ভার্সন তথ্য (v7+) */
+  if(ver>=7){
+    let rem=ver;
+    for(let i=0;i<12;i++)rem=(rem<<1)^((rem>>>11)*0x1F25);
+    const bits=(ver<<12)|rem;
+    for(let i=0;i<18;i++){
+      const bit=qrGetBit(bits,i);
+      const a=size-11+(i%3),b=Math.floor(i/3);
+      setFn(a,b,bit);setFn(b,a,bit);
+    }
+  }
+  /* ডেটা বিট-বাফার */
+  const bits=[];
+  const ap=function(val,n){for(let i=n-1;i>=0;i--)bits.push((val>>>i)&1);};
+  ap(4,4);
+  ap(bytes.length,ver<=9?8:16);
+  for(let i=0;i<bytes.length;i++)ap(bytes[i],8);
+  const dataCap=QR_TOTAL_CODEWORDS[ver-1]-QR_ECC_PER_BLOCK[ver-1]*QR_NUM_BLOCKS[ver-1];
+  ap(0,Math.min(4,dataCap*8-bits.length));
+  while(bits.length%8)bits.push(0);
+  const dataBytes=[];
+  for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i+j];dataBytes.push(b);}
+  let padT=true;
+  while(dataBytes.length<dataCap){dataBytes.push(padT?0xEC:0x11);padT=!padT;}
+  /* ECC + ইন্টারলিভ */
+  const numBlocks=QR_NUM_BLOCKS[ver-1],eccLen=QR_ECC_PER_BLOCK[ver-1],total=QR_TOTAL_CODEWORDS[ver-1];
+  const shortLen=Math.floor(total/numBlocks);
+  const numShort=numBlocks-(total%numBlocks);
+  const divisor=qrRsDivisor(eccLen);
+  const blocks=[];
+  for(let bi=0,k=0;bi<numBlocks;bi++){
+    const datLen=shortLen-eccLen+(bi<numShort?0:1);
+    const dat=dataBytes.slice(k,k+datLen);k+=datLen;
+    blocks.push({dat:dat,ecc:qrRsRemainder(dat,divisor)});
+  }
+  const all=[];
+  const maxDat=shortLen-eccLen+1;
+  for(let i=0;i<maxDat;i++)for(let bi=0;bi<blocks.length;bi++){if(i<blocks[bi].dat.length)all.push(blocks[bi].dat[i]);}
+  for(let i=0;i<eccLen;i++)for(let bi=0;bi<blocks.length;bi++)all.push(blocks[bi].ecc[i]);
+  /* জিগজ্যাগ বসানো */
+  let bi2=0;
+  for(let right=size-1;right>=1;right-=2){
+    if(right===6)right=5;
+    for(let vert=0;vert<size;vert++){
+      for(let j=0;j<2;j++){
+        const x=right-j;
+        const upward=((right+1)&2)===0;
+        const y=upward?size-1-vert:vert;
+        if(!isFunction[y][x]&&bi2<all.length*8){
+          modules[y][x]=qrGetBit(all[bi2>>>3],7-(bi2&7));
+          bi2++;
+        }
+      }
+    }
+  }
+  /* মাস্ক ০: (r+c)%2==0 হলে ইনভার্ট (শুধু ডেটা মডিউল) */
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    if(!isFunction[y][x]&&((x+y)%2)===0)modules[y][x]=!modules[y][x];
+  }
+  return modules;
+}
+
+function qrDrawTo(canvas,matrix,scale){
+  try{
+    const quiet=4,n=matrix.length,px=(n+quiet*2)*scale;
+    canvas.width=px;canvas.height=px;
+    const ctx=canvas.getContext&&canvas.getContext('2d');
+    if(!ctx)return false;
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,px,px);
+    ctx.fillStyle='#16324f';
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(matrix[y][x])ctx.fillRect((x+quiet)*scale,(y+quiet)*scale,scale,scale);}
+    return true;
+  }catch(e){return false;}
+}
+function openQrModal(text,title){
+  const m=qrMakeMatrix(text);
+  if(!m)return toast('লিংকটি খুব দীর্ঘ — QR তৈরি করা গেল না');
+  window.__qrText=String(text||'');
+  openModal(modalHead('📱 QR কোড'+(title?' — '+title:''))+
+    '<p class="small muted" style="margin:2px 0 8px">ফোনের ক্যামেরা দিয়ে স্ক্যান করলেই লিংক খুলে যাবে। QR-টি সম্পূর্ণ অ্যাপের ভেতরে, অফলাইনে তৈরি — কোনো তৃতীয় পক্ষ লিংক দেখতে পায় না। প্রিন্ট করে অফিসেও লাগানো যাবে।</p>'+
+    '<div style="text-align:center"><canvas id="qr-canvas" style="max-width:100%;background:#fff;border:1px solid #e0e0e0"></canvas></div>'+
+    '<button class="btn btn-primary" onclick="downloadQr()">⬇️ QR ছবি সেভ করুন</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>');
+  const cv=$('qr-canvas');
+  if(!cv||!qrDrawTo(cv,m,8))toast('⚠️ QR আঁকা যায়নি — লিংক কপি করে ব্যবহার করুন');
+}
+function downloadQr(){
+  try{
+    const cv=$('qr-canvas');
+    const a=document.createElement('a');
+    a.href=cv.toDataURL('image/png');
+    a.download='caseledger-qr.png';
+    a.click();
+  }catch(e){toast('⚠️ সেভ করা যায়নি — স্ক্রিনশট নিন');}
+}
+/* ---- v6.23: অফিসার ড্রাফট → WhatsApp (শুধু-পড়া সংযোগে একমাত্র লেখার-অনুরোধের পথ) ---- */
+function canDraft(){try{return !!currentUser&&currentUser.role==='officer'&&PERSIST&&cloudCfg()&&cloudCfg().readOnly;}catch(e){return false;}}
+function b64uEnc(t){return b64e(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function b64uDec(t){t=String(t||'').replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';return b64d(t);}
+function openDraftRequest(){
+  if(!canDraft())return toast('এই সংযোগে এই সুবিধা নেই');
+  openModal(modalHead('📝 নতুন মামলার অনুরোধ (WhatsApp)')+
+    '<p class="small muted" style="margin:2px 0 8px">এই ডিভাইস থেকে সরাসরি সেভ করা যায় না (শুধু-পড়া সংযোগ) — তাই অনুরোধটি WhatsApp-এ অ্যাডমিনের কাছে যাবে, তিনি যাচাই করে যোগ করে দেবেন।</p>'+
+    '<label>Case Name / Title *</label><input id="dr-name" placeholder="e.g. State vs. Karim">'+
+    '<div class="two">'+
+      '<div><label>Case Type</label><select id="dr-type">'+caseTypeOptions(null).map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+      '<div><label>Deal Amount (৳)</label><input id="dr-deal" type="number"></div>'+
+    '</div>'+
+    '<label>Client</label><input id="dr-client" placeholder="Client name">'+
+    '<label>Opening Date</label><input id="dr-open" type="date" value="'+todayISO()+'">'+
+    '<label>Notes</label><textarea id="dr-notes" style="min-height:48px"></textarea>'+
+    '<button class="btn btn-primary" onclick="sendDraftRequest()">📤 WhatsApp-এ পাঠান</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function sendDraftRequest(){
+  const name=($('dr-name').value||'').trim();
+  if(!name)return toast('মামলার নাম লিখুন');
+  const wa=db.settings.adminWhatsapp;
+  if(!wa)return toast('অ্যাডমিনের WhatsApp নম্বর সেট নেই — Settings → General-এ সেট করতে বলুন');
+  const d={app:'CaseLedgerDraft',v:1,name:name,type:$('dr-type').value,client:($('dr-client').value||'').trim(),deal:+$('dr-deal').value||0,open:$('dr-open').value||todayISO(),notes:($('dr-notes').value||'').trim(),byName:currentUser.name,byPhone:currentUser.phone||'',at:new Date().toISOString()};
+  const link=guestLinkBase()+'#draft='+b64uEnc(JSON.stringify(d));
+  const msg='🔔 নতুন মামলার অনুরোধ (Case Writer Pro)\n'+
+    '👤 অফিসার: '+d.byName+(d.byPhone?' ('+d.byPhone+')':'')+'\n'+
+    '📁 মামলা: '+d.name+'\n'+
+    '🏷️ টাইপ: '+d.type+'\n'+
+    (d.client?'👥 মক্ষেল: '+d.client+'\n':'')+
+    (d.deal?'💰 ফি: ৳'+d.deal+'\n':'')+
+    '📅 দায়ের: '+d.open+'\n'+
+    (d.notes?'📝 নোট: '+d.notes+'\n':'')+
+    '➡️ যোগ করতে লিংক খুলুন:\n'+link;
+  let digits=String(wa).replace(/\D/g,'');
+  if(digits.indexOf('00')===0)digits=digits.slice(2);
+  if(digits.indexOf('880')!==0)digits='880'+digits.replace(/^0+/,'');
+  try{window.open('https://wa.me/'+digits+'?text='+encodeURIComponent(msg),'_blank');toast('✅ WhatsApp খুলছে — Send চাপুন');}
+  catch(e){toast('WhatsApp খোলা যায়নি — অনুরোধটি অ্যাডমিনকে জানান');}
+}
+function saveAdminWa(){
+  if(!can('settings'))return toast('⛔ Permission নেই');
+  const ph=($('st-adminwa').value||'').trim();
+  if(ph&&normPhone(ph).length<10)return toast('সঠিক WhatsApp নম্বর দিন (যেমন 017XXXXXXXX)');
+  db.settings.adminWhatsapp=ph;saveDb();
+  toast(ph?'✅ WhatsApp নম্বর সেভ হয়েছে':'WhatsApp নম্বর মুছে ফেলা হয়েছে');
+}
+function captureDraftHash(){
+  try{
+    const h=String(location.hash||'');
+    if(h.indexOf('#draft=')!==0)return;
+    const raw=h.slice(7);
+    if(raw.length>3000){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}return;}
+    const j=JSON.parse(b64uDec(raw));
+    if(j&&j.app==='CaseLedgerDraft'&&typeof j.name==='string'&&j.name.length)storage.setItem('caseLedgerPendingDraft',JSON.stringify(j));
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  }catch(e){}
+}
+function applyPendingDraft(){
+  try{
+    const raw=storage.getItem('caseLedgerPendingDraft');
+    if(!raw||!currentUser||!can('add'))return;
+    const d=JSON.parse(raw);
+    if(!d||d.app!=='CaseLedgerDraft')return;
+    storage.removeItem('caseLedgerPendingDraft');
+    const off=db.officers.find(function(o){return normPhone(o.phone)===normPhone(d.byPhone||'');})||null;
+    openCaseForm(null,off?off.id:undefined);
+    $('cfm-name').value=String(d.name).slice(0,120);
+    if(d.client)$('cfm-client').value=String(d.client).slice(0,80);
+    if(d.deal)$('cfm-deal').value=String(d.deal);
+    if(d.open)$('cfm-open').value=String(d.open).slice(0,10);
+    if(d.notes)$('cfm-notes').value='[অনুরোধ: '+d.byName+'] '+String(d.notes).slice(0,400);
+    toast('📥 WhatsApp-এর মামলার অনুরোধ থেকে ফর্ম ভরা হয়েছে — যাচাই করে Save করুন');
+  }catch(e){}
 }
 function cloudCancelTimers(){try{clearTimeout(cloudTimer);}catch(e){}try{clearInterval(cloudPullTimer);}catch(e){}cloudTimer=null;cloudPullTimer=null;}
 function b64e(t){return btoa(unescape(encodeURIComponent(t)));}
@@ -1295,6 +1547,7 @@ function loginAs(u){
   resetIdleTimer();
   toast('👋 Welcome, '+u.name+' — '+roleLabel(u.role));
   if(window_migrated){setTimeout(()=>{toast('🔄 পুরনো v5-এর সব ডেটা স্বয়ংক্রিয়ভাবে এনে নেওয়া হয়েছে (পুরনো PIN-ই ব্যবহার করুন)');},800);window_migrated=false;}
+  applyPendingDraft();
 }
 function lockApp(){
   currentUser=null;clearTimeout(idleT);
@@ -1818,6 +2071,10 @@ function renderRecent(){
 
 /* ==================== CASES LIST ==================== */
 function renderCases(){
+  const abD=$('add-case-btn');
+  if(abD)abD.textContent=canDraft()?'📝 অনুরোধ পাঠান (WhatsApp)':'＋ Add New Case';
+  const dnD=$('draft-note');
+  if(dnD)dnD.innerHTML=canDraft()?'<div class="banner banner-info" style="margin:8px 0"><span>👁️ এই সংযোগটি শুধু-পড়া — নতুন মামলার অনুরোধ পাঠাতে উপরের "📝 অনুরোধ পাঠান" বাটনে চাপুন (WhatsApp-এ অ্যাডমিনের কাছে যাবে)।</span></div>':'';
   const q=($('cf-q').value||'').trim().toLowerCase();
   const status=$('cf-status').value,off=$('cf-officer').value,prio=$('cf-priority').value,sort=$('cf-sort').value;
   const from=$('cf-from').value,to=$('cf-to').value;
@@ -1883,6 +2140,7 @@ function caseTypeOptions(c){
   return types;
 }
 function openCaseForm(caseId,presetOfficerId){
+  if(!caseId&&canDraft()){openDraftRequest();return;}
   if(!can(caseId?'edit':'add'))return toast('⛔ Permission নেই');
   if(!db.officers.length)return toast('আগে একজন Officer যোগ করুন');
   const c=caseId?db.cases.find(x=>x.id===caseId):null;
@@ -2509,6 +2767,7 @@ function emptyBin(){
 function renderSettings(){
   if(!can('settings')){go('dashboard');return;}
   $('st-biz').value=db.settings.businessName||'';
+  $('st-adminwa').value=db.settings.adminWhatsapp||'';
   $('st-autolock').checked=!!db.settings.autoLock;
   $('st-me').innerHTML='👤 <b>'+esc(currentUser.name)+'</b> · '+roleLabel(currentUser.role);
   $('st-secq-btn').style.display=can('users')?'block':'none';
@@ -2813,6 +3072,7 @@ function applyPerms(){
 /* ==================== boot ==================== */
 function boot(){
   loadDb();
+  captureDraftHash();
   adoptGuestCfg();
   purgeBin();
   if(PERSIST&&cloudCfg()&&!guestGate()){
@@ -2850,5 +3110,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fab81a98515ed9',t:'MTc5MDE3ODc3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbfac2dd41db83',t:'MTc5MDE5MTk5MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
