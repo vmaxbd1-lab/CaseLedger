@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.19</title>
+<title>Case Writer Pro v6.22</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -283,7 +283,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.19</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.22</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -317,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.19 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.22 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -346,6 +346,7 @@ textarea{min-height:80px;resize:vertical}
     <button class="hdr-btn" id="backBtn" onclick="goBack()" style="display:none">←</button>
     <span id="header-title">Dashboard</span>
     <div class="hdr-right">
+      <span id="sync-chip" onclick="cloudPullNow(null,true)" style="display:none;font-size:11px;opacity:.75;cursor:pointer;white-space:nowrap" title="শেষ ক্লাউড সিঙ্ক — ক্লিক করলে এখনই রিফ্রেশ"></span>
       <button class="hdr-btn" onclick="openSearchView()" title="Global Search">🔎</button>
       <button class="hdr-btn" onclick="lockApp()" title="Lock">🔒</button>
     </div>
@@ -539,7 +540,7 @@ textarea{min-height:80px;resize:vertical}
         <p class="small muted" style="margin:0 0 6px">সবাই একই ডেটা দেখবে — ডেটা থাকবে আপনার GitHub অ্যাকাউন্টের প্রাইভেট রিপোজিটরিতে (db.json)। মূল ডিভাইস থেকে কানেক্ট করুন।</p>
         <div id="cloud-st" class="small muted" style="margin:0 0 6px"></div>
         <button class="btn btn-info" onclick="openCloudConnect(false)">🔌 Connect / Setup</button>
-        <button class="btn" onclick="cloudPullNow(null)">🔄 Refresh Now</button>
+        <button class="btn" onclick="cloudPullNow(null,true)">🔄 Refresh Now</button>
         <button class="btn" onclick="openGuestLink()">🔗 গেস্ট লিংক (শুধু পড়া)</button>
         <button class="btn btn-ghost" id="cloud-off-btn" onclick="disconnectCloud()" style="display:none">🔌 Disconnect</button>
       </div>
@@ -547,7 +548,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.19 (Final) · PC + Mobile · Cloud Sync · 20 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.22 · PC + Mobile · Smart Cloud Sync · 23 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -864,44 +865,79 @@ function ghFetch(url,opts){
     return fetch(url,Object.assign({},opts||{},{signal:ctl.signal})).then(function(r){clearTimeout(t);return r;},function(e){clearTimeout(t);throw e;});
   }catch(e){return fetch(url,opts);}
 }
-function cloudStatus(t){cloudLastStatus=t;try{const el=$('cloud-st');if(el)el.textContent=t;}catch(e){}}
+function cloudStatus(t){cloudLastStatus=t;try{const el=$('cloud-st');if(el)el.textContent=t;}catch(e){}try{syncChipRender();}catch(e){}}
 function cloudStatusRender(){
   const el=$('cloud-st');if(!el)return;
   const c=cloudCfg();
   el.textContent=cloudLastStatus||(c?((c.guest?'👤 গেস্ট-সংযোগ':'✅ কানেক্টেড')+' · '+(c.lastSync?('শেষ সিঙ্ক '+new Date(c.lastSync).toLocaleTimeString()):'এখনো সিঙ্ক হয়নি')+(c.readOnly?' · 👁️ শুধু-পড়া':'')):'⛔ কানেক্ট করা নেই');
   const off=$('cloud-off-btn');if(off)off.style.display=c?'inline-block':'none';
 }
-function cloudGetRemote(cb){
+function cloudGetRemote(cb,full){
   const c=cloudCfg();if(!c)return cb({network:true});
   try{
-    ghFetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json?_='+Date.now(),{headers:ghHeaders(c),cache:'no-store'})
+    const hh=ghHeaders(c);
+    if(c.etag&&!full)hh['If-None-Match']=c.etag; /* v6.22: শর্তসাপেক্ষ অনুরোধ — ৩০৪ হলে রেট-লিমিটে গোনা যায় না */
+    ghFetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json',{headers:hh,cache:'no-store'})
       .then(function(r){
+        if(r.status===304)return cb(null,{notmodified:true,sha:c.sha});
         if(r.status===404)return cb(null,{empty:true});
-        if(!r.ok)return cb({status:r.status});
+        if(!r.ok){
+          let rl=false;try{rl=r.headers&&r.headers.get&&String(r.headers.get('x-ratelimit-remaining'))==='0';}catch(e){}
+          return cb({status:r.status,ratelimit:rl});
+        }
         return r.json().then(function(j){
           let d=null;
           try{d=JSON.parse(b64d(String(j.content||'').replace(/\n/g,'')));}catch(e){}
           if(!d||!d.settings||!Array.isArray(d.users))return cb({status:0});
-          cb(null,{db:d,sha:j.sha});
+          let et=null;try{et=r.headers&&r.headers.get&&r.headers.get('etag');}catch(e){}
+          cb(null,{db:d,sha:j.sha,etag:et});
         });
       })
       .catch(function(){cb({network:true});});
   }catch(e){cb({network:true});}
 }
-function mergeCloudDb(remote){
-  const merged=JSON.parse(JSON.stringify(db));
-  const idsOf=function(a){const m={};(a||[]).forEach(function(x){if(x&&x.id!==undefined)m[x.id]=x;});return m;};
+/* ---- v6.20: স্মার্ট সিঙ্ক — ডিফ-ভিত্তিক মার্জ ----
+   শেষ সফল সিঙ্কের স্ন্যাপশট (base) থেকে এখনকার লোকাল ডেটার পরিবর্তন (যোগ/বদল/মুছে-ফেলা)
+   বের করে ঠিক সেটাই ক্লাউডে বসানো হয় — ফলে ডিলিট আর ফিরে আসে না, আর পরিবর্তন না থাকলে
+   পুরনো-ডেটার ডিভাইস কখনোই ক্লাউড রোলব্যাক করতে পারে না। ---- */
+const CLOUD_BASE_KEY='caseLedgerCloudBaseV6';
+function baseGet(){try{return storage.getItem(CLOUD_BASE_KEY);}catch(e){return null;}}
+function baseSet(str){try{storage.setItem(CLOUD_BASE_KEY,str);}catch(e){}}
+function baseClear(){try{storage.removeItem(CLOUD_BASE_KEY);}catch(e){}}
+function diffDb(baseStr,cur){
+  let b=null;try{b=baseStr?JSON.parse(baseStr):null;}catch(e){}
+  if(!b)return {clean:false,noBase:true,collections:{},settings:{}};
+  const out={clean:true,collections:{},settings:{}};
   ['officers','cases','expenses','users','recycleBin'].forEach(function(k){
-    const lm=idsOf(db[k]);(remote[k]||[]).forEach(function(x){if(x&&x.id!==undefined&&!lm[x.id])merged[k].push(x);});
+    const bm={};(b[k]||[]).forEach(function(x){if(x&&x.id!==undefined)bm[String(x.id)]=x;});
+    const cm={};(cur[k]||[]).forEach(function(x){if(x&&x.id!==undefined)cm[String(x.id)]=x;});
+    const add=[],chg=[],rm=[];
+    Object.keys(cm).forEach(function(id){if(!bm[id])add.push(cm[id]);else if(JSON.stringify(bm[id])!==JSON.stringify(cm[id]))chg.push(cm[id]);});
+    Object.keys(bm).forEach(function(id){if(!cm[id])rm.push(id);});
+    if(add.length||chg.length||rm.length)out.collections[k]={added:add,changed:chg,removed:rm};
   });
-  /* v6.19: মামলা/রশিদ নম্বর ডাবল না হতে দুই দিকের কাউন্টারের বড়টি রাখা হয় */
-  try{
-    ['caseSeq','receiptSeq'].forEach(function(k){
-      const rs=remote&&remote.settings&&remote.settings[k],ms=merged.settings&&merged.settings[k];
-      if(rs&&ms&&String(rs.year)===String(ms.year)&&Number(rs.n)>Number(ms.n))ms.n=rs.n;
+  const bs=b.settings||{},cs=cur.settings||{};
+  Object.keys(cs).forEach(function(k){if(JSON.stringify(bs[k])!==JSON.stringify(cs[k]))out.settings[k]=cs[k];});
+  if(Object.keys(out.collections).length||Object.keys(out.settings).length)out.clean=false;
+  return out;
+}
+function applyDiff(target,d){
+  if(!d)return target;
+  Object.keys(d.collections||{}).forEach(function(k){
+    const c=d.collections[k];if(!target[k])target[k]=[];
+    (c.removed||[]).forEach(function(id){target[k]=target[k].filter(function(x){return String(x.id)!==String(id);});});
+    (c.added||[]).forEach(function(rec){if(!target[k].some(function(x){return String(x.id)===String(rec.id);}))target[k].push(rec);});
+    (c.changed||[]).forEach(function(rec){const i=target[k].findIndex(function(x){return String(x.id)===String(rec.id);});if(i>=0)target[k][i]=rec;else target[k].push(rec);});
+  });
+  if(target.settings&&d.settings){
+    Object.keys(d.settings).forEach(function(k){
+      if(k==='caseSeq'||k==='receiptSeq'){
+        try{const r=d.settings[k],t=target.settings[k];if(r&&t&&String(r.year)===String(t.year)&&Number(t.n)>Number(r.n))return;}catch(e){}
+      }
+      target.settings[k]=d.settings[k];
     });
-  }catch(e){}
-  return merged;
+  }
+  return target;
 }
 function cloudApplyRemote(rdb){
   try{if($('modal-root').innerHTML)return false;}catch(e){}
@@ -920,15 +956,31 @@ function scheduleCloudPush(){
   try{clearTimeout(cloudTimer);}catch(e){}
   cloudTimer=setTimeout(function(){cloudTimer=null;cloudPushNow(null);},4000);
 }
-function cloudPullNow(cb){
+function cloudPullNow(cb,force){
   const c=cloudCfg();if(!c)return cb&&cb('nocfg');
+  if(!force&&Date.now()<cloudBackoffUntil)return cb&&cb('backoff');
+  if(cloudBusy)return cb&&cb('busy');
+  cloudBusy=true;
   cloudGetRemote(function(err,r){
-    if(err){cloudStatus(err&&err.status===403?'⛔ টোকেন বাতিল বা পড়ার অনুমতি নেই — নতুন টোকেন দিয়ে আবার Connect করুন':'⚠️ ক্লাউড থেকে আনা গেল না — নেটওয়ার্ক দেখুন');return cb&&cb(err);}
-    if(r.empty){cloudStatus('☁️ ক্লাউড খালি — এখনো কোনো ডেটা পাঠানো হয়নি');return cb&&cb('empty');}
-    if(cloudDirty)return cb&&cb('dirty');
+    if(err){
+      if(err&&err.status===403&&err.ratelimit){cloudBackoffUntil=Date.now()+300000;cloudStatus('⏳ GitHub-এর অনুরোধ-সীমা পূর্ণ — কিছুক্ষণ পরে নিজে থেকেই চেষ্টা হবে');}
+      else{cloudStatus(err&&err.status===403?'⛔ টোকেন বাতিল বা পড়ার অনুমতি নেই — নতুন টোকেন দিয়ে আবার Connect করুন':'⚠️ ক্লাউড থেকে আনা গেল না — নেটওয়ার্ক দেখুন');}
+      cloudBusy=false;return cb&&cb(err);
+    }
+    if(r.empty){cloudStatus('☁️ ক্লাউড খালি — এখনো কোনো ডেটা পাঠানো হয়নি');cloudBusy=false;return cb&&cb('empty');}
+    if(cloudDirty){cloudBusy=false;return cb&&cb('dirty');}
+    if(r.notmodified){c.lastSync=Date.now();cloudSet(c);cloudBusy=false;cloudStatus('☁️ সিঙ্কড · '+new Date().toLocaleTimeString());return cb&&cb(null,r);}
+    if(c.readOnly&&!force){
+      const dRO=diffDb(baseGet(),db);
+      if(!dRO.clean&&!dRO.noBase){
+        cloudStatus('✍️ এই ডিভাইসে লোকাল পরিবর্তন আছে কিন্তু সংযোগ শুধু-পড়া — Admin-এর কাছে লেখার টোকেন চান (Refresh Now চাপলে লোকাল পরিবর্তন বাদ দিয়ে ক্লাউডের ডেটা আসবে)');
+        cloudBusy=false;return cb&&cb('rolcoal');
+      }
+    }
     window.__cloudOffline=false;
-    cloudApplyRemote(r.db);
-    c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
+    if(cloudApplyRemote(r.db))baseSet(JSON.stringify(r.db));
+    c.sha=r.sha;c.lastSync=Date.now();if(r.etag)c.etag=r.etag;cloudSet(c);
+    cloudBusy=false;
     cloudStatus('☁️ সিঙ্কড · '+new Date().toLocaleTimeString());
     cb&&cb(null,r);
   });
@@ -936,56 +988,99 @@ function cloudPullNow(cb){
 function cloudPushNow(cb){
   const c=cloudCfg();if(!c)return cb&&cb('nocfg');
   if(c.readOnly)return cb&&cb('ro');
+  if(Date.now()<cloudBackoffUntil)return cb&&cb('backoff');
+  if(cloudBusy)return cb&&cb('busy');
+  cloudBusy=true;
   cloudStatus('⏳ ক্লাউডে সেভ হচ্ছে…');
   cloudGetRemote(function(err,r){
-    if(err&&err.network){cloudDirty=true;window.__cloudOffline=true;cloudStatus('⚠️ অফলাইন — সংযোগ ফিরলে সেভ হবে');renderBanners();return cb&&cb(err);}
+    if(err&&err.network){cloudDirty=true;window.__cloudOffline=true;cloudStatus('⚠️ অফলাইন — সংযোগ ফিরলে সেভ হবে');renderBanners();cloudBusy=false;return cb&&cb(err);}
     let payloadDb=db;
+    let pushDiff=null;
     if(r&&r.db&&!window.__forceCloudPush){
-      payloadDb=mergeCloudDb(r.db);db=payloadDb;saveLocal();
-      if(currentUser){const ku=db.users.find(function(u){return u.id===currentUser.id;});if(ku)currentUser=ku;}
+      const bb=baseGet();
+      if(bb){
+        pushDiff=diffDb(bb,db);
+        if(pushDiff.clean){
+          /* লোকাল পরিবর্তন নেই — PUT হবে না (পুরনো-ডেটার ডিভাইস ক্লাউড রোলব্যাক করতে পারবে না) */
+          cloudDirty=false;window.__cloudOffline=false;
+          c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);baseSet(JSON.stringify(db));
+          cloudStatus('☁️ ইতিমধ্যে সিঙ্কড · '+new Date().toLocaleTimeString());
+          renderBanners();cloudBusy=false;return cb&&cb(null,{skipped:true});
+        }
+        payloadDb=applyDiff(JSON.parse(JSON.stringify(r.db)),pushDiff);
+        db=payloadDb;saveLocal();
+        if(currentUser){const ku=db.users.find(function(u){return u.id===currentUser.id;});if(ku)currentUser=ku;}
+      }
     }
     const attempt=function(sha){
       const body={message:'CaseLedger update '+new Date().toISOString(),content:b64e(JSON.stringify(payloadDb))};
       if(sha)body.sha=sha;
       try{
         ghFetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/contents/db.json',{method:'PUT',headers:ghHeaders(c),body:JSON.stringify(body)})
-          .then(function(res){return res.json().catch(function(){return {};}).then(function(j){j.__status=res.status;return j;});})
+          .then(function(res){return res.json().catch(function(){return {};}).then(function(j){j.__status=res.status;j.__rl=(function(){try{return res.headers&&res.headers.get&&String(res.headers.get('x-ratelimit-remaining'))==='0';}catch(e){return false;}})();return j;});})
           .then(function(j){
             if(j.__status===409){
               cloudGetRemote(function(e2,r2){
-                if(r2&&r2.db){payloadDb=mergeCloudDb(r2.db);db=payloadDb;saveLocal();}
+                if(r2&&r2.db){payloadDb=(pushDiff&&!window.__forceCloudPush)?applyDiff(JSON.parse(JSON.stringify(r2.db)),pushDiff):db;db=payloadDb;saveLocal();}
                 attempt(r2&&r2.sha);
-              });
+              },{full:true});
             }else if(j.__status===403){
+              if(j.__rl){cloudBackoffUntil=Date.now()+300000;cloudDirty=true;cloudBusy=false;cloudStatus('⏳ GitHub-এর অনুরোধ-সীমা পূর্ণ — কিছুক্ষণ পরে নিজে থেকেই সেভ হবে');return cb&&cb('ratelimit');}
               c.readOnly=true;cloudSet(c);cloudDirty=false;
               cloudStatus('👁️ শুধু-পড়া কানেকশন — এই ডিভাইস থেকে সেভ হবে না');
-              cb&&cb('ro');
+              cloudBusy=false;cb&&cb('ro');
             }else if(j&&j.content&&j.content.sha){
               cloudDirty=false;window.__cloudOffline=false;window.__forceCloudPush=false;
-              c.sha=j.content.sha;c.lastSync=Date.now();cloudSet(c);
+              c.sha=j.content.sha;c.lastSync=Date.now();cloudSet(c);baseSet(JSON.stringify(db));
+              cloudBusy=false;
               cloudStatus('☁️ সেভ হয়েছে · '+new Date().toLocaleTimeString());
               renderBanners();
               cb&&cb(null,j);
             }else{
-              cloudDirty=true;cloudStatus('⚠️ সেভ ব্যর্থ (HTTP '+(j.__status||'?')+') — আবার চেষ্টা হবে');
+              cloudDirty=true;cloudBusy=false;cloudStatus('⚠️ সেভ ব্যর্থ (HTTP '+(j.__status||'?')+') — আবার চেষ্টা হবে');
               cb&&cb({status:j.__status});
             }
           })
-          .catch(function(){cloudDirty=true;cloudStatus('⚠️ সেভ ব্যর্থ — নেটওয়ার্ক দেখুন');cb&&cb({network:true});});
-      }catch(e){cloudDirty=true;cb&&cb({network:true});}
+          .catch(function(){cloudDirty=true;cloudBusy=false;cloudStatus('⚠️ সেভ ব্যর্থ — নেটওয়ার্ক দেখুন');cb&&cb({network:true});});
+      }catch(e){cloudDirty=true;cloudBusy=false;cb&&cb({network:true});}
     };
     attempt(r&&r.sha);
-  });
+  },{full:true});
 }
+/* ---- v6.21: লাইভ-ফিল — ট্যাব-ফোকাস/নেট-ফিরলে সাথে সাথে সিঙ্ক + ২০ সে. টিক ---- */
+let cloudBusy=false,cloudResumeLast=0,cloudBackoffUntil=0;
+function cloudResumeSync(){
+  if(!PERSIST||!currentUser)return;
+  if(Date.now()<cloudBackoffUntil)return;
+  if(Date.now()-cloudResumeLast<5000)return;
+  cloudResumeLast=Date.now();
+  const c=cloudCfg();if(!c)return;
+  try{if($('modal-root').innerHTML)return;}catch(e){}
+  if(cloudDirty)cloudPushNow(null);else cloudPullNow(null);
+}
+function cloudTick(){
+  if(!PERSIST||!currentUser)return;
+  if(Date.now()<cloudBackoffUntil)return;
+  const c=cloudCfg();if(!c)return;
+  try{if($('modal-root').innerHTML)return;}catch(e){}
+  if(cloudDirty)cloudPushNow(null);else cloudPullNow(null);
+}
+function syncChipRender(){
+  const el=$('sync-chip');if(!el)return;
+  const c=cloudCfg();
+  if(!c||!currentUser){el.style.display='none';return;}
+  el.style.display='inline-block';
+  if(cloudLastStatus.indexOf('⏳')>=0){el.textContent='☁️ ⏳';return;}
+  el.textContent='☁️ '+(c.lastSync?new Date(c.lastSync).toLocaleTimeString():'—');
+}
+try{document.addEventListener('visibilitychange',function(){if(!document.visibilityState||document.visibilityState==='visible')cloudResumeSync();});}catch(e){}
+try{window.addEventListener('online',function(){window.__cloudOffline=false;try{renderBanners();}catch(e2){}cloudResumeSync();});}catch(e){}
+try{window.addEventListener('focus',function(){cloudResumeSync();});}catch(e){}
 function cloudStartTimers(){
   if(!PERSIST)return;
   try{clearInterval(cloudPullTimer);}catch(e){}
   const c=cloudCfg();if(!c)return;
-  cloudPullTimer=setInterval(function(){
-    if(!currentUser||cloudDirty)return;
-    try{if($('modal-root').innerHTML)return;}catch(e){}
-    cloudPullNow(null);
-  },45000);
+  cloudPullTimer=setInterval(cloudTick,20000);
 }
 function openCloudConnect(fromSetup){
   sess.cloudFromSetup=!!fromSetup;
@@ -1026,7 +1121,7 @@ function doCloudConnect(){
               '<button class="btn btn-primary" onclick="cloudPushInitial()">⬆️ এই ডিভাইসের ডেটা ক্লাউডে পাঠান</button>'+
               '<button class="btn btn-ghost" style="margin-top:6px" onclick="closeModal()">পরে করবো</button>');
           }
-        });
+        },{full:true});
       })
       .catch(function(){cloudStatus('❌ নেটওয়ার্ক সমস্যা');});
   }catch(e){cloudStatus('❌ নেটওয়ার্ক সমস্যা');}
@@ -1034,7 +1129,7 @@ function doCloudConnect(){
 function cloudPullReplace(){
   cloudGetRemote(function(err,r){
     if(err||!r||!r.db)return cloudStatus('❌ ডেটা আনা গেল না');
-    db=r.db;ensureDefaults(db);saveLocal();
+    db=r.db;ensureDefaults(db);saveLocal();baseSet(JSON.stringify(db));
     const c=cloudCfg();c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
     window.__cloudOffline=false;
     closeModal();
@@ -1043,7 +1138,7 @@ function cloudPullReplace(){
     cloudStartTimers();
     cloudStatus('☁️ ক্লাউডের ডেটা এসে গেছে · '+new Date().toLocaleTimeString());
     toast('✅ ক্লাউড থেকে ডেটা এসে গেছে');
-  });
+  },{full:true});
 }
 function cloudPushInitial(){
   cloudPushNow(function(e){
@@ -1052,7 +1147,7 @@ function cloudPushInitial(){
 }
 function disconnectCloud(){
   askConfirm('Disconnect Cloud','এই ব্রাউজার আর ক্লাউডে সিঙ্ক হবে না। ডেটা মুছবে না — শুধু সংযোগ বিচ্ছিন্ন হবে।','Disconnect',function(){
-    cloudClear();cloudCancelTimers();cloudLastStatus='';cloudDirty=false;cloudStatusRender();renderBanners();toast('🔌 ক্লাউড বিচ্ছিন্ন হয়েছে');
+    cloudClear();baseClear();cloudCancelTimers();cloudLastStatus='';cloudDirty=false;cloudStatusRender();renderBanners();toast('🔌 ক্লাউড বিচ্ছিন্ন হয়েছে');
   });
 }
 
@@ -1105,6 +1200,7 @@ function tryLogin(){
     try{$('pinError').textContent='⏳ যাচাই করা হচ্ছে…';$('pinError').style.display='block';}catch(e){}
     cloudGetRemote(function(err,r){
       if(err&&err.network)return guestLoginFail('⚠️ ইন্টারনেট সংযোগ নেই — আবার চেষ্টা করুন');
+      if(err&&err.status===403&&err.ratelimit)return guestLoginFail('⏳ GitHub-এর অনুরোধ-সীমা পূর্ণ — কিছুক্ষণ পরে আবার চেষ্টা করুন');
       if(err&&err.status===403)return guestLoginFail('⛔ প্রবেশ-চাবি বাতিল হয়েছে — নতুন গেস্ট লিংকের জন্য অনুরোধ করুন');
       if(err)return guestLoginFail('⚠️ ক্লাউড থেকে ডেটা আনা গেল না — একটু পরে আবার চেষ্টা করুন');
       if(!r||!r.db)return guestLoginFail('⚠️ ক্লাউডে এখনো কোনো ডেটা নেই');
@@ -1112,7 +1208,7 @@ function tryLogin(){
       let gu=null;
       if(gn){const byPh=r.db.users.find(x=>normPhone(x.phone)===gn);if(byPh&&verifyPin(byPh,pin))gu=byPh;}
       if(!gu){noteLoginFail();return guestLoginFail('❌ ভুল নম্বর বা PIN — আবার চেষ্টা করুন');}
-      db=r.db;ensureDefaults(db);saveLocal();
+      db=r.db;ensureDefaults(db);saveLocal();baseSet(JSON.stringify(db));
       const gc=cloudCfg();if(gc){gc.sha=r.sha;gc.lastSync=Date.now();cloudSet(gc);}
       window.__cloudOffline=false;
       sess.loginUserId=gu.id;
@@ -1122,7 +1218,7 @@ function tryLogin(){
       noteLoginSuccess();
       cloudStartTimers();
       cloudStatus('☁️ গেস্ট-মোড · শুধু পড়া · সিঙ্কড '+new Date().toLocaleTimeString());
-    });
+    },{full:true});
     return;
   }
   const n=normPhone(raw);
@@ -1314,6 +1410,7 @@ function renderBanners(){
     html+='<div class="banner banner-warn"><span>⚠️ ক্লাউড সংযোগ নেই — এই ডিভাইসের লোকাল কপি দেখানো হচ্ছে। সংযোগ ফিরলে নিজে থেকেই সিঙ্ক হবে।</span></div>';
   }
   $('banner-root').innerHTML=html;
+  syncChipRender();
 }
 
 /* ==================== auto-lock ==================== */
@@ -2722,10 +2819,23 @@ function boot(){
     cloudStatus('⏳ ক্লাউড থেকে ডেটা আনা হচ্ছে…');
     cloudGetRemote(function(err,r){
       if(!err&&r&&r.db){
-        db=r.db;ensureDefaults(db);saveLocal();
+        const bb=baseGet();
+        const dd=bb?diffDb(bb,db):null;
+        if(!bb||!dd||dd.clean){
+          db=r.db;ensureDefaults(db);saveLocal();baseSet(JSON.stringify(db));
+        }else if(cloudCfg()&&cloudCfg().readOnly){
+          cloudStatus('✍️ এই ডিভাইসে লোকাল পরিবর্তন আছে কিন্তু সংযোগ শুধু-পড়া — লেখার টোকেন ছাড়া ক্লাউডে যাবে না');
+        }else{
+          cloudDirty=true;
+          cloudStatus('⏳ এই ডিভাইসের অসিঙ্কড পরিবর্তন ক্লাউডে মার্জ হচ্ছে…');
+          scheduleCloudPush();
+        }
         const c=cloudCfg();c.sha=r.sha;c.lastSync=Date.now();cloudSet(c);
       }else if(err&&err.network){
         window.__cloudOffline=true;
+      }else if(err&&err.status===403&&err.ratelimit){
+        cloudBackoffUntil=Date.now()+300000;
+        cloudStatus('⏳ GitHub-এর অনুরোধ-সীমা পূর্ণ — কিছুক্ষণ পরে নিজে থেকেই চেষ্টা হবে');
       }else if(err&&err.status===403){
         const c=cloudCfg();if(c){c.readOnly=true;cloudSet(c);}
       }
@@ -2740,5 +2850,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e190326f6b48ff',t:'MTc4OTkxNDk5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fab81a98515ed9',t:'MTc5MDE3ODc3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
