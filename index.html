@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.23</title>
+<title>Case Writer Pro v6.24</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -283,7 +283,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.23</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.24</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -317,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.23 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.24 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -554,7 +554,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.23 (Final) · PC + Mobile · Smart Cloud Sync · 24 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.24 (Final) · PC + Mobile · Smart Cloud Sync · 24 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -1712,6 +1712,7 @@ function fallbackCopy(){
 
 /* ==================== recycle bin core ==================== */
 function restoreItem(binId){
+  if(!can('delete'))return toast('⛔ Permission নেই');
   const i=db.recycleBin.findIndex(b=>b.id===binId);
   if(i<0)return toast('খুঁজে পাওয়া যায়নি');
   const item=db.recycleBin[i];
@@ -1748,6 +1749,25 @@ function visibleOfficers(){const oid=myOfficerId();return oid?db.officers.filter
 function prEmoji(p){return {Critical:'🔴',High:'🟠',Medium:'🟡',Low:'🟢'}[p]||'🟡';}
 const PRIO_ORDER={Critical:0,High:1,Medium:2,Low:3};
 function isUnderInvestigation(c){return c.status==='New'||c.status==='Running';}
+/* ---- v6.24: অফিসার-লেজার নিয়ম — নিষ্পত্তি-হওয়া মামলার হিসাব লুকানো ---- */
+function officerFullSummary(){try{return !!(currentUser&&currentUser.role==='officer'&&currentUser.fullSummary===true);}catch(e){return false;}}
+function caseMoneyVisible(c){
+  try{
+    if(!myOfficerId())return true;
+    if(officerFullSummary())return true;
+    const st=String(c.status||'');
+    if(st==='Closed')return false;
+    if(st==='Completed')return caseDue(c)>0;
+    return true;
+  }catch(e){return true;}
+}
+function finLockNote(){return '<span title="নিষ্পত্তি-হওয়া মামলার হিসাব লুকানো আছে">🔒</span>';}
+function toggleOfficerSummary(id){
+  if(!currentUser||currentUser.role!=='superadmin')return toast('⛔ শুধু Super Admin এই অনুমতি বদলাতে পারবেন');
+  const u=db.users.find(x=>x.id===id);if(!u||u.role!=='officer')return;
+  u.fullSummary=u.fullSummary===true?false:true;saveDb();renderUsers();
+  toast(u.fullSummary===true?('✅ '+u.name+' এখন তাঁর সব মামলার পূর্ণ হিসাব দেখতে পারবেন'):('🔒 '+u.name+' এখন শুধু চলমান ও বকেয়া মামলার হিসাব দেখবেন'));
+}
 function isCDCase(c){return c.caseType==='GR'||c.caseType==='Unnatural Death'||c.caseType==='UD';}
 function lastCDDate(c){const cds=c.caseCDs||[];let d='';cds.forEach(x=>{if(x.date&&x.date>d)d=x.date;});return d||(c.openingDate||'');}
 function cdAgeDays(c){const ref=lastCDDate(c);if(!ref)return 0;return Math.max(0,daysBetween(ref,todayISO()));}
@@ -1835,7 +1855,7 @@ function renderDashboard(){
   const crArr=casesIn.filter(c=>c.caseType==='CR'&&isUnderInvestigation(c));
   const cdArr=casesIn.filter(c=>isCDCase(c)&&isUnderInvestigation(c)&&cdOverdue(c));
   const iso=!!myOfficerId();
-  const finCs=iso?casesIn.filter(c=>isUnderInvestigation(c)&&caseDue(c)>0):casesIn;
+  const finCs=iso?casesIn.filter(caseMoneyVisible):casesIn;
   let paidIn=0;
   const paySrc=iso?finCs:visibleCases();
   paySrc.forEach(c=>{if(!iso&&!S.actIds.has(c.officerId))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))paidIn+=+p.amount||0;});});
@@ -1854,12 +1874,13 @@ function renderDashboard(){
     statBox('📂','CR Case',fmt(crArr.length),'st-b',"openStatDetail('cr')")+
     statBox('💿','Case CD',fmt(cdArr.length),cdArr.length>0?'st-r':'st-g',"openStatDetail('cd')")+
     '</div>';
-  if(canFin()){
+  if(canFin()&&(iso?officerFullSummary()||finCs.length>0:true)){
     h+='<div class="stats">'+
       statBox('🤝','Total Deal',tk(dealIn),'st-p',"openStatDetail('deal')")+
       statBox('💰','Collected',tk(paidIn),'st-b',"openStatDetail('collected')")+
       statBox('🧾','Total Due',tk(dueIn),'st-r',"openStatDetail('due')")+
       '</div>';
+    if(iso&&!officerFullSummary())h+='<div class="case-meta" style="margin-top:8px">📊 <b>চলমান ও বকেয়া মামলার সর্বমোট</b> — নিষ্পত্তি-হওয়া (সম্পূর্ণ পরিশোধিত/Closed) মামলার হিসাব 🔒 লুকানো আছে</div>';
     if(can('financial'))h+='<div class="stats c2">'+
       statBox('💸','Expense',tk(expIn),'st-y',"openStatDetail('expense')")+
       statBox('📈','Net Income',tk(paidIn-expIn),(paidIn-expIn)>=0?'st-g':'st-r',"openStatDetail('net')")+
@@ -1873,7 +1894,7 @@ function renderDashboard(){
 function statDetailData(type){
   const S=dashScope();
   const cs=S.casesIn,rg=S.rg,today=todayISO();
-  const dcs=myOfficerId()?cs.filter(c=>isUnderInvestigation(c)&&caseDue(c)>0):cs;
+  const dcs=myOfficerId()?cs.filter(caseMoneyVisible):cs;
   const fin=canFin();
   const rangeNote=(rg.from||rg.to)?('সময়কাল: '+(rg.from?fmtD(rg.from):'শুরু')+' থেকে '+(rg.to?fmtD(rg.to):'আজ')):'সময়কাল: সব সময়';
   const money=v=>'<b style="color:var(--navy)">'+tk(v)+'</b>';
@@ -1883,9 +1904,9 @@ function statDetailData(type){
   let title='',sumTxt='',list='',table='';
   if(type==='total'){
     title='📁 Total Cases';
-    sumTxt=cs.length+'টি মামলা'+(fin?(' · মোট Deal: '+tk(cs.reduce((a,c)=>a+(+c.dealAmount||0),0))):'');
-    list=cs.map(c=>caseRow(c,fin?money(c.dealAmount):'')).join('');
-    table='<table><tr>'+TH6+(fin?'<th>Deal</th>':'')+'</tr>'+cs.map(c=>cTr(c,fin?('৳'+fmt(c.dealAmount)):undefined)).join('')+'</table>';
+    sumTxt=cs.length+'টি মামলা'+(fin?(' · মোট Deal: '+tk(dcs.reduce((a,c)=>a+(+c.dealAmount||0),0))+(myOfficerId()&&!officerFullSummary()?' (চলমান ও বকেয়া মামলা)':'')):'');
+    list=cs.map(c=>caseRow(c,fin?(caseMoneyVisible(c)?money(c.dealAmount):finLockNote()):'')).join('');
+    table='<table><tr>'+TH6+(fin?'<th>Deal</th>':'')+'</tr>'+cs.map(c=>cTr(c,fin?(caseMoneyVisible(c)?('৳'+fmt(c.dealAmount)):'🔒'):undefined)).join('')+'</table>';
   }else if(type==='active'){
     const arr=cs.filter(isUnderInvestigation);
     title='⚙️ Active Cases (তদন্তাধীন)';
@@ -1942,7 +1963,7 @@ function statDetailData(type){
     if(!fin)return {title:title,rangeNote:rangeNote,sumTxt:'',list:'<p class="small muted">⛔ Financial data — permission নেই।</p>',table:''};
     const pays=[];
     const cSrc=myOfficerId()?dcs:visibleCases();
-    cSrc.forEach(c=>{if(!myOfficerId()&&!S.actIds.has(c.officerId))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))pays.push({c:c,p:p});});});
+    cSrc.forEach(c=>{if(!myOfficerId()&&!S.actIds.has(c.officerId))return;if(myOfficerId()&&!caseMoneyVisible(c))return;(c.payments||[]).forEach(p=>{if(inRange(p.date,rg.from,rg.to))pays.push({c:c,p:p});});});
     pays.sort((a,b)=>String(b.p.date||'').localeCompare(String(a.p.date||'')));
     const tot=pays.reduce((a,x)=>a+(+x.p.amount||0),0);
     sumTxt=pays.length+'টি পেমেন্ট · মোট: '+tk(tot);
@@ -1992,7 +2013,7 @@ function renderDashAlerts(){
   }
   const today=todayISO();
   const actIdsA=new Set(activeOfficers().map(o=>o.id));
-  const open=visibleCases().filter(c=>c.deadline&&c.status!=='Completed'&&c.status!=='Closed'&&(myOfficerId()||actIdsA.has(c.officerId)));
+  const open=visibleCases().filter(c=>c.deadline&&(myOfficerId()?(officerFullSummary()?(c.status!=='Completed'&&c.status!=='Closed'):(c.status!=='Closed'&&(c.status!=='Completed'||caseDue(c)>0))):(c.status!=='Completed'&&c.status!=='Closed'))&&(myOfficerId()||actIdsA.has(c.officerId)));
   const soon=open.filter(c=>{const d=daysBetween(today,c.deadline);return d>7&&d<=30;}).sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,5);
   if(soon.length){
     html+='<div class="card"><h3>📅 Upcoming Deadlines (৮–৩০ দিন)</h3>'+
@@ -2001,7 +2022,7 @@ function renderDashAlerts(){
   }
   if(canFin()){
     const isoZ=!!myOfficerId();
-    const aged=visibleCases().filter(c=>caseDue(c)>0&&(isoZ?isUnderInvestigation(c):isActiveOfficer(c.officerId))).map(c=>({c:c,age:dueAgeDays(c)})).sort((a,b)=>b.age-a.age).filter(x=>x.age>0).slice(0,5);
+    const aged=visibleCases().filter(c=>caseDue(c)>0&&(isoZ?caseMoneyVisible(c):isActiveOfficer(c.officerId))).map(c=>({c:c,age:dueAgeDays(c)})).sort((a,b)=>b.age-a.age).filter(x=>x.age>0).slice(0,5);
     if(aged.length){
       html+='<div class="card"><h3>🔥 Old Dues (Aging)</h3>'+
         aged.map(x=>'<div class="list-item"><span><b>'+esc(officerName(x.c.officerId))+'</b> — '+esc(x.c.caseNo)+' <small class="muted">'+esc(x.c.name)+'</small></span><span><b class="red">'+tk(caseDue(x.c))+'</b> <span class="age-chip">'+x.age+'d</span></span></div>').join('')+
@@ -2063,7 +2084,7 @@ function renderRecent(){
   const el=$('dash-recent');
   if(!canFin()){el.innerHTML='<p class="small muted">Financial data — permission নেই।</p>';return;}
   const rows=[];
-  visibleCases().forEach(c=>{if(!myOfficerId()&&!isActiveOfficer(c.officerId))return;(c.payments||[]).forEach(p=>rows.push({o:officerName(c.officerId),cno:c.caseNo,p:p}));});
+  visibleCases().forEach(c=>{if(myOfficerId()&&!caseMoneyVisible(c))return;if(!myOfficerId()&&!isActiveOfficer(c.officerId))return;(c.payments||[]).forEach(p=>rows.push({o:officerName(c.officerId),cno:c.caseNo,p:p}));});
   rows.sort((a,b)=>String(b.p.date||'').localeCompare(String(a.p.date||'')));
   if(!rows.length){el.innerHTML='<p class="small muted">এখনো কোনো পেমেন্ট এন্ট্রি হয়নি।</p>';return;}
   el.innerHTML=rows.slice(0,5).map(r=>'<div class="list-item"><span><b>'+esc(r.o)+'</b> · '+esc(r.cno)+'<br><small class="muted">'+fmtD(r.p.date)+(r.p.method?' · '+esc(r.p.method):'')+'</small></span><span><b class="green">+'+tk(r.p.amount)+'</b>'+(r.p.method?' <span class="pm-chip">'+esc(r.p.method)+'</span>':'')+'</span></div>').join('');
@@ -2093,13 +2114,13 @@ function renderCases(){
   });
   if(sort==='newest')arr.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
   else if(sort==='oldest')arr.sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
-  else if(sort==='due')arr.sort((a,b)=>caseDue(b)-caseDue(a));
+  else if(sort==='due')arr.sort((a,b)=>((caseMoneyVisible(b)?caseDue(b):-1)-(caseMoneyVisible(a)?caseDue(a):-1)));
   else if(sort==='priority')arr.sort((a,b)=>PRIO_ORDER[a.priority||'Medium']-PRIO_ORDER[b.priority||'Medium']);
-  else if(sort==='deal')arr.sort((a,b)=>(+b.dealAmount||0)-(+a.dealAmount||0));
+  else if(sort==='deal')arr.sort((a,b)=>((caseMoneyVisible(b)?(+b.dealAmount||0):-1)-(caseMoneyVisible(a)?(+a.dealAmount||0):-1)));
   else if(sort==='deadline')arr.sort((a,b)=>String(a.deadline||'9999').localeCompare(String(b.deadline||'9999')));
-  else if(sort==='aging')arr.sort((a,b)=>dueAgeDays(b)-dueAgeDays(a));
-  let deal=0,due=0;arr.forEach(c=>{deal+=+c.dealAmount||0;due+=caseDue(c);});
-  $('cases-summary').innerHTML='<b>'+arr.length+'</b> case(s) found'+(canFin()?' · Deal '+tk(deal)+' · Due <span class="red">'+tk(due)+'</span>':'');
+  else if(sort==='aging')arr.sort((a,b)=>((caseMoneyVisible(b)?dueAgeDays(b):-1)-(caseMoneyVisible(a)?dueAgeDays(a):-1)));
+  let deal=0,due=0;arr.forEach(c=>{if(!caseMoneyVisible(c))return;deal+=+c.dealAmount||0;due+=caseDue(c);});
+  $('cases-summary').innerHTML='<b>'+arr.length+'</b> case(s) found'+(canFin()?' · Deal '+tk(deal)+' · Due <span class="red">'+tk(due)+'</span>'+(myOfficerId()&&!officerFullSummary()?' <span class="muted">(চলমান ও বকেয়া)</span>':''):'');
   const per=8,pages=Math.max(1,Math.ceil(arr.length/per));
   if(sess.caseFilters.page>pages)sess.caseFilters.page=1;
   const page=sess.caseFilters.page;
@@ -2119,11 +2140,13 @@ function caseCardHTML(c){
   const paid=casePaid(c),due=caseDue(c);
   const pct=(+c.dealAmount||0)>0?Math.min(100,Math.round(paid*100/(+c.dealAmount))):0;
   const age=dueAgeDays(c);
-  return '<div class="case-card '+(due>0?'alert-red':'')+'">'+
+  return '<div class="case-card '+((caseMoneyVisible(c)&&due>0)?'alert-red':'')+'">'+
     '<div class="case-head"><div><span class="case-no">'+esc(c.caseNo)+'</span> '+prEmoji(c.priority||'Medium')+'<br><b>'+esc(c.name)+'</b></div><span class="badge st-'+String(c.status||'running').toLowerCase()+'">'+esc(c.status)+'</span></div>'+
     '<div class="case-meta">👮 '+esc(officerName(c.officerId))+(c.client?' · 👤 '+esc(c.client):'')+(c.caseType?' · 📂 '+esc(c.caseType):'')+'</div>'+
     '<div class="case-meta">📅 '+fmtD(c.openingDate)+deadlineChip(c)+(isCDCase(c)&&isUnderInvestigation(c)?(cdOverdue(c)?' · <span class="age-chip">💿 CD '+cdAgeDays(c)+'d — লিখতে হবে</span>':' · <span class="pm-chip">💿 CD '+cdAgeDays(c)+'d</span>'):'')+'</div>'+
-    (canFin()?
+    (canFin()&&!caseMoneyVisible(c)?
+      '<div class="case-meta">🔒 এই মামলার হিসাব লুকানো আছে (নিষ্পত্তি হয়েছে)</div>'
+      :canFin()?
       '<div class="progress"><div style="width:'+pct+'%"></div></div>'+
       '<div class="case-fin"><span>Deal <b>'+tk(c.dealAmount)+'</b></span><span>Paid <b class="green">'+tk(paid)+'</b></span><span>Due <b class="red">'+tk(due)+'</b></span>'+(due>0&&age>0?'<span class="age-chip">⏳ '+age+'d</span>':'')+(due<=0?'<span class="paid-chip">✅ Paid</span>':'')+'</div>'
       :'<div class="case-meta">🔒 Financial data — permission নেই</div>')+
@@ -2224,9 +2247,11 @@ function openCaseModal(id){
       '<div><small>Opening Date</small><b>'+fmtD(c.openingDate)+'</b></div>'+
       '<div><small>Deadline</small><b>'+(c.deadline?fmtD(c.deadline):'—')+'</b></div>'+
       '<div><small>Status</small>'+statusSel+'</div>'+
-      '<div><small>Due Age</small><b>'+(due>0&&dueAgeDays(c)>0?dueAgeDays(c)+' days':'—')+'</b></div>'+
+      '<div><small>Due Age</small><b>'+((caseMoneyVisible(c)&&due>0&&dueAgeDays(c)>0)?dueAgeDays(c)+' days':'—')+'</b></div>'+
     '</div>'+
-    (canFin()?
+    (canFin()&&!caseMoneyVisible(c)?
+      '<div class="cm-sec"><b>🔒 হিসাব</b><p class="small muted" style="margin:6px 0 0">এই মামলার হিসাব লুকানো আছে (নিষ্পত্তি হয়েছে)।</p></div>':
+     canFin()?
       '<div class="cm-fin"><div class="fin-b">Deal<b>'+tk(c.dealAmount)+'</b></div><div class="fin-b">Paid<b class="green">'+tk(paid)+'</b></div><div class="fin-b">Due<b class="red">'+tk(due)+'</b></div></div>'+
       '<div class="progress"><div style="width:'+pct+'%"></div></div>':'')+
     (c.description?'<div class="cm-sec"><b>📝 Description</b><p class="small" style="margin:6px 0 0;white-space:pre-wrap">'+esc(c.description)+'</p></div>':'')+
@@ -2235,7 +2260,7 @@ function openCaseModal(id){
       '<div class="cm-sec"><b>➕ Add Payment</b>'+
       '<div class="flex-row"><input type="date" id="pm-date" value="'+todayISO()+'"><input type="number" id="pm-amt" placeholder="Amount ৳"><button class="btn-small" onclick="addPayment(\''+c.id+'\')">Add</button></div>'+
       '<div class="flex-row"><select id="pm-method">'+db.settings.paymentMethods.map(m=>'<option'+(m==='Cash'?' selected':'')+'>'+esc(m)+'</option>').join('')+'</select><input id="pm-note" placeholder="Note (optional)"></div></div>':'')+
-    (canFin()?'<div class="cm-sec"><b>🧾 Payments ('+(c.payments||[]).length+')</b>'+(payHtml||'<p class="small muted" style="margin:6px 0 0">কোনো পেমেন্ট নেই।</p>')+'</div>':'')+
+    (canFin()&&caseMoneyVisible(c)?'<div class="cm-sec"><b>🧾 Payments ('+(c.payments||[]).length+')</b>'+(payHtml||'<p class="small muted" style="margin:6px 0 0">কোনো পেমেন্ট নেই।</p>')+'</div>':'')+
     cdSection+
     '<div class="case-actions">'+
       (can('edit')?'<button class="btn-small btn-ghost" onclick="openCaseForm(\''+c.id+'\')">✏️ Edit</button>':'')+
@@ -2364,7 +2389,7 @@ function printCase(id){
   const c=db.cases.find(x=>x.id===id);if(!c)return;
   if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
   const o=officerById(c.officerId);
-  const fin=canFin();
+  const fin=canFin()&&caseMoneyVisible(c);
   const rows=(c.payments||[]).map(p=>'<tr><td>'+fmtD(p.date)+'</td><td>'+esc(p.receiptNo||'—')+'</td><td>'+esc(p.method||'—')+'</td><td>'+esc(p.note||'')+'</td><td style="text-align:right">৳'+fmt(p.amount)+'</td></tr>').join('');
   printDoc('Case Report — '+esc(c.caseNo),
     '<table>'+
@@ -2394,6 +2419,7 @@ function openReminderPicker(caseId){
 function sendCaseReminder(caseId,tplId){
   if(!can('financial'))return toast('⛔ Financial permission নেই');
   const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  if(myOfficerId()&&!caseMoneyVisible(c))return toast('⛔ এই মামলার হিসাব লুকানো — রিমাইন্ডার পাঠানো যাবে না');
   const t=tplById(tplId);if(!t)return;
   const o=officerById(c.officerId);
   const ctx=caseCtx(c);
@@ -2404,6 +2430,7 @@ function sendReceipt(caseId,payId){
   const c=db.cases.find(x=>x.id===caseId);if(!c)return;
   if(!canFin())return toast('⛔ Financial permission নেই');
   if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  if(myOfficerId()&&!caseMoneyVisible(c))return toast('⛔ এই মামলার হিসাব লুকানো — রশিদ পাঠানো যাবে না');
   const p=(c.payments||[]).find(x=>x.id===payId);if(!p)return;
   const o=officerById(c.officerId);
   const tpl=db.settings.templates.find(x=>x.type==='receipt')||builtinTpl('receipt');
@@ -2418,7 +2445,7 @@ function renderOfficers(){
   const arr=visibleOfficers().filter(o=>!q||String(o.name).toLowerCase().includes(q)||String(o.phone||'').includes(q));
   $('officers-list').innerHTML=arr.map(o=>{
     const cs=db.cases.filter(c=>c.officerId===o.id);
-    let due=0;cs.forEach(c=>due+=caseDue(c));
+    let due=0;cs.forEach(c=>{if(caseMoneyVisible(c))due+=caseDue(c);});
     const inactive=o.active===false;
     return '<div class="officer-card '+(due>0?'alert-red':'')+(inactive?' inactive':'')+'" onclick="openProfile(\''+o.id+'\')">'+
       '<div class="off-avatar">'+esc(initials(o.name))+'</div>'+
@@ -2491,7 +2518,7 @@ function renderProfile(){
   if(myOfficerId()&&String(o.id)!==String(myOfficerId())){go('officers');return;}
   $('header-title').textContent=o.name;
   const cs=db.cases.filter(c=>c.officerId===o.id);
-  let tot=0,paid=0;cs.forEach(c=>{tot+=+c.dealAmount||0;paid+=casePaid(c);});
+  let tot=0,paid=0;cs.forEach(c=>{if(!caseMoneyVisible(c))return;tot+=+c.dealAmount||0;paid+=casePaid(c);});
   const due=tot-paid;
   const active=cs.filter(c=>c.status==='New'||c.status==='Running').length;
   let h='<div class="pf-top"><div class="off-avatar big">'+esc(initials(o.name))+'</div>'+
@@ -2500,8 +2527,9 @@ function renderProfile(){
   if(o.address)h+='<div class="case-meta">📍 '+esc(o.address)+'</div>';
   if(o.note)h+='<div class="case-meta">🗒️ '+esc(o.note)+'</div>';
   if(o.active===false)h+='<div class="case-meta" style="color:var(--red);font-weight:700">⛔ এই Officer Inactive — তাঁর মামলার হিসাব ড্যাশবোর্ডে যাবে না (এই প্রোফাইলে সব হিসাব দেখা যাবে)</div>';
-  if(canFin()){
+  if(canFin()&&(myOfficerId()?(officerFullSummary()||cs.some(caseMoneyVisible)):true)){
     h+='<div class="stats">'+statBox('🤝','Deal',tk(tot),'st-p')+statBox('💰','Paid',tk(paid),'st-b')+statBox('🧾','Due',tk(due),'st-r')+'</div>';
+    if(myOfficerId())h+='<div class="case-meta" style="margin-top:8px">'+(officerFullSummary()?'🔓 পূর্ণ হিসাব (Admin-অনুমতি চালু) — সব মামলার আজীবন সর্বমোট':'📊 <b>চলমান ও বকেয়া মামলার সর্বমোট</b> — নিষ্পত্তি-হওয়া মামলার হিসাব 🔒 লুকানো')+'</div>';
   }
   h+='<div class="case-actions">'+
     (can('financial')&&due>0?'<button class="btn-small btn-wa" onclick="openOfficerReminder(\''+o.id+'\')">📱 Reminder</button>':'')+
@@ -2529,8 +2557,8 @@ function sendOfficerReminder(oid,tplId){
   if(!can('financial'))return toast('⛔ Financial permission নেই');
   const o=officerById(oid);if(!o)return;
   const t=tplById(tplId);if(!t)return;
-  const cs=db.cases.filter(c=>c.officerId===oid);
-  let tot=0,paid=0;cs.forEach(c=>{tot+=+c.dealAmount||0;paid+=casePaid(c);});
+  const cs=db.cases.filter(c=>c.officerId===oid&&caseMoneyVisible(c));
+  let tot=0,paid=0;cs.forEach(c=>{if(!caseMoneyVisible(c))return;tot+=+c.dealAmount||0;paid+=casePaid(c);});
   const due=tot-paid;
   const dueCases=cs.filter(c=>caseDue(c)>0);
   const block=dueCases.map(c=>'• '+c.caseNo+' | '+c.name+' | Due ৳'+fmt(caseDue(c))).join('\n');
@@ -2555,7 +2583,7 @@ function buildStatement(oid){
   const o=officerById(oid);if(!o)return;
   if(myOfficerId()&&String(oid)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
   const ym=$('stmt-m').value||todayISO().slice(0,7);
-  const cases=db.cases.filter(c=>c.officerId===oid).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
+  const cases=db.cases.filter(c=>c.officerId===oid&&caseMoneyVisible(c)).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
   let tot=0,paid=0,monthCol=0;
   const lines=cases.map(c=>{
     const p=casePaid(c);tot+=+c.dealAmount||0;paid+=p;
@@ -2577,7 +2605,7 @@ function printStatement(oid,ym){
   if(!can('financial'))return toast('⛔ Financial permission নেই');
   const o=officerById(oid);if(!o)return;
   if(myOfficerId()&&String(oid)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
-  const cases=db.cases.filter(c=>c.officerId===oid).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
+  const cases=db.cases.filter(c=>c.officerId===oid&&caseMoneyVisible(c)).sort((a,b)=>String(a.caseNo).localeCompare(String(b.caseNo)));
   let tot=0,paid=0;
   const rows=cases.map(c=>{const p=casePaid(c);tot+=+c.dealAmount||0;paid+=p;
     return '<tr><td>'+esc(c.caseNo)+'</td><td>'+esc(c.name)+'</td><td style="text-align:right">৳'+fmt(c.dealAmount)+'</td><td style="text-align:right">৳'+fmt(p)+'</td><td style="text-align:right">৳'+fmt(caseDue(c))+'</td></tr>';}).join('');
@@ -2654,21 +2682,21 @@ function runGlobalSearch(){
   const offs=visibleOfficers().filter(o=>match(o.name)||match(o.phone)||match(o.address)||match(o.note)).slice(0,8);
   if(offs.length){
     html+='<div class="gs-head">👮 Officers</div>'+offs.map(o=>{
-      const cs=db.cases.filter(c=>c.officerId===o.id);let due=0;cs.forEach(c=>due+=caseDue(c));
+      const cs=db.cases.filter(c=>c.officerId===o.id);let due=0;cs.forEach(c=>{if(caseMoneyVisible(c))due+=caseDue(c);});
       return '<div class="gs-row" onclick="openProfile(\''+o.id+'\')"><span><b>'+esc(o.name)+'</b><br><small class="muted">'+esc(o.phone||'')+' · '+cs.length+' cases</small></span>'+(canFin()?'<b class="'+(due>0?'red':'green')+'">'+tk(due)+'</b>':'')+'</div>';
     }).join('');
   }
   const cs=visibleCases().filter(c=>match(c.caseNo)||match(c.name)||match(c.client)||match(c.caseType)||match(c.description)||match(c.notes)).slice(0,10);
   if(cs.length){
-    html+='<div class="gs-head">📁 Cases</div>'+cs.map(c=>'<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span><b>'+esc(c.caseNo)+'</b> — '+esc(c.name)+'<br><small class="muted">👮 '+esc(officerName(c.officerId))+' · '+esc(c.status)+'</small></span>'+(canFin()?'<b class="'+(caseDue(c)>0?'red':'green')+'">'+tk(caseDue(c))+'</b>':'')+'</div>').join('');
+    html+='<div class="gs-head">📁 Cases</div>'+cs.map(c=>'<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span><b>'+esc(c.caseNo)+'</b> — '+esc(c.name)+'<br><small class="muted">👮 '+esc(officerName(c.officerId))+' · '+esc(c.status)+'</small></span>'+(canFin()?(caseMoneyVisible(c)?('<b class="'+(caseDue(c)>0?'red':'green')+'">'+tk(caseDue(c))+'</b>'):finLockNote()):'')+'</div>').join('');
   }
   if(canFin()){
     let ph='';
-    visibleCases().forEach(c=>(c.payments||[]).forEach(p=>{
+    visibleCases().forEach(c=>{if(myOfficerId()&&!caseMoneyVisible(c))return;(c.payments||[]).forEach(p=>{
       if(match(p.note)||match(p.receiptNo)||match(p.method)||match(p.amount)||match(p.date)){
         ph+='<div class="gs-row" onclick="openCaseModal(\''+c.id+'\')"><span>💰 '+esc(p.receiptNo||'Payment')+' <small>· '+esc(c.caseNo)+'</small><br><small class="muted">'+fmtD(p.date)+(p.method?' · '+esc(p.method):'')+'</small></span><b class="green">+'+tk(p.amount)+'</b></div>';
       }
-    }));
+    });});
     if(ph)html+='<div class="gs-head">💰 Payments</div>'+ph;
     if(can('financial')){
       const eh=db.expenses.filter(e=>match(e.category)||match(e.note)||match(e.amount)||match(e.date)).slice(0,8);
@@ -2948,7 +2976,7 @@ function renderUsers(){
   if(!can('users')){go('dashboard');return;}
   $('users-list').innerHTML=db.users.map(u=>'<div class="list-item"><span><b>'+esc(u.name)+'</b> '+(u.id===currentUser.id?'<span class="badge st-running">You</span>':'')+
     '<br><small class="muted">'+roleLabel(u.role)+' · 📱 '+(u.phone?esc(u.phone):'⚠️ নম্বর নেই')+(u.officerId?' · 🔗 '+esc(officerName(u.officerId)):'')+' · since '+fmtD(isoOfTs(u.createdAt||Date.now()))+'</small></span>'+
-    '<span><button class="btn-small btn-ghost" title="লগইন নম্বর সেট/বদল" onclick="promptPhoneSetup(\''+u.id+'\')">📱</button> '+(u.id!==currentUser.id?'<button class="btn-small btn-ghost" title="Officer Link" onclick="openOfficerLink(\''+u.id+'\')">🔗</button> <button class="btn-small btn-ghost" title="Reset PIN" onclick="resetUserPin(\''+u.id+'\')">🔑</button> <button class="icon-btn" title="Delete" onclick="deleteUser(\''+u.id+'\')">🗑️</button>':'')+'</span></div>').join('');
+    '<span>'+(u.role==='officer'?'<button class="btn-small '+(u.fullSummary===true?'btn-wa':'btn-ghost')+'" title="সর্বমোট হিসাব দেখার অনুমতি (ON/OFF)" onclick="toggleOfficerSummary(\''+u.id+'\')">📊</button> ':'')+'<button class="btn-small btn-ghost" title="লগইন নম্বর সেট/বদল" onclick="promptPhoneSetup(\''+u.id+'\')">📱</button> '+(u.id!==currentUser.id?'<button class="btn-small btn-ghost" title="Officer Link" onclick="openOfficerLink(\''+u.id+'\')">🔗</button> <button class="btn-small btn-ghost" title="Reset PIN" onclick="resetUserPin(\''+u.id+'\')">🔑</button> <button class="icon-btn" title="Delete" onclick="deleteUser(\''+u.id+'\')">🗑️</button>':'')+'</span></div>').join('');
   $('perm-matrix').innerHTML=permMatrixHtml();
   $('add-user-btn').style.display='block';
 }
@@ -3110,5 +3138,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbfac2dd41db83',t:'MTc5MDE5MTk5MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4039d005ed472e3',t:'MTc5MDI3MjAzNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
