@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.25</title>
+<title>Case Writer Pro v6.26</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -222,6 +222,45 @@ textarea{min-height:80px;resize:vertical}
 #sidebar button.active{background:var(--navy);color:#fff}
 #sidebar hr{border:none;border-top:1px solid var(--line);margin:8px 6px}
 .sb-me{margin-top:auto;padding:10px 8px 2px;font-size:12.5px;font-weight:700;color:var(--mut);border-top:1px solid var(--line);line-height:1.5}
+#sidebar .sb-toggle{margin-top:6px;font-size:12px;color:var(--mut);font-weight:700}
+#sidebar .sb-toggle:hover{background:#eef2f9;color:var(--navy)}
+@media (min-width:900px){
+  body.sb-collapsed #sidebar{width:64px;padding:14px 8px 10px}
+  body.sb-collapsed #app{padding-left:64px}
+  body.sb-collapsed #sidebar button{justify-content:center;padding:10px 0;gap:0}
+  body.sb-collapsed #sidebar .lbl,body.sb-collapsed .sb-me,body.sb-collapsed #sidebar hr{display:none}
+  body.sb-collapsed .sb-brand{justify-content:center;padding-left:0;padding-right:0}
+}
+/* ---- v6.26: Case Timeline ---- */
+.tl{position:relative;margin:8px 0 0;padding-left:22px}
+.tl::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line);border-radius:2px}
+.tl-item{position:relative;padding:0 0 12px 8px;font-size:13px}
+.tl-item:last-child{padding-bottom:2px}
+.tl-item::before{content:'';position:absolute;left:-19px;top:4px;width:10px;height:10px;border-radius:50%;background:#94a3b8;border:2px solid #fff;box-shadow:0 0 0 2px #cbd5e1}
+.tl-item.tl-open::before{background:#16202f}
+.tl-item.tl-pay::before{background:#16a34a;box-shadow:0 0 0 2px #bbf7d0}
+.tl-item.tl-cd::before{background:#7c3aed;box-shadow:0 0 0 2px #ddd6fe}
+.tl-item.tl-deadline::before{background:#dc2626;box-shadow:0 0 0 2px #fecaca}
+.tl-date{font-size:11px;font-weight:800;color:var(--mut)}
+/* ---- v6.26: Floating Quick Add ---- */
+.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;background:#16a34a;color:#fff;border:none;font-size:26px;font-weight:800;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(22,163,74,.4);z-index:45;transition:transform .15s}
+.fab:hover{transform:scale(1.07)}
+.fab-menu{position:fixed;right:18px;bottom:calc(148px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(22,50,79,.18);z-index:46;overflow:hidden;min-width:200px}
+.fab-menu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;font:inherit;font-size:13.5px;font-weight:700;color:var(--navy);padding:12px 16px;cursor:pointer;text-align:left}
+.fab-menu button:hover{background:#eef2f9}
+@media(min-width:900px){.fab{bottom:24px}.fab-menu{bottom:90px}}
+/* ---- v6.26: Notification Center ---- */
+.notif-badge{position:relative}
+.notif-badge::after{content:attr(data-n);position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;padding:0 3px;border:2px solid #fff}
+.notif-panel{position:fixed;top:58px;right:10px;width:min(360px,calc(100vw - 20px));max-height:70vh;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(22,50,79,.2);z-index:60}
+.notif-panel h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--navy)}
+.notif-item{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:13px}
+.notif-item:hover{background:#f8fafc}
+.notif-item.unread{background:#f0fdf4}
+.notif-item .n-ic{font-size:17px}
+.notif-empty{padding:22px;text-align:center;color:var(--mut);font-size:13px}
+#notif-backdrop{position:fixed;inset:0;z-index:59}
+@media print{.fab,.fab-menu,.notif-panel,#notif-backdrop{display:none!important}}
 
 /* ============ DESKTOP / PC LAYOUT (>=900px) ============ */
 @media (min-width:900px){
@@ -283,7 +322,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.25</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.26</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -317,7 +356,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.25 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.26 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -328,18 +367,19 @@ textarea{min-height:80px;resize:vertical}
 <!-- ============ APP ============ -->
 <div id="app">
   <aside id="sidebar">
-    <div class="sb-brand"><span class="sb-logo">⚖️</span> Case Writer Pro</div>
-    <button data-v="dashboard" onclick="go('dashboard')">🏠 Dashboard</button>
-    <button data-v="cases" onclick="go('cases')">📁 Cases</button>
-    <button data-v="officers" onclick="go('officers')">👮 Officers</button>
-    <button data-v="expenses" id="sb-expenses" onclick="go('expenses')">💸 Expenses</button>
-    <button id="sb-search" onclick="openSearchView()">🔎 Global Search</button>
+    <div class="sb-brand"><span class="sb-logo">⚖️</span><span class="lbl">Case Writer Pro</span></div>
+    <button data-v="dashboard" onclick="go('dashboard')" title="Dashboard">🏠<span class="lbl"> Dashboard</span></button>
+    <button data-v="cases" onclick="go('cases')" title="Cases">📁<span class="lbl"> Cases</span></button>
+    <button data-v="officers" onclick="go('officers')" title="Officers">👮<span class="lbl"> Officers</span></button>
+    <button data-v="expenses" id="sb-expenses" onclick="go('expenses')" title="Expenses">💸<span class="lbl"> Expenses</span></button>
+    <button id="sb-search" onclick="openSearchView()" title="Global Search">🔎<span class="lbl"> Global Search</span></button>
     <hr>
-    <button data-v="templates" id="sb-templates" onclick="go('templates')">📝 Templates</button>
-    <button data-v="recycle" id="sb-recycle" onclick="go('recycle')">♻️ Recycle Bin</button>
-    <button data-v="users" id="sb-users" onclick="go('users')">👥 Users &amp; Roles</button>
-    <button data-v="settings" id="sb-settings" onclick="go('settings')">⚙️ Settings</button>
-    <button onclick="lockApp()">🔒 Lock Now</button>
+    <button data-v="templates" id="sb-templates" onclick="go('templates')" title="Templates">📝<span class="lbl"> Templates</span></button>
+    <button data-v="recycle" id="sb-recycle" onclick="go('recycle')" title="Recycle Bin">♻️<span class="lbl"> Recycle Bin</span></button>
+    <button data-v="users" id="sb-users" onclick="go('users')" title="Users &amp; Roles">👥<span class="lbl"> Users &amp; Roles</span></button>
+    <button data-v="settings" id="sb-settings" onclick="go('settings')" title="Settings">⚙️<span class="lbl"> Settings</span></button>
+    <button onclick="lockApp()" title="Lock Now">🔒<span class="lbl"> Lock Now</span></button>
+    <button class="sb-toggle" onclick="toggleSidebar()" title="সাইডবার ভাঁজ/খোলা"><span id="sb-tog-ic">«</span><span class="lbl" id="sb-tog-lbl"> ভাঁজ করুন</span></button>
     <div class="sb-me" id="sb-me"></div>
   </aside>
   <header id="app-header">
@@ -347,11 +387,16 @@ textarea{min-height:80px;resize:vertical}
     <span id="header-title">Dashboard</span>
     <div class="hdr-right">
       <span id="sync-chip" onclick="cloudPullNow(null,true)" style="display:none;font-size:11px;opacity:.75;cursor:pointer;white-space:nowrap" title="শেষ ক্লাউড সিঙ্ক — ক্লিক করলে এখনই রিফ্রেশ"></span>
+      <button class="hdr-btn" id="notif-bell" onclick="toggleNotifPanel(event)" title="নোটিফিকেশন" style="display:none">🔔</button>
       <button class="hdr-btn" onclick="openSearchView()" title="Global Search">🔎</button>
       <button class="hdr-btn" onclick="lockApp()" title="Lock">🔒</button>
     </div>
   </header>
   <div id="banner-root"></div>
+  <button class="fab" id="fab-btn" onclick="toggleFabMenu(event)" style="display:none" title="দ্রুত যোগ করুন">＋</button>
+  <div class="fab-menu" id="fab-menu" style="display:none"></div>
+  <div id="notif-backdrop" onclick="closeNotifPanel()" style="display:none"></div>
+  <div class="notif-panel" id="notif-panel" style="display:none"></div>
   <div class="container">
 
     <!-- DASHBOARD -->
@@ -554,7 +599,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.25 (Final) · PC + Mobile · Smart Cloud Sync · 25 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.26 (Final) · PC + Mobile · Smart Cloud Sync · 26 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -1560,7 +1605,7 @@ function loginAs(u){
 }
 function lockApp(){
   currentUser=null;clearTimeout(idleT);
-  closeModal();closeMoreSheet();
+  closeModal();closeMoreSheet();closeNotifPanel();closeFabMenu();
   $('app').style.display='none';
   $('login-view').style.display='flex';
   $('loginPhone').value='';$('pinInput').value='';
@@ -1625,6 +1670,7 @@ function goBack(){go(sess.view==='profile'?'officers':'dashboard');}
 function refreshCurrentView(){
   const R={dashboard:renderDashboard,cases:renderCases,officers:renderOfficers,profile:renderProfile,expenses:renderExpenses,search:renderSearchView,templates:renderTemplates,recycle:renderRecycle,settings:renderSettings,users:renderUsers};
   if(R[sess.view])R[sess.view]();
+  updateNotifBell();updateFab();
 }
 
 /* ==================== modal / toast / sheet ==================== */
@@ -1853,6 +1899,123 @@ function dashScope(){
   const casesIn=visibleCases().filter(c=>(iso||actIds.has(c.officerId))&&inRange(c.openingDate,rg.from,rg.to));
   return {rg:rg,actIds:actIds,casesIn:casesIn};
 }
+/* ==================== v6.26: GR/Other, Timeline, Quick Add, Notification, Sidebar ==================== */
+function caseDeadlineVisible(c){
+  if(myOfficerId())return officerFullSummary()?(c.status!=='Completed'&&c.status!=='Closed'):(c.status!=='Closed'&&(c.status!=='Completed'||caseDue(c)>0));
+  return c.status!=='Completed'&&c.status!=='Closed';
+}
+/* ---- Quick Add (ভাসমান ➕) ---- */
+function fabMenuHtml(){
+  let h='';
+  if(can('add'))h+='<button onclick="closeFabMenu();openCaseForm(null)">📁 নতুন মামলা (New Case)</button>';
+  if(can('add')&&!myOfficerId())h+='<button onclick="closeFabMenu();openOfficerForm(null)">👮 নতুন Officer</button>';
+  if(can('financial'))h+='<button onclick="closeFabMenu();go(\'expenses\')">💸 নতুন খরচ (Expense)</button>';
+  return h;
+}
+function toggleFabMenu(ev){
+  if(ev)try{ev.stopPropagation();}catch(e){}
+  const m=$('fab-menu');if(!m)return;
+  if(m.style.display==='none'){m.innerHTML=fabMenuHtml();m.style.display='block';}
+  else m.style.display='none';
+}
+function closeFabMenu(){const m=$('fab-menu');if(m)m.style.display='none';}
+function updateFab(){
+  const f=$('fab-btn');if(!f)return;
+  const has=!!currentUser&&(can('add')||can('financial'));
+  f.style.display=has?'block':'none';
+  if(!has)closeFabMenu();
+}
+/* ---- Notification Center (🔔) ---- */
+function notifData(){
+  const out=[];if(!currentUser)return out;
+  const today=todayISO();
+  const actIds=new Set(activeOfficers().map(o=>o.id));
+  const dis=db.settings.dismissedDeadlines||{};
+  visibleCases().forEach(c=>{
+    if(!(myOfficerId()||actIds.has(c.officerId)))return;
+    if(!c.deadline||!caseDeadlineVisible(c))return;
+    const d=daysBetween(today,c.deadline);
+    if(d<0)out.push({key:'dl:'+c.id+':'+c.deadline,ic:'🔴',txt:'ডেডলাইন পেরিয়ে গেছে ('+fmtD(c.deadline)+')',sub:c.caseNo+' — '+c.name,act:"openCaseModal('"+c.id+"')"});
+    else if(d<=7){
+      if(dis[c.id]!==today)out.push({key:'dl:'+c.id+':'+c.deadline,ic:'🟠',txt:'ডেডলাইন '+d+' দিনে ('+fmtD(c.deadline)+')',sub:c.caseNo+' — '+c.name,act:"openCaseModal('"+c.id+"')"});
+    }else if(d<=30)out.push({key:'dl:'+c.id+':'+c.deadline,ic:'🟡',txt:'ডেডলাইন '+d+' দিনে ('+fmtD(c.deadline)+')',sub:c.caseNo+' — '+c.name,act:"openCaseModal('"+c.id+"')"});
+  });
+  if(canFin()){
+    visibleCases().forEach(c=>{
+      if(myOfficerId()&&!caseMoneyVisible(c))return;
+      if(!myOfficerId()&&!isActiveOfficer(c.officerId))return;
+      const a=dueAgeDays(c);
+      if(caseDue(c)>0&&a>=15)out.push({key:'due:'+c.id,ic:'💰',txt:'পুরনো বকেয়া ('+a+' দিন) — '+tk(caseDue(c)),sub:c.caseNo+' — '+c.name,act:"openCaseModal('"+c.id+"')"});
+    });
+    visibleCases().forEach(c=>{
+      if(isCDCase(c)&&isUnderInvestigation(c)&&cdOverdue(c)&&(myOfficerId()||actIds.has(c.officerId)))
+        out.push({key:'cd:'+c.id,ic:'💿',txt:'Case CD '+cdAgeDays(c)+' দিন — লিখতে হবে',sub:c.caseNo+' — '+c.name,act:"openCaseModal('"+c.id+"')"});
+    });
+  }
+  if(PERSIST&&can('settings')&&db.cases.length&&daysBetween(db.settings.lastBackupDate||'2000-01-01',todayISO())>=7)
+    out.push({key:'bk:'+today,ic:'💾',txt:'সাপ্তাহিক ব্যাকআপ বাকি',sub:'শেষ ব্যাকআপ: '+(db.settings.lastBackupDate?fmtD(db.settings.lastBackupDate):'কখনো হয়নি'),act:"go('settings')"});
+  return out;
+}
+function notifReadMap(){if(!db.settings.notifRead||typeof db.settings.notifRead!=='object')db.settings.notifRead={};return db.settings.notifRead;}
+function updateNotifBell(){
+  const b=$('notif-bell');if(!b)return;
+  if(!currentUser){b.style.display='none';return;}
+  b.style.display='';
+  const data=notifData();const rd=notifReadMap();
+  const un=data.filter(n=>!rd[n.key]).length;
+  if(un>0){b.classList.add('notif-badge');b.setAttribute('data-n',un>99?'99+':String(un));}
+  else b.classList.remove('notif-badge');
+}
+function notifPanelHtml(){
+  const data=notifData();const rd=notifReadMap();
+  if(!data.length)return '<h4><span>🔔 নোটিফিকেশন</span></h4><div class="notif-empty">🎉 কোনো নোটিফিকেশন নেই</div>';
+  let h='<h4><span>🔔 নোটিফিকেশন ('+data.length+')</span><button class="btn-small btn-ghost" onclick="notifMarkAllRead()">✓ সব পড়া</button></h4>';
+  h+=data.map(n=>'<div class="notif-item'+(rd[n.key]?'':' unread')+'" onclick="closeNotifPanel();'+n.act+'"><span class="n-ic">'+n.ic+'</span><span><b>'+esc(n.txt)+'</b><br><small class="muted">'+esc(n.sub)+'</small></span></div>').join('');
+  return h;
+}
+function toggleNotifPanel(ev){
+  if(ev)try{ev.stopPropagation();}catch(e){}
+  const pn=$('notif-panel'),bk=$('notif-backdrop');
+  if(!pn||!bk)return;
+  if(pn.style.display==='none'){pn.innerHTML=notifPanelHtml();pn.style.display='block';bk.style.display='block';updateNotifBell();}
+  else{pn.style.display='none';bk.style.display='none';}
+}
+function closeNotifPanel(){const pn=$('notif-panel'),bk=$('notif-backdrop');if(pn)pn.style.display='none';if(bk)bk.style.display='none';}
+function notifMarkAllRead(){
+  const rd=notifReadMap();const now=Date.now();
+  notifData().forEach(n=>rd[n.key]=now);
+  Object.keys(rd).forEach(k=>{if(now-rd[k]>30*24*3600*1000)delete rd[k];});
+  saveDb();
+  const pn=$('notif-panel');if(pn)pn.innerHTML=notifPanelHtml();
+  updateNotifBell();
+  toast('✅ সব নোটিফিকেশন পড়া হিসেবে চিহ্নিত');
+}
+/* ---- Sidebar Collapse (◀️) ---- */
+let sbCollapsed=false;
+function toggleSidebar(){
+  sbCollapsed=!sbCollapsed;
+  sidebarApply();
+  try{if(PERSIST)localStorage.setItem('caseLedgerSidebarCol',sbCollapsed?'1':'0');}catch(e){}
+}
+function sidebarApply(){
+  try{
+    if(sbCollapsed)document.body.classList.add('sb-collapsed');
+    else document.body.classList.remove('sb-collapsed');
+  }catch(e){}
+  const t=$('sb-tog-ic');if(t)t.textContent=sbCollapsed?'»':'«';
+  const l=$('sb-tog-lbl');if(l)l.textContent=sbCollapsed?' খোলা':' ভাঁজ করুন';
+}
+function initSidebar(){
+  try{sbCollapsed=!!(PERSIST&&localStorage.getItem('caseLedgerSidebarCol')==='1');}catch(e){sbCollapsed=false;}
+  sidebarApply();
+}
+try{document.addEventListener('click',function(e){
+  try{
+    const t=e.target;
+    if(t&&t.closest&&!t.closest('#fab-menu')&&!t.closest('#fab-btn'))closeFabMenu();
+    if(t&&t.closest&&!t.closest('#notif-panel')&&!t.closest('#notif-bell'))closeNotifPanel();
+  }catch(e2){}
+});}catch(e3){}
 function renderDashboard(){
   const S=dashScope();
   const casesIn=S.casesIn,rg=S.rg;
@@ -1862,6 +2025,8 @@ function renderDashboard(){
   const dlExpired=casesIn.filter(c=>c.deadline&&c.deadline<today&&isUnderInvestigation(c));
   const udArr=casesIn.filter(c=>(c.caseType==='Unnatural Death'||c.caseType==='UD')&&isUnderInvestigation(c));
   const crArr=casesIn.filter(c=>c.caseType==='CR'&&isUnderInvestigation(c));
+  const grArr=casesIn.filter(c=>c.caseType==='GR'&&isUnderInvestigation(c));
+  const otArr=casesIn.filter(c=>['GR','CR','UD','Unnatural Death'].indexOf(c.caseType)<0&&isUnderInvestigation(c));
   const cdArr=casesIn.filter(c=>isCDCase(c)&&isUnderInvestigation(c)&&cdOverdue(c));
   const iso=!!myOfficerId();
   const finCs=iso?casesIn.filter(caseMoneyVisible):casesIn;
@@ -1881,6 +2046,8 @@ function renderDashboard(){
     statBox('⏰','Deadline',fmt(dlExpired.length),dlExpired.length>0?'st-r':'st-c',"openStatDetail('deadline')")+
     statBox('⚰️','UD Case',fmt(udArr.length),'st-p',"openStatDetail('ud')")+
     statBox('📂','CR Case',fmt(crArr.length),'st-b',"openStatDetail('cr')")+
+    statBox('🗂️','GR Case',fmt(grArr.length),'st-y',"openStatDetail('gr')")+
+    statBox('📚','Other Case',fmt(otArr.length),'st-c',"openStatDetail('other')")+
     statBox('💿','Case CD',fmt(cdArr.length),cdArr.length>0?'st-r':'st-g',"openStatDetail('cd')")+
     '</div>';
   if(canFin()&&(iso?officerFullSummary()||finCs.length>0:true)){
@@ -1944,6 +2111,18 @@ function statDetailData(type){
     const arr=cs.filter(c=>c.caseType==='CR'&&isUnderInvestigation(c));
     title='📂 CR Cases (তদন্তাধীন)';
     sumTxt=arr.length+'টি সিআর মামলা তদন্তাধীন';
+    list=arr.map(c=>caseRow(c)).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='gr'){
+    const arr=cs.filter(c=>c.caseType==='GR'&&isUnderInvestigation(c));
+    title='🗂️ GR Cases (তদন্তাধীন)';
+    sumTxt=arr.length+'টি জিআর মামলা তদন্তাধীন';
+    list=arr.map(c=>caseRow(c)).join('');
+    table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
+  }else if(type==='other'){
+    const arr=cs.filter(c=>['GR','CR','UD','Unnatural Death'].indexOf(c.caseType)<0&&isUnderInvestigation(c));
+    title='📚 Other Cases — অন্যান্য (তদন্তাধীন)';
+    sumTxt=arr.length+'টি অন্যান্য (Civil/Criminal/Family/Appeal…) মামলা তদন্তাধীন';
     list=arr.map(c=>caseRow(c)).join('');
     table='<table><tr>'+TH6+'</tr>'+arr.map(c=>cTr(c)).join('')+'</table>';
   }else if(type==='cd'){
@@ -2022,7 +2201,7 @@ function renderDashAlerts(){
   }
   const today=todayISO();
   const actIdsA=new Set(activeOfficers().map(o=>o.id));
-  const open=visibleCases().filter(c=>c.deadline&&(myOfficerId()?(officerFullSummary()?(c.status!=='Completed'&&c.status!=='Closed'):(c.status!=='Closed'&&(c.status!=='Completed'||caseDue(c)>0))):(c.status!=='Completed'&&c.status!=='Closed'))&&(myOfficerId()||actIdsA.has(c.officerId)));
+  const open=visibleCases().filter(c=>c.deadline&&caseDeadlineVisible(c)&&(myOfficerId()||actIdsA.has(c.officerId)));
   const soon=open.filter(c=>{const d=daysBetween(today,c.deadline);return d>7&&d<=30;}).sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,5);
   if(soon.length){
     html+='<div class="card"><h3>📅 Upcoming Deadlines (৮–৩০ দিন)</h3>'+
@@ -2240,6 +2419,18 @@ function openCaseModal(id){
         '<input id="cd-note" placeholder="মন্তব্য (optional)" style="margin-top:6px">':'')+
       '</div>';
   }
+  let tlSection='';
+  if(canFin()&&caseMoneyVisible(c)){
+    const ev=[];
+    if(c.openingDate)ev.push({d:c.openingDate,cls:'tl-open',ic:'📁',txt:'মামলা খোলা'+(c.caseType?' · '+esc(c.caseType):'')});
+    (c.payments||[]).forEach(p=>ev.push({d:p.date||'',cls:'tl-pay',ic:'💰',txt:'পেমেন্ট '+tk(p.amount)+(p.receiptNo?' · '+esc(p.receiptNo):'')+(p.method?' · '+esc(p.method):'')}));
+    (c.caseCDs||[]).forEach(x=>ev.push({d:x.date||'',cls:'tl-cd',ic:'💿',txt:'Case CD '+esc(x.cdNo)}));
+    if(c.deadline)ev.push({d:c.deadline,cls:'tl-deadline',ic:'⏰',txt:'ডেডলাইন'+((c.status==='Completed'||c.status==='Closed')?' (নিষ্পত্তি হয়েছে)':'')});
+    ev.sort((a,b)=>String(a.d||'').localeCompare(String(b.d||'')));
+    tlSection='<div class="cm-sec"><b>🕐 Case Timeline ('+ev.length+')</b><div class="tl">'+
+      ev.map(e=>'<div class="tl-item '+e.cls+'"><span class="tl-date">'+(e.d?fmtD(e.d):'—')+'</span><br>'+e.ic+' '+e.txt+'</div>').join('')+
+      '</div></div>';
+  }
   const statusSel=can('edit')?
     '<select onchange="updateCaseField(\''+c.id+'\',\'status\',this.value)">'+['New','Running','Completed','Closed'].map(s=>'<option'+(c.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select>'
     :'<span class="badge st-'+String(c.status||'').toLowerCase()+'">'+esc(c.status)+'</span>';
@@ -2271,6 +2462,7 @@ function openCaseModal(id){
       '<div class="flex-row"><select id="pm-method">'+db.settings.paymentMethods.map(m=>'<option'+(m==='Cash'?' selected':'')+'>'+esc(m)+'</option>').join('')+'</select><input id="pm-note" placeholder="Note (optional)"></div></div>':'')+
     (canFin()&&caseMoneyVisible(c)?'<div class="cm-sec"><b>🧾 Payments ('+(c.payments||[]).length+')</b>'+(payHtml||'<p class="small muted" style="margin:6px 0 0">কোনো পেমেন্ট নেই।</p>')+'</div>':'')+
     cdSection+
+    (tlSection||'')+
     '<div class="case-actions">'+
       (can('edit')?'<button class="btn-small btn-ghost" onclick="openCaseForm(\''+c.id+'\')">✏️ Edit</button>':'')+
       (can('financial')&&due>0?'<button class="btn-small btn-wa" onclick="openReminderPicker(\''+c.id+'\')">📱 Remind</button>':'')+
@@ -3103,6 +3295,7 @@ function applyPerms(){
   Object.keys(ids).forEach(k=>{const el=$(k);if(el)el.style.display=ids[k]?'flex':'none';});
   const me=$('sb-me');
   if(me&&currentUser)me.innerHTML='👤 '+esc(currentUser.name)+'<br><small class="muted">'+roleLabel(currentUser.role)+'</small>';
+  initSidebar();updateFab();updateNotifBell();
   renderBanners();
 }
 
@@ -3147,5 +3340,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a407a2f89a1c32d0',t:'MTc5MDMxNDIyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4126e538c4548ff',t:'MTc5MDQyNzQxMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
