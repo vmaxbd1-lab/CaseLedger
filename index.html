@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.26</title>
+<title>Case Writer Pro v6.27</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -261,6 +261,10 @@ textarea{min-height:80px;resize:vertical}
 .notif-empty{padding:22px;text-align:center;color:var(--mut);font-size:13px}
 #notif-backdrop{position:fixed;inset:0;z-index:59}
 @media print{.fab,.fab-menu,.notif-panel,#notif-backdrop{display:none!important}}
+/* ---- v6.27: রসিদ-স্লিপ ---- */
+.rc{max-width:400px;margin:0 auto;font-size:15px}
+.rc-amt{font-size:36px;font-weight:800;text-align:center;margin:12px 0;color:#16a34a}
+.rc-sign{margin-top:46px;font-size:13px;color:#444}
 
 /* ============ DESKTOP / PC LAYOUT (>=900px) ============ */
 @media (min-width:900px){
@@ -282,6 +286,7 @@ textarea{min-height:80px;resize:vertical}
   #dash-stats .stat{padding:14px 10px;border-radius:14px}
   #dash-stats .s-v{font-size:17px}
   #dash-stats .stat-note{grid-column:1/-1}
+  #dash-stats .case-meta{grid-column:1/-1}
   #dash-alerts:empty{display:none}
   #dash-alerts:empty+.card{grid-column:1/-1}
   #view-dashboard>.card:last-child{grid-column:2}
@@ -322,7 +327,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.26</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.27</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -356,7 +361,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.26 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.27 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -403,7 +408,7 @@ textarea{min-height:80px;resize:vertical}
     <div id="view-dashboard" class="view active">
       <div id="deadline-alarm-root"></div>
       <div class="card" id="dash-main">
-        <h3>📊 Dashboard <button class="icon-btn" onclick="window.print()" title="Print">🖨️</button></h3>
+        <h3>📊 Dashboard <button class="icon-btn" id="dash-report-btn" onclick="openMonthlyReport()" title="মাসিক বিজনেস রিপোর্ট (প্রিন্ট)" style="display:none">📈</button> <button class="icon-btn" id="dash-paycsv-btn" onclick="exportPaymentsCsv()" title="পেমেন্ট তালিকা CSV (চলতি রেঞ্জ)" style="display:none">📤</button> <button class="icon-btn" onclick="window.print()" title="Print">🖨️</button></h3>
         <div class="chips" id="dash-chips">
           <button class="chip active" data-r="all" onclick="setDashRange('all')">All Time</button>
           <button class="chip" data-r="today" onclick="setDashRange('today')">Today</button>
@@ -448,6 +453,7 @@ textarea{min-height:80px;resize:vertical}
           <button class="btn-small btn-ghost" onclick="clearCaseFilters()">✖</button>
         </div>
         <div id="cases-summary" class="small muted" style="margin-top:8px"></div>
+        <div style="margin-top:8px"><button class="btn-small btn-ghost" onclick="exportCasesCsv()" title="চলতি ফিল্টার-রেঞ্জ মেনে Excel/CSV-তে এক্সপোর্ট">📤 Export CSV</button></div>
       </div>
       <button class="btn btn-primary" id="add-case-btn" onclick="openCaseForm()">＋ Add New Case</button>
       <div id="draft-note"></div>
@@ -497,7 +503,7 @@ textarea{min-height:80px;resize:vertical}
           <button class="btn-small" onclick="sess.expFilters.page=1;renderExpenses()">🔍 Search</button>
           <button class="btn-small btn-ghost" onclick="clearExpFilters()">✖ Clear</button>
         </div>
-        <div class="exp-total">Filtered Total: <span id="exp-total">৳0</span></div>
+        <div class="exp-total">Filtered Total: <span id="exp-total">৳0</span> <button class="btn-small btn-ghost" onclick="exportExpensesCsv()" title="চলতি ফিল্টার-রেঞ্জ মেনে Excel/CSV-তে এক্সপোর্ট">📤 CSV</button></div>
         <div id="exp-list"></div>
         <div id="exp-pager" class="pager"></div>
       </div>
@@ -599,7 +605,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.26 (Final) · PC + Mobile · Smart Cloud Sync · 26 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.27 · PC + Mobile · Smart Cloud Sync · 26 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -1899,6 +1905,162 @@ function dashScope(){
   const casesIn=visibleCases().filter(c=>(iso||actIds.has(c.officerId))&&inRange(c.openingDate,rg.from,rg.to));
   return {rg:rg,actIds:actIds,casesIn:casesIn};
 }
+/* ==================== v6.27: CSV এক্সপোর্ট · tel: লিংক · রসিদ-স্লিপ · মাসিক রিপোর্ট · ডুপ্লিকেট-সতর্কতা ==================== */
+function csvCell(v){v=String(v===undefined||v===null?'':v);if(/[",\n\r]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
+function csvStr(rows){return '\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');}
+function csvDownload(fname,csv){
+  try{
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{URL.revokeObjectURL(a.href);a.remove();}catch(e){}},500);
+    toast('📤 CSV ডাউনলোড হচ্ছে — Excel/Google Sheets-এ খুলুন');
+  }catch(e){toast('❌ ডাউনলোড করা যায়নি');}
+}
+/* ---- v6.27: tel: স্যানিটাইজার — বাংলা সংখ্যাও ASCII-তে রূপান্তর ---- */
+function telDigits(x){const bn='০১২৩৪৫৬৭৮৯';return String(x||'').replace(/[০-৯]/g,function(d){return String(bn.indexOf(d));}).replace(/[^+0-9]/g,'');}
+/* ---- v6.27-১: Cases CSV (চলতি ফিল্টার+সর্ট মেনে; রোল-নিয়মে টাকা-গোপন) ---- */
+function casesFilteredArr(){
+  const q=($('cf-q').value||'').trim().toLowerCase();
+  const status=$('cf-status').value,off=$('cf-officer').value,prio=$('cf-priority').value,sort=$('cf-sort').value;
+  const from=$('cf-from').value,to=$('cf-to').value;
+  let arr=visibleCases().filter(c=>{
+    if(q&&![c.caseNo,c.name,c.client,c.caseType,c.description].some(s=>s&&String(s).toLowerCase().includes(q)))return false;
+    if(status&&c.status!==status)return false;
+    if(off&&String(c.officerId)!==String(off))return false;
+    if(prio&&c.priority!==prio)return false;
+    if(sess.caseFilters.unpaid&&caseDue(c)<=0)return false;
+    if(from&&(c.openingDate||'9999')<from)return false;
+    if(to&&(c.openingDate||'0000')>to)return false;
+    return true;
+  });
+  if(sort==='newest')arr.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  else if(sort==='oldest')arr.sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+  else if(sort==='due')arr.sort((a,b)=>((caseMoneyVisible(b)?caseDue(b):-1)-(caseMoneyVisible(a)?caseDue(a):-1)));
+  else if(sort==='priority')arr.sort((a,b)=>PRIO_ORDER[a.priority||'Medium']-PRIO_ORDER[b.priority||'Medium']);
+  else if(sort==='deal')arr.sort((a,b)=>((caseMoneyVisible(b)?(+b.dealAmount||0):-1)-(caseMoneyVisible(a)?(+a.dealAmount||0):-1)));
+  else if(sort==='deadline')arr.sort((a,b)=>String(a.deadline||'9999').localeCompare(String(b.deadline||'9999')));
+  else if(sort==='aging')arr.sort((a,b)=>((caseMoneyVisible(b)?dueAgeDays(b):-1)-(caseMoneyVisible(a)?dueAgeDays(a):-1)));
+  return arr;
+}
+function buildCasesCsv(){
+  const arr=casesFilteredArr();
+  const fin=canFin();
+  const head=['Case No','Case Name','Officer','Client','Type','Status','Priority','Opening Date','Deadline'];
+  if(fin)head.push('Deal (৳)','Paid (৳)','Due (৳)');
+  const rows=[head];
+  arr.forEach(c=>{
+    const r=[c.caseNo,c.name,officerName(c.officerId),c.client||'',c.caseType||'',c.status||'',c.priority||'',c.openingDate||'',c.deadline||''];
+    if(fin){
+      if(myOfficerId()&&!caseMoneyVisible(c))r.push('','','');
+      else r.push(+c.dealAmount||0,casePaid(c),caseDue(c));
+    }
+    rows.push(r);
+  });
+  return csvStr(rows);
+}
+function exportCasesCsv(){csvDownload('cases-'+todayISO()+'.csv',buildCasesCsv());}
+/* ---- v6.27-২: Payments CSV (ড্যাশবোর্ডের চলতি রেঞ্জ মেনে) ---- */
+function buildPaymentsCsv(){
+  if(!canFin())return '';
+  const rg=dashRangeDates();
+  const rows=[['Date','Receipt No','Case No','Case Name','Officer','Method','Note','Amount (৳)']];
+  let tot=0;
+  visibleCases().forEach(c=>{
+    if(myOfficerId()&&!caseMoneyVisible(c))return;
+    if(!myOfficerId()&&!isActiveOfficer(c.officerId))return;
+    (c.payments||[]).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))).forEach(p=>{
+      if(inRange(p.date,rg.from,rg.to)){rows.push([p.date,p.receiptNo||'',c.caseNo,c.name,officerName(c.officerId),p.method||'',p.note||'',+p.amount||0]);tot+=+p.amount||0;}
+    });
+  });
+  rows.push(['','','','','','','মোট আদায় ('+rg.from+' → '+rg.to+')',tot]);
+  return csvStr(rows);
+}
+function exportPaymentsCsv(){if(!canFin())return toast('⛔ Financial permission নেই');csvDownload('payments-'+todayISO()+'.csv',buildPaymentsCsv());}
+/* ---- v6.27-৩: Expenses CSV ---- */
+function buildExpensesCsv(){
+  if(!can('financial'))return '';
+  const from=$('exf-from').value,to=$('exf-to').value,cat=$('exf-cat').value;
+  const arr=db.expenses.filter(e=>(!from||e.date>=from)&&(!to||e.date<=to)&&(!cat||e.category===cat)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  const rows=[['Date','Category','Case No','Case Name','Note','Amount (৳)']];
+  let tot=0;
+  arr.forEach(e=>{
+    const c=e.caseId?db.cases.find(x=>x.id===e.caseId):null;
+    rows.push([e.date,e.category||'',c?c.caseNo:'',c?c.name:'',e.note||'',+e.amount||0]);
+    tot+=+e.amount||0;
+  });
+  rows.push(['','','','','মোট খরচ',tot]);
+  return csvStr(rows);
+}
+function exportExpensesCsv(){if(!can('financial'))return toast('⛔ Financial permission নেই');csvDownload('expenses-'+todayISO()+'.csv',buildExpensesCsv());}
+/* ---- v6.27-৪: প্রিন্টেবল রসিদ-স্লিপ ---- */
+function printReceipt(caseId,payId){
+  const c=db.cases.find(x=>x.id===caseId);if(!c)return;
+  if(!canFin())return toast('⛔ Financial permission নেই');
+  if(myOfficerId()&&String(c.officerId)!==String(myOfficerId()))return toast('⛔ অনুমতি নেই');
+  if(myOfficerId()&&!caseMoneyVisible(c))return toast('⛔ এই মামলার হিসাব লুকানো — রসিদ ছাপা যাবে না');
+  const p=(c.payments||[]).find(x=>x.id===payId);if(!p)return;
+  const o=officerById(c.officerId);
+  printDoc('রসিদ / PAYMENT RECEIPT',
+    '<div class="rc">'+
+    '<div class="rc-amt">৳'+fmt(p.amount)+'</div>'+
+    '<table>'+
+    '<tr><th>Receipt No</th><td>'+esc(p.receiptNo||'—')+'</td></tr>'+
+    '<tr><th>তারিখ</th><td>'+fmtD(p.date)+'</td></tr>'+
+    '<tr><th>প্রাপক (Officer)</th><td>'+esc(o?o.name:'—')+'</td></tr>'+
+    '<tr><th>মামলা</th><td>'+esc(c.caseNo)+' — '+esc(c.name)+'</td></tr>'+
+    '<tr><th>মাধ্যম</th><td>'+esc(p.method||'—')+'</td></tr>'+
+    (p.note?'<tr><th>মন্তব্য</th><td>'+esc(p.note)+'</td></tr>':'')+
+    '<tr><th>মোট পরিশোধ</th><td>৳'+fmt(casePaid(c))+'</td></tr>'+
+    '<tr><th>বর্তমান বকেয়া</th><td>৳'+fmt(caseDue(c))+'</td></tr>'+
+    '</table>'+
+    '<div class="rc-sign">গ্রহণকারীর স্বাক্ষর: ____________________</div>'+
+    '</div>');
+}
+/* ---- v6.27-৫: মালিকের মাসিক বিজনেস-রিপোর্ট ---- */
+function monthlyReportData(ym){
+  const from=ym+'-01';
+  const last=new Date(+(ym.slice(0,4)),+(ym.slice(5,7)),0).getDate();
+  const to=ym+'-'+String(last).padStart(2,'0');
+  let collected=0,exp=0,newCases=0,newDeal=0,dueNow=0;
+  const byOfficer={};
+  const scope=visibleCases().filter(c=>isActiveOfficer(c.officerId));
+  scope.forEach(c=>{
+    if(c.openingDate&&c.openingDate>=from&&c.openingDate<=to){newCases++;newDeal+=+c.dealAmount||0;}
+    (c.payments||[]).forEach(p=>{
+      if(inRange(p.date,from,to)){collected+=+p.amount||0;const nm=officerName(c.officerId);byOfficer[nm]=(byOfficer[nm]||0)+(+p.amount||0);}
+    });
+    dueNow+=caseDue(c);
+  });
+  db.expenses.forEach(e=>{if(inRange(e.date,from,to))exp+=+e.amount||0;});
+  return {from:from,to:to,collected:collected,expense:exp,net:collected-exp,newCases:newCases,newDeal:newDeal,dueNow:dueNow,byOfficer:byOfficer};
+}
+function openMonthlyReport(){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  openModal(modalHead('📈 মাসিক বিজনেস রিপোর্ট')+
+    '<label>Month</label><input type="month" id="mr-m" value="'+todayISO().slice(0,7)+'">'+
+    '<button class="btn btn-primary" onclick="printMonthlyReport()">Generate &amp; Print</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function printMonthlyReport(){
+  if(!can('financial'))return toast('⛔ Financial permission নেই');
+  const ym=($('mr-m').value||todayISO().slice(0,7));
+  const d=monthlyReportData(ym);
+  const offRows=Object.keys(d.byOfficer).map(k=>'<tr><td>'+esc(k)+'</td><td style="text-align:right">৳'+fmt(d.byOfficer[k])+'</td></tr>').join('')||'<tr><td colspan="2">—</td></tr>';
+  printDoc('মাসিক বিজনেস রিপোর্ট — '+monthLabel(ym),
+    '<table>'+
+    '<tr><th>মাস</th><td>'+monthLabel(ym)+' ('+d.from+' → '+d.to+')</td></tr>'+
+    '<tr><th>নতুন মামলা</th><td>'+d.newCases+'টি · মোট ডিল ৳'+fmt(d.newDeal)+'</td></tr>'+
+    '<tr><th>মাসের মোট আদায়</th><td>৳'+fmt(d.collected)+'</td></tr>'+
+    '<tr><th>মাসের মোট খরচ</th><td>৳'+fmt(d.expense)+'</td></tr>'+
+    '<tr><th>নিট (আদায় − খরচ)</th><td>৳'+fmt(d.net)+'</td></tr>'+
+    '<tr><th>বর্তমান মোট বকেয়া</th><td>৳'+fmt(d.dueNow)+'</td></tr>'+
+    '</table>'+
+    '<h4>অফিসার-ভিত্তিক আদায়</h4>'+
+    '<table><tr><th>Officer</th><th style="text-align:right">আদায়</th></tr>'+offRows+'</table>');
+  closeModal();
+}
 /* ==================== v6.26: GR/Other, Timeline, Quick Add, Notification, Sidebar ==================== */
 function caseDeadlineVisible(c){
   if(myOfficerId())return officerFullSummary()?(c.status!=='Completed'&&c.status!=='Closed'):(c.status!=='Closed'&&(c.status!=='Completed'||caseDue(c)>0));
@@ -2017,6 +2179,9 @@ try{document.addEventListener('click',function(e){
   }catch(e2){}
 });}catch(e3){}
 function renderDashboard(){
+  const drb=$('dash-report-btn'),dcb=$('dash-paycsv-btn');
+  if(drb)drb.style.display=can('financial')?'':'none';
+  if(dcb)dcb.style.display=can('financial')?'':'none';
   const S=dashScope();
   const casesIn=S.casesIn,rg=S.rg;
   const activeIn=casesIn.filter(isUnderInvestigation);
@@ -2284,29 +2449,10 @@ function renderCases(){
   if(abD)abD.textContent=canDraft()?'📝 অনুরোধ পাঠান (WhatsApp)':'＋ Add New Case';
   const dnD=$('draft-note');
   if(dnD)dnD.innerHTML=canDraft()?'<div class="banner banner-info" style="margin:8px 0"><span>👁️ এই সংযোগটি শুধু-পড়া — নতুন মামলার অনুরোধ পাঠাতে উপরের "📝 অনুরোধ পাঠান" বাটনে চাপুন (WhatsApp-এ অ্যাডমিনের কাছে যাবে)।</span></div>':'';
-  const q=($('cf-q').value||'').trim().toLowerCase();
-  const status=$('cf-status').value,off=$('cf-officer').value,prio=$('cf-priority').value,sort=$('cf-sort').value;
-  const from=$('cf-from').value,to=$('cf-to').value;
   const oSel=$('cf-officer');const curOff=oSel.value;
   oSel.innerHTML='<option value="">All Officers</option>'+visibleOfficers().map(o=>'<option value="'+o.id+'">'+esc(o.name)+(o.active===false?' (Inactive)':'')+'</option>').join('');
   if(curOff&&db.officers.find(o=>String(o.id)===String(curOff)))oSel.value=curOff;
-  let arr=visibleCases().filter(c=>{
-    if(q&&![c.caseNo,c.name,c.client,c.caseType,c.description].some(s=>s&&String(s).toLowerCase().includes(q)))return false;
-    if(status&&c.status!==status)return false;
-    if(off&&String(c.officerId)!==String(off))return false;
-    if(prio&&c.priority!==prio)return false;
-    if(sess.caseFilters.unpaid&&caseDue(c)<=0)return false;
-    if(from&&(c.openingDate||'9999')<from)return false;
-    if(to&&(c.openingDate||'0000')>to)return false;
-    return true;
-  });
-  if(sort==='newest')arr.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
-  else if(sort==='oldest')arr.sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
-  else if(sort==='due')arr.sort((a,b)=>((caseMoneyVisible(b)?caseDue(b):-1)-(caseMoneyVisible(a)?caseDue(a):-1)));
-  else if(sort==='priority')arr.sort((a,b)=>PRIO_ORDER[a.priority||'Medium']-PRIO_ORDER[b.priority||'Medium']);
-  else if(sort==='deal')arr.sort((a,b)=>((caseMoneyVisible(b)?(+b.dealAmount||0):-1)-(caseMoneyVisible(a)?(+a.dealAmount||0):-1)));
-  else if(sort==='deadline')arr.sort((a,b)=>String(a.deadline||'9999').localeCompare(String(b.deadline||'9999')));
-  else if(sort==='aging')arr.sort((a,b)=>((caseMoneyVisible(b)?dueAgeDays(b):-1)-(caseMoneyVisible(a)?dueAgeDays(a):-1)));
+  let arr=casesFilteredArr();
   let deal=0,due=0;arr.forEach(c=>{if(!caseMoneyVisible(c))return;deal+=+c.dealAmount||0;due+=caseDue(c);});
   $('cases-summary').innerHTML='<b>'+arr.length+'</b> case(s) found'+(canFin()?' · Deal '+tk(deal)+' · Due <span class="red">'+tk(due)+'</span>'+(myOfficerId()&&!officerFullSummary()?' <span class="muted">(চলমান ও বকেয়া)</span>':''):'');
   const per=8,pages=Math.max(1,Math.ceil(arr.length/per));
@@ -2388,12 +2534,22 @@ function submitCaseForm(id){
     if(!c)return;
     Object.assign(c,vals);
     toast('✅ Case updated');
-  }else{
+    saveDb();closeModal();refreshCurrentView();
+    return;
+  }
+  /* v6.27: ডুপ্লিকেট-মামলা সতর্কতা — একই Officer-এ একই নাম থাকলে জিজ্ঞেস করবে */
+  const dup=db.cases.find(x=>String(x.officerId)===String(officer)&&String(x.name||'').trim().toLowerCase()===name.toLowerCase());
+  const doSave=function(){
     const no=nextCaseNo();
     db.cases.push(Object.assign({id:uid(),caseNo:no,createdAt:Date.now(),payments:[]},vals));
     toast('✅ Case added: '+no);
+    saveDb();closeModal();refreshCurrentView();
+  };
+  if(dup){
+    askConfirm('⚠️ ডুপ্লিকেট মামলা?','এই Officer-এর নামে আগেই <b>"'+esc(dup.name)+'"</b> ('+esc(dup.caseNo)+') মামলাটি আছে!<br>একই মামলা কি সত্যিই আবার যোগ করতে চান?','হ্যাঁ, তবুও সেভ',doSave);
+    return;
   }
-  saveDb();closeModal();refreshCurrentView();
+  doSave();
 }
 
 /* ==================== CASE DETAIL MODAL ==================== */
@@ -2404,7 +2560,7 @@ function openCaseModal(id){
   const paid=casePaid(c),due=caseDue(c);
   const pct=(+c.dealAmount||0)>0?Math.min(100,Math.round(paid*100/(+c.dealAmount))):0;
   const pays=(c.payments||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  const payHtml=pays.map(p=>'<div class="list-item"><span>'+fmtD(p.date)+(p.receiptNo?' · <small class="muted">'+esc(p.receiptNo)+'</small>':'')+(p.method?' <span class="pm-chip">'+esc(p.method)+'</span>':'')+(p.note?'<br><small class="muted">'+esc(p.note)+'</small>':'')+'</span><span><b class="green">+'+tk(p.amount)+'</b> <button class="icon-btn" title="Resend receipt" onclick="sendReceipt(\''+c.id+'\',\''+p.id+'\')">🧾</button>'+(can('edit')?'<button class="icon-btn" title="Edit Payment" onclick="editPayment(\''+c.id+'\',\''+p.id+'\')">✏️</button><button class="icon-btn" title="Delete" onclick="deletePayment(\''+c.id+'\',\''+p.id+'\')">❌</button>':'')+'</span></div>').join('');
+  const payHtml=pays.map(p=>'<div class="list-item"><span>'+fmtD(p.date)+(p.receiptNo?' · <small class="muted">'+esc(p.receiptNo)+'</small>':'')+(p.method?' <span class="pm-chip">'+esc(p.method)+'</span>':'')+(p.note?'<br><small class="muted">'+esc(p.note)+'</small>':'')+'</span><span><b class="green">+'+tk(p.amount)+'</b> <button class="icon-btn" title="Resend receipt" onclick="sendReceipt(\''+c.id+'\',\''+p.id+'\')">🧾</button>'+(canFin()?'<button class="icon-btn" title="রসিদ-স্লিপ ছাপান" onclick="printReceipt(\''+c.id+'\',\''+p.id+'\')">🖨️</button>':'')+(can('edit')?'<button class="icon-btn" title="Edit Payment" onclick="editPayment(\''+c.id+'\',\''+p.id+'\')">✏️</button><button class="icon-btn" title="Delete" onclick="deletePayment(\''+c.id+'\',\''+p.id+'\')">❌</button>':'')+'</span></div>').join('');
   const cds=(c.caseCDs||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   const cdAge=cdAgeDays(c);
   let cdSection='';
@@ -2650,7 +2806,7 @@ function renderOfficers(){
     const inactive=o.active===false;
     return '<div class="officer-card '+(due>0?'alert-red':'')+(inactive?' inactive':'')+'" onclick="openProfile(\''+o.id+'\')">'+
       '<div class="off-avatar">'+esc(initials(o.name))+'</div>'+
-      '<div class="off-info"><b>'+esc(o.name)+'</b> '+(inactive?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+'<small>'+esc(o.phone||'নম্বর নেই')+' · '+cs.length+' cases</small></div>'+
+      '<div class="off-info"><b>'+esc(o.name)+'</b> '+(inactive?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+'<small>📱 '+(telDigits(o.phone)?'<a href="tel:'+esc(telDigits(o.phone))+'" onclick="event.stopPropagation()" style="color:inherit;text-decoration:underline">'+esc(o.phone)+'</a>':(o.phone?esc(o.phone):'নম্বর নেই'))+' · '+cs.length+' cases</small></div>'+
       '<div class="off-due">'+(canFin()?(due>0?'<span class="red">'+tk(due)+'</span>':'<span class="green">✓ Clear</span>'):'')+' <span class="chev">›</span></div>'+
     '</div>';
   }).join('')||'<p class="small muted">কোনো অফিসার পাওয়া যায়নি।</p>';
@@ -2724,7 +2880,7 @@ function renderProfile(){
   const active=cs.filter(c=>c.status==='New'||c.status==='Running').length;
   let h='<div class="pf-top"><div class="off-avatar big">'+esc(initials(o.name))+'</div>'+
     '<div style="flex:1;min-width:0"><h3 style="margin:0;border:none;padding:0">'+esc(o.name)+' '+(o.active===false?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+'</h3>'+
-    '<small class="muted">📱 '+esc(o.phone||'নম্বর নেই')+' · 📋 '+cs.length+' cases ('+active+' active)</small></div></div>';
+    '<small class="muted">📱 '+(telDigits(o.phone)?'<a href="tel:'+esc(telDigits(o.phone))+'" style="color:inherit;text-decoration:underline">'+esc(o.phone)+'</a>':(o.phone?esc(o.phone):'নম্বর নেই'))+' · 📋 '+cs.length+' cases ('+active+' active)</small></div></div>';
   if(o.address)h+='<div class="case-meta">📍 '+esc(o.address)+'</div>';
   if(o.note)h+='<div class="case-meta">🗒️ '+esc(o.note)+'</div>';
   if(o.active===false)h+='<div class="case-meta" style="color:var(--red);font-weight:700">⛔ এই Officer Inactive — তাঁর মামলার হিসাব ড্যাশবোর্ডে যাবে না (এই প্রোফাইলে সব হিসাব দেখা যাবে)</div>';
@@ -3340,5 +3496,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4126e538c4548ff',t:'MTc5MDQyNzQxMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a414b9ac2b010eed',t:'MTc5MDQ1MTQ2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
