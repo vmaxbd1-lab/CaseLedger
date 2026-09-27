@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.27</title>
+<title>Case Writer Pro v6.28</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -24,7 +24,7 @@ textarea{min-height:80px;resize:vertical}
 /* fullscreen views */
 .fullscreen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;z-index:50}
 #setup-view{background:linear-gradient(160deg,#16324f,#1d5b79);color:#fff;overflow:auto;justify-content:flex-start;padding-top:36px}
-#login-view{background:linear-gradient(160deg,#16324f,#1d5b79);color:#fff}
+#login-view{background:linear-gradient(160deg,#16324f,#1d5b79);color:#fff;position:relative}
 .logo-big{font-size:52px;line-height:1}
 .setup-box{width:100%;max-width:430px}
 .setup-box .card{text-align:left}
@@ -327,7 +327,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.27</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.28</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -358,15 +358,17 @@ textarea{min-height:80px;resize:vertical}
 
 <!-- ============ LOGIN ============ -->
 <div id="login-view" class="fullscreen">
+  <button class="icon-btn" id="lock-cfg-btn" onclick="openClientCfg()" title="গেস্ট-সংযোগ সেটিংস (ম্যানুয়াল সেট)" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff">⚙️</button>
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.27 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.28 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
   <p id="pinError" class="pin-error">❌ ভুল PIN — আবার চেষ্টা করুন</p>
   <span class="forgot-link" onclick="forgotPin()">PIN ভুলে গেছেন?</span>
+  <p style="margin:16px 0 0;font-size:10px;opacity:.65"><span class="forgot-link" id="lock-newadmin" onclick="openNewAdminWizard()">＋ Create New Admin — নিজের GitHub রিপো</span></p>
 </div>
 
 <!-- ============ APP ============ -->
@@ -605,7 +607,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.27 · PC + Mobile · Smart Cloud Sync · 26 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.28 · PC + Mobile · Smart Cloud Sync · 27 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -852,6 +854,61 @@ let cloudDirty=false,cloudTimer=null,cloudPullTimer=null,cloudLastStatus='';
 function cloudCfg(){try{const r=storage.getItem(CLOUD_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function cloudSet(c){try{storage.setItem(CLOUD_KEY,JSON.stringify(c));}catch(e){}}
 function cloudClear(){try{storage.removeItem(CLOUD_KEY);}catch(e){}}
+/* ---- v6.28: ক্লায়েন্ট-অ্যাপ ডিফল্ট (গেস্ট/শুধু-পড়া) ----
+   ⚙️ APK বানানোর আগে নিচের ৩টি ঘর পূরণ করুন (CaseLedger Team-এর ডেটা-রিপো + Read-only টোকেন):
+   owner = GitHub Username · repo = প্রাইভেট ডেটা-রিপো · token = fine-grained (Contents: Read-only) টোকেন
+   খালি থাকলে (সাধারণ ওয়েব-ভার্সন) কিছুই বদলাবে না — আগের মতোই সেটআপ-উইজার্ড চলবে।
+   ডিভাইসে একবার সংযোগ সেট হয়ে গেলে এই ডিফল্ট আর ছুঁবে না (⚙️ ও Create New Admin-এর পথ সবসময় খোলা)। */
+let CLIENT_DEFAULT_GUEST=null;
+let CLIENT_DEFAULT_GUEST_ENC='';
+/* স্তর-২ অবফিস্কেশন: টোকেন প্লেইন-টেক্সটে APK-তে থাকে না — set_client_config.py
+   XOR+base64 করে CLIENT_DEFAULT_GUEST_ENC-এ বসায় (grep/unzip-এ ধরা পড়ে না)।
+   ⚠️ এটা এনক্রিপশন নয় — রানটাইমে ডিকোড হয়; আসল সমাধান সার্ভার-প্রক্সি (স্তর ৩)। */
+function applyClientDefaultEnc(){
+  CLIENT_DEFAULT_GUEST=null;
+  if(!CLIENT_DEFAULT_GUEST_ENC)return;
+  try{
+    const k='CLv28#CaseLedger';
+    const raw=b64d(CLIENT_DEFAULT_GUEST_ENC);
+    let out='';
+    for(let i=0;i<raw.length;i++)out+=String.fromCharCode(raw.charCodeAt(i)^k.charCodeAt(i%k.length));
+    const j=JSON.parse(out);
+    if(j&&j.o&&j.r&&String(j.t||'').length>=10)CLIENT_DEFAULT_GUEST={owner:String(j.o),repo:String(j.r),token:String(j.t)};
+  }catch(e){CLIENT_DEFAULT_GUEST=null;}
+}
+function __setClientDefaultCfg(o){CLIENT_DEFAULT_GUEST=o||{};}
+function __setClientDefaultEnc(e){CLIENT_DEFAULT_GUEST_ENC=e||'';applyClientDefaultEnc();}
+function maybeAdoptClientDefault(){
+  try{
+    if(!PERSIST)return false;
+    if(cloudCfg())return false;
+    const g=CLIENT_DEFAULT_GUEST||{};
+    if(!g.owner||!g.repo||!g.token||String(g.token).length<10)return false;
+    cloudSet({owner:g.owner,repo:g.repo,token:g.token,readOnly:true,guest:true,sha:'',lastSync:0});
+    return true;
+  }catch(e){return false;}
+}
+/* ---- v6.28: Android APK-ব্রিজ হুক (ব্রাউজারে সম্পূর্ণ নিষ্প্রভ) ---- */
+function androidBack(){
+  try{
+    const mr=$('modal-root');
+    if(mr&&mr.style.display==='block'&&mr.innerHTML){closeModal();return 'handled';}
+    const pn=$('notif-panel');
+    if(pn&&pn.style.display==='block'){closeNotifPanel();return 'handled';}
+    const fm=$('fab-menu');
+    if(fm&&fm.style.display==='block'){closeFabMenu();return 'handled';}
+    const ms=$('more-sheet');
+    if(ms&&String(ms.className||'').indexOf('open')>=0){closeMoreSheet();return 'handled';}
+  }catch(e){}
+  return 'exit';
+}
+function installAndroidBridge(){
+  if(!window.CaseLedgerBridge)return false;
+  try{
+    window.open=function(u){if(u){try{CaseLedgerBridge.openExternal(String(u));}catch(e){}}return null;};
+    return true;
+  }catch(e){return false;}
+}
 /* ---- v6.17: গেস্ট রিড-অ্যাক্সেস (#guest=owner/repo/read-only-token লিংক) ---- */
 function parseGuestHash(){
   try{
@@ -1394,9 +1451,48 @@ function cloudStartTimers(){
   const c=cloudCfg();if(!c)return;
   cloudPullTimer=setInterval(cloudTick,20000);
 }
-function openCloudConnect(fromSetup){
+/* ---- v6.28: ক্লায়েন্ট-মোড UI (লক-স্ক্রিনের ⚙️ + Create New Admin) ---- */
+function openClientCfg(){
+  const c=(cloudCfg()&&cloudCfg().guest)?cloudCfg():{};
+  openModal(modalHead('⚙️ সংযোগ-সেটিংস (গেস্ট / শুধু-পড়া)')+
+    '<p class="small muted" style="margin:2px 0 8px">যে GitHub-রিপো থেকে ডেটা পড়া হবে তার তথ্য দিন। এটি <b>শুধু-পড়া</b> সংযোগ — এই ডিভাইস থেকে কোনো ডেটা সেভ হবে না; নতুন মামলার অনুরোধ WhatsApp-এ (ড্রাফট) যাবে।</p>'+
+    '<label>GitHub Username *</label><input id="ccg-owner" value="'+esc(c.owner||'')+'" placeholder="যেমন vmaxbd1-lab">'+
+    '<label>প্রাইভেট রিপোর নাম *</label><input id="ccg-repo" value="'+esc(c.repo||'')+'" placeholder="যেমন caseledger-data">'+
+    '<label>Read-only Token * (github_pat_…)</label><input id="ccg-token" placeholder="টোকেন পরিবর্তন করতে চাইলে আবার দিন">'+
+    '<button class="btn btn-primary" onclick="applyClientCfg()">💾 সেভ করে রিলোড</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function applyClientCfg(){
+  const owner=($('ccg-owner').value||'').trim(),repo=($('ccg-repo').value||'').trim(),token=($('ccg-token').value||'').trim();
+  if(!owner||!repo||!token||token.length<10)return toast('তিনটি ঘরই সঠিকভাবে পূরণ করুন (টোকেন github_pat_…)');
+  const doApply=function(){
+    cloudSet({owner:owner,repo:repo,token:token,readOnly:true,guest:true,sha:'',lastSync:0});
+    toast('✅ সংযোগ সেট হয়েছে — ডেটা আনতে অ্যাপ রিলোড হচ্ছে');
+    closeModal();
+    try{location.reload();}catch(e){}
+  };
+  const ex=cloudCfg();
+  if(ex&&!ex.guest){
+    askConfirm('⚠️ সংযোগ বদলাবেন?','এই ডিভাইসে এখন <b>লেখা-সংযোগ</b> (Admin) আছে — গেস্ট (শুধু-পড়া) দিয়ে বদলালে এই ডিভাইস থেকে আর সেভ করা যাবে না।','হ্যাঁ, বদলান',doApply);
+    return;
+  }
+  doApply();
+}
+function openNewAdminWizard(){
+  askConfirm('🆕 Create New Admin — নিজের রিপো','নিজের GitHub <b>প্রাইভেট রিপো</b> + <b>লেখার টোকেন</b> দিয়ে এই ডিভাইসকে স্বাধীন Admin বানানো যাবে (নিজের ব্যবসার নাম, ইউজার, সব ডেটা নিজের রিপোতে থাকবে)।<br>⚠️ বর্তমান গেস্ট-সংযোগ ও তার ক্যাশড ডেটা এই ডিভাইস থেকে মুছে <b>একদম ফর্সা শুরু</b> হবে।','এগোন',function(){openCloudConnect(false,true);});
+}
+/* v6.28: Create New Admin-এ ফর্সা শুরু — গেস্ট-ডিভাইসের ক্যাশড (টিম) ডেটা নতুন রিপোতে লিক হবে না */
+function resetLocalForFreshAdmin(){
+  try{
+    db=defaultDb();ensureDefaults(db);saveLocal();
+    try{baseSet(JSON.stringify(db));}catch(e2){}
+    cloudDirty=false;
+  }catch(e){}
+}
+function openCloudConnect(fromSetup,fresh){
   sess.cloudFromSetup=!!fromSetup;
-  const c=cloudCfg()||{};
+  sess.cloudFresh=!!fresh; /* v6.28: Create New Admin → ফর্সা শুরু (টিমের ক্যাশড ডেটা নতুন রিপোতে সরবে না) */
+  const c=fresh?{}:(cloudCfg()||{});
   openModal(modalHead('☁️ Cloud Connect — GitHub')+
     '<p class="small muted" style="margin:2px 0 8px">ডেটা থাকবে আপনার GitHub অ্যাকাউন্টের <b>প্রাইভেট রিপোজিটরি</b>-তে (db.json ফাইল হিসেবে)। নিচের ৩টি তথ্য দিন — বানানোর নিয়ম রিলিজ নোটে আছে।</p>'+
     '<label>GitHub Username *</label><input id="cc-owner" value="'+esc(c.owner||'')+'" placeholder="যেমন vmaxbd1-lab">'+
@@ -1417,6 +1513,14 @@ function doCloudConnect(){
         if(x.__status===404||x.__status===401)return cloudStatus('❌ যাচাই হয়নি — Username/রিপোর নাম/Token আবার দেখুন (টোকেনে ওই রিপোর Contents অনুমতি থাকতে হবে)');
         if(x.__status!==200)return cloudStatus('❌ সমস্যা: HTTP '+x.__status);
         cloudSet(c);
+        if(sess.cloudFresh){ /* v6.28: Create New Admin — ওয়াইপ → রিলোড → নিজের রিপোর সেটআপ-উইজার্ড */
+          sess.cloudFresh=false;
+          resetLocalForFreshAdmin();
+          try{closeModal();}catch(e3){}
+          toast('🆕 নতুন Admin-সেটআপ শুরু হচ্ছে — এই ডিভাইসের আগের (গেস্ট) ডেটা মুছে ফেলা হয়েছে');
+          try{location.reload();}catch(e4){}
+          return;
+        }
         cloudGetRemote(function(err,r){
           if(err)return cloudStatus('❌ db.json পড়া গেল না — Token-এ Contents অনুমতি আছে তো?');
           closeModal();
@@ -1430,7 +1534,7 @@ function doCloudConnect(){
             if(!db.users.length){cloudStatusRender();toast('✅ কানেক্ট হয়েছে — তবে ক্লাউড খালি ও এই ডিভাইসেও কোনো ইউজার নেই');return;}
             openModal(modalHead('☁️ কানেক্ট হয়েছে — ক্লাউড খালি')+
               '<p class="small muted" style="margin:2px 0 8px">এই ডিভাইসের ডেটা ক্লাউডে পাঠিয়ে দিন — এরপর বাকি ডিভাইস এই কানেক্ট দিয়ে ডেটা টানে আনবে।</p>'+
-              '<button class="btn btn-primary" onclick="cloudPushInitial()">⬆️ এই ডিভাইসের ডেটা ক্লাউডে পাঠান</button>'+
+              (can('settings')?'<button class="btn btn-primary" onclick="cloudPushInitial()">⬆️ এই ডিভাইসের ডেটা ক্লাউডে পাঠান</button>':'')+
               '<button class="btn btn-ghost" style="margin-top:6px" onclick="closeModal()">পরে করবো</button>');
           }
         },{full:true});
@@ -1791,7 +1895,10 @@ function restoreItem(binId){
 function printDoc(title,innerHtml){
   $('print-area').innerHTML='<div class="doc"><h2>⚖️ '+esc(db.settings.businessName)+'</h2><h3>'+title+'</h3>'+innerHtml+'<p class="doc-foot">Printed on '+fmtD(todayISO())+'</p></div>';
   document.body.classList.add('printing');
-  setTimeout(function(){try{window.print();}catch(e){}},50);
+  setTimeout(function(){try{
+      if(window.CaseLedgerBridge){CaseLedgerBridge.printHtml('<!DOCTYPE html><html><head><meta charset="utf-8"><style>'+document.getElementsByTagName('style')[0].textContent+' @page{margin:10mm}body{background:#fff}</style></head><body>'+$('print-area').innerHTML+'</body></html>');}
+      else{window.print();}
+    }catch(e){}},50);
   setTimeout(function(){document.body.classList.remove('printing');$('print-area').innerHTML='';},1000);
 }
 
@@ -1910,6 +2017,7 @@ function csvCell(v){v=String(v===undefined||v===null?'':v);if(/[",\n\r]/.test(v)
 function csvStr(rows){return '\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');}
 function csvDownload(fname,csv){
   try{
+    if(window.CaseLedgerBridge){try{CaseLedgerBridge.saveFile(b64e(csv),fname,'text/csv');toast('📤 CSV তৈরি হচ্ছে — সেভ/শেয়ার করুন');return;}catch(e){}}
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);a.download=fname;
@@ -3458,8 +3566,11 @@ function applyPerms(){
 /* ==================== boot ==================== */
 function boot(){
   loadDb();
+  installAndroidBridge();
   captureDraftHash();
   adoptGuestCfg();
+  applyClientDefaultEnc();
+  maybeAdoptClientDefault();
   purgeBin();
   if(PERSIST&&cloudCfg()&&!guestGate()){
     cloudStatus('⏳ ক্লাউড থেকে ডেটা আনা হচ্ছে…');
@@ -3496,5 +3607,5 @@ function boot(){
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a414da9bedbc1c00',t:'MTc5MDQ1MjgxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a41cd173ff78a07c',t:'MTc5MDUzNjMyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
