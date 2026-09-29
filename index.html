@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.28.2</title>
+<title>Case Writer Pro v6.29.4</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -319,6 +319,41 @@ textarea{min-height:80px;resize:vertical}
  .stat,.badge,.age-chip,.progress>div{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .container{padding:0;max-width:100%}
 }
+/* ===== v6.29: রেফারেন্স কার্ড (তদন্ত সময়সীমা + ব্যয়বিল) ===== */
+.ref-tile-btns{display:flex;gap:8px;flex-wrap:wrap}
+.lt-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center}
+.lt-toolbar input{flex:1;min-width:160px;margin:0}
+.lt-chip{border:1px solid #cbd5e1;background:#f8fafc;color:#16324f;border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
+.lt-chip.on{background:#16324f;color:#fff;border-color:#16324f}
+.lt-b{display:inline-block;font-size:10px;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+.lt-b-wd{background:#dbeafe;color:#1e40af}
+.lt-b-dd{background:#fef3c7;color:#92400e}
+.lt-cat{display:inline-block;font-size:10px;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.lt-c-has{background:#dcfce7;color:#166534}
+.lt-c-none{background:#fee2e2;color:#991b1b}
+.lt-c-trial{background:#e5e7eb;color:#374151}
+.lt-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.lt-table th,.lt-table td{border:1px solid #dbe3ee;padding:6px 7px;text-align:left;vertical-align:top}
+.lt-table th{background:#f0f4fa;position:sticky;top:0;z-index:1}
+.lt-table tr.lt-r-has td:nth-child(4){background:#f0fdf4}
+.lt-table tr.lt-r-none td:nth-child(4){background:#fef2f2}
+.lt-table tr.lt-r-trial td:nth-child(4){background:#f7f8fa}
+@media(max-width:699px){
+  .lt-table thead{display:none}
+  .lt-table tr{display:block;border:1px solid #dbe3ee;border-radius:12px;margin:8px 0;padding:6px 8px;background:#fff}
+  .lt-table tr[hidden]{display:none}
+  .lt-table td{display:block;border:none;padding:3px 0}
+  .lt-table td::before{content:attr(data-l);display:block;font-weight:700;color:#16324f;font-size:11px}
+  .lt-table td:nth-child(4){border-radius:8px;padding:4px 6px}
+}
+.lt-calc{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:10px 12px;margin-top:12px}
+.lt-calc .flex-row{flex-wrap:wrap}
+.cb-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.cb-table th,.cb-table td{border:1px solid #dbe3ee;padding:6px 8px;text-align:left;vertical-align:top}
+.cb-table th{background:#f0f4fa}
+.cb-in{width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;text-align:right;margin:0}
+.cb-gov{font-weight:700;color:#16324f;white-space:nowrap}
+.cb-note{font-size:10.5px;color:#b45309}
 </style>
 </head>
 <body>
@@ -327,7 +362,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.28.2</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.29.4</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -362,7 +397,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.28.2 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.29.4 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -410,7 +445,7 @@ textarea{min-height:80px;resize:vertical}
     <div id="view-dashboard" class="view active">
       <div id="deadline-alarm-root"></div>
       <div class="card" id="dash-main">
-        <h3>📊 Dashboard <button class="icon-btn" id="dash-report-btn" onclick="openMonthlyReport()" title="মাসিক বিজনেস রিপোর্ট (প্রিন্ট)" style="display:none">📈</button> <button class="icon-btn" id="dash-paycsv-btn" onclick="exportPaymentsCsv()" title="পেমেন্ট তালিকা CSV (চলতি রেঞ্জ)" style="display:none">📤</button> <button class="icon-btn" onclick="window.print()" title="Print">🖨️</button></h3>
+        <h3>📊 Dashboard <button class="icon-btn" id="dash-report-btn" onclick="openMonthlyReport()" title="মাসিক বিজনেস রিপোর্ট (প্রিন্ট)" style="display:none">📈</button> <button class="icon-btn" id="dash-paycsv-btn" onclick="exportPaymentsCsv()" title="পেমেন্ট তালিকা CSV (চলতি রেঞ্জ)" style="display:none">📤</button> <button class="icon-btn" onclick="pagePrint()" title="Print">🖨️</button></h3>
         <div class="chips" id="dash-chips">
           <button class="chip active" data-r="all" onclick="setDashRange('all')">All Time</button>
           <button class="chip" data-r="today" onclick="setDashRange('today')">Today</button>
@@ -607,7 +642,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.28.2 · PC + Mobile · Smart Cloud Sync · 28 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.29.4 · PC + Mobile · Smart Cloud Sync · 29 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -639,7 +674,7 @@ textarea{min-height:80px;resize:vertical}
     <button class="sheet-item" id="ms-recycle" onclick="go('recycle')">♻️ Recycle Bin</button>
     <button class="sheet-item" id="ms-settings" onclick="go('settings')">⚙️ Settings</button>
     <button class="sheet-item" id="ms-users" onclick="go('users')">👥 Users &amp; Roles</button>
-    <button class="sheet-item" onclick="window.print()">🖨️ Print This Page</button>
+    <button class="sheet-item" onclick="closeMoreSheet();pagePrint()">🖨️ Print This Page</button>
     <button class="sheet-item" onclick="lockApp()">🔒 Lock Now</button>
     <div id="more-me" class="small muted center" style="margin-top:10px"></div>
   </div>
@@ -1902,6 +1937,23 @@ function printDoc(title,innerHtml){
   setTimeout(function(){document.body.classList.remove('printing');$('print-area').innerHTML='';},1000);
 }
 
+/* ---- pagePrint — APK-তে ব্রিজপথে সিস্টেম-প্রিন্ট; ব্রাউজারে আগের মতোই window.print ---- */
+function pagePrint(){
+  if(window.CaseLedgerBridge){
+    try{
+      var v=$('view-'+sess.view);
+      var title=(VIEWMETA[sess.view]&&VIEWMETA[sess.view].title)||sess.view;
+      var css='';
+      try{css=document.getElementsByTagName('style')[0].textContent;}catch(e){}
+      var inner='<div class="doc"><h2>⚖️ '+esc(db.settings.businessName)+'</h2><h3>'+esc(title)+'</h3>'+(v?v.innerHTML:'')+'<p class="doc-foot">Printed on '+fmtD(todayISO())+'</p></div>';
+      CaseLedgerBridge.printHtml('<!DOCTYPE html><html><head><meta charset="utf-8"><style>'+css+' @page{margin:10mm}body{background:#fff}</style></head><body>'+inner+'</body></html>');
+      return;
+    }catch(e){}
+  }
+  try{window.print();}catch(e){}
+}
+
+
 /* ==================== shared render helpers ==================== */
 function statBox(icon,label,val,cls,onclick){return '<div class="stat '+cls+(onclick?' clickable':'')+'"'+(onclick?' title="বিস্তারিত দেখুন — ক্লিক করুন" onclick="'+onclick+'"':'')+'><span class="s-ic">'+icon+'</span><span class="s-v">'+val+'</span><span class="s-l">'+label+'</span></div>';}
 function casePaid(c){return (c.payments||[]).reduce((s,p)=>s+(+p.amount||0),0);}
@@ -2338,7 +2390,7 @@ function renderDashboard(){
   if(iso)h+='<div class="stat-note">💰 বিলের হিসাব — শুধুমাত্র বকেয়া আছে এমন চলমান মামলার (পরিশোধিত / Completed-Closed মামলা বাদ) — প্রতিটি মামলা খুলে পুরো হিসাব দেখতে পারবেন</div>';
   if(inactCount>0&&!myOfficerId())h+='<div class="stat-note">⛔ '+inactCount+' জন Inactive Officer-এর মামলার হিসাব ড্যাশবোর্ডে বাদ আছে</div>';
   $('dash-stats').innerHTML=h;
-  renderDeadlineAlarm();renderDashAlerts();renderRecent();
+  renderDeadlineAlarm();renderDashAlerts();renderRecent();renderRefCards();
 }
 function statDetailData(type){
   const S=dashScope();
@@ -3003,7 +3055,7 @@ function renderProfile(){
     (can('edit')?'<button class="btn-small btn-ghost" onclick="openOfficerForm(\''+o.id+'\')">✏️ Edit</button>':'')+
     (can('edit')?(o.active===false?'<button class="btn-small" onclick="toggleOfficerActive(\''+o.id+'\')">✅ Make Active</button>':'<button class="btn-small btn-warn" onclick="toggleOfficerActive(\''+o.id+'\')">⛔ Make Inactive</button>'):'')+
     (can('delete')?'<button class="btn-small btn-red" onclick="deleteOfficer(\''+o.id+'\')">🗑️</button>':'')+
-    '<button class="btn-small btn-ghost" onclick="window.print()">🖨️</button>'+
+    '<button class="btn-small btn-ghost" onclick="pagePrint()">🖨️</button>'+
     '</div>';
   $('profile-head').innerHTML=h;
   $('profile-cases').innerHTML=cs.map(caseCardHTML).join('')||'<p class="small muted">কোনো কেস নেই — উপরে ＋ Case বাটনে চাপুন।</p>';
@@ -3318,6 +3370,9 @@ function removeCaseType(t){
 function backupNow(){
   if(db.users.length&&!can('settings'))return toast('⛔ Permission নেই');
   const payload={app:'CaseWriterPro',schemaVersion:6,exportedAt:new Date().toISOString(),data:db};
+  if(window.CaseLedgerBridge){
+    try{CaseLedgerBridge.saveFile(b64e(JSON.stringify(payload,null,1)),'CaseLedger_v6_Backup_'+todayISO()+'.json','application/json');toast('📤 ব্যাকআপ তৈরি হচ্ছে — সেভ/শেয়ার করুন');return;}catch(e){}
+  }
   let ok=false;
   try{
     const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
@@ -3605,7 +3660,320 @@ function boot(){
     initAuth();
   }
 }
+/* ==================== v6.29: রেফারেন্স কার্ড — তদন্ত সময়সীমা + তদন্ত ব্যয়বিল ==================== */
+/* ডেটা-ভিত্তি: bdlaws.minlaw.gov.bd ও গেজেট-পাঠে যাচাইকৃত মাস্টার তালিকা (সেপ্টেম্বর ২০২৬)।
+   ব্যয়বিল: স্বরাষ্ট্র মন্ত্রণালয়ের জননিরাপত্তা বিভাগের ২০২১-প্রজ্ঞাপন (মামলা তদন্ত ব্যয়বিল আদেশ)। */
+var LAW_TIMES=[
+{law:'ফৌজদারি কার্যবিধি, ১৮৯৮ (২০২৫-সংশোধিত)',sec:'১৭৩বি (173B)',time:'৬০ কার্যদিবস (তথ্য প্রাপ্তির দিন থেকে)',cat:'has',unit:'wd',calc:60,
+ mx:'যুক্তিসঙ্গত কারণে কারণ লিখে আবেদন করলে ম্যাজিস্ট্রেট যুক্তিসঙ্গত সময় বাড়িয়ে দিতে পারেন',
+ io:'থানার OC/ক্ষমতাপ্রাপ্ত পুলিশ কর্মকর্তা (ধারা ১৫৬–১৫৭); PRB-প্রথায় সাধারণত SI বা ঊর্ধ্বতন'},
+{law:'অস্ত্র আইন, ১৮৭৮',sec:'৩০খ',time:'হাতেনাতে ধৃত: ১৫ কার্যদিবস · ধৃত নয়: ৬০ কার্যদিবস',cat:'has',unit:'wd',calc:60,calcNote:'ধৃত নয় ক্ষেত্রে',
+ mx:'কারণ লিখে +৭ কার্যদিবস; এরপর নতুন IO-তে — ধৃত ৭ / অন্যান্য ৩০ কার্যদিবস',
+ io:'আইনে পদ নির্দিষ্ট নেই → CrPC/PRB কাঠামো (প্রথায় SI+)'},
+{law:'আইন-শৃঙ্খলা বিঘ্নকারী অপরাধ (দ্রুত বিচার) আইন, ২০০২',sec:'১০(২)–(৪)',time:'হাতেনাতে ধৃত: ২৪ ঘণ্টায় আদালতে হাজির + ৭ কার্যদিবসে রিপোর্ট/অভিযোগ',cat:'has',unit:'wd',calc:7,calcNote:'হাতেনাতে ধৃত ক্ষেত্রে — রিপোর্ট-দাখিলের মেয়াদ',
+ mx:'ধৃত না হলে অপরাধ সংঘটনের পরবর্তী ৭ কার্যদিবসে রিপোর্ট/অভিযোগ [১০(৩)]; এটি রিপোর্ট-দাখিলের মেয়াদ, তদন্ত-সমাপ্তির নয়; বিচার: রিপোর্টের পর ৩০ (ধৃত) / ৬০ (ধৃত নয়) কার্যদিবস',
+ io:'নির্দিষ্ট পদ নেই → সাধারণ CrPC/পুলিশ কাঠামো; রিপোর্ট/অভিযোগ SI-নিম্ন নয় এমন কর্মকর্তার [৯(২)]'},
+{law:'এসিড অপরাধ দমন আইন, ২০০২',sec:'১১',time:'৩০ দিন (তথ্য প্রাপ্তি/তদন্তের আদেশ থেকে)',cat:'has',unit:'d',calc:30,
+ mx:'+১৫ দিন [১১(২)] → ট্রাইব্যুনালের নির্দেশে +১৫ দিন [১১(৩)] → নতুন IO-তে +১৫ দিন [১১(৪)] = সর্বোচ্চ ৭৫ দিন',
+ io:'নির্দিষ্ট পদ নেই → সংশ্লিষ্ট পুলিশ কর্মকর্তা (CrPC/PRB)'},
+{law:'জুয়া প্রতিরোধ আইন, ২০২৬',sec:'৩১, ৩৫',time:'আইনে নির্দিষ্ট সময়সীমা নেই',cat:'none',unit:'wd',calc:60,calcNote:'কার্যত — ধারা ৩৫ অনুযায়ী CrPC প্রযোজ্য',
+ mx:'ধারা ৩৫ অনুযায়ী CrPC প্রযোজ্য → কার্যত ধারা ১৭৩বি-র ৬০ কার্যদিবসই খাটবে; সরকার তদন্ত যেকোনো সংস্থায় স্থানান্তর করতে পারে',
+ io:'SI বা ঊর্ধ্বতন পুলিশ কর্মকর্তা [৩১(১)]'},
+{law:'নারী ও শিশু নির্যাতন দমন আইন, ২০০০ (২০২৬-সংশোধিত)',sec:'১৮',time:'হাতেনাতে ধৃত: ১৫ কার্যদিবস · ধৃত নয়: ৩০ কার্যদিবস',cat:'has',unit:'wd',calc:30,calcNote:'ধৃত নয় ক্ষেত্রে',
+ mx:'কেস-ডায়েরিসহ লিখিত কারণে +১৫ কার্যদিবস [১৮(২)]; DNA পরীক্ষা আবশ্যক হলে প্রয়োজনীয় ন্যূনতম সময়; নারাজির পর নতুন IO-তে ১৫ কার্যদিবস [১৮(৩)]',
+ io:'ধারায় পদ নির্দিষ্ট নেই → সাধারণ কাঠামো (প্রথায় SI+)'},
+{law:'নির্যাতন এবং হেফাজতে মৃত্যু (নিবারণ) আইন, ২০১৩',sec:'৮',time:'৯০ কার্যদিবস (প্রথম অভিযোগ লিপিবদ্ধের তারিখ থেকে)',cat:'has',unit:'wd',calc:90,
+ mx:'স্বয়ংক্রিয় বৃদ্ধি নেই; মেয়াদে শেষ না হলে IO-কে আদালতে ব্যক্তিগতভাবে উপস্থিত হয়ে বিলম্বের কারণ ব্যাখ্যা করতে হয়',
+ io:'আদালত-নির্ধারিত — অপরাধে জড়িত ব্যক্তির পদমর্যাদার নিম্নে নয় এমন পুলিশ কর্মকর্তা (ধারা ৪–৫ ক্রম)'},
+{law:'পর্নোগ্রাফি নিয়ন্ত্রণ আইন, ২০১২',sec:'৫',time:'৩০ কার্যদিবস',cat:'has',unit:'wd',calc:30,
+ mx:'পুলিশ সুপার/সমপদ/তদূর্ধ্ব-এর অনুমোদনে +১৫ → আদালতের অনুমোদনে +৩০ = সর্বোচ্চ ৭৫ কার্যদিবস',
+ io:'SI বা সমপদমর্যাদা বা ঊর্ধ্বতন [৫(১)]'},
+{law:'বিশেষ ক্ষমতা আইন (Special Powers Act), ১৯৭৪',sec:'২৯',time:'নিজস্ব তদন্ত-সময়সীমা নেই',cat:'none',unit:'wd',calc:60,calcNote:'কার্যত — ধারা ২৯ অনুযায়ী Tribunal-এ CrPC প্রযোজ্য',
+ mx:'ধারা ২৯ → Special Tribunal-এ CrPC প্রযোজ্য → কার্যত ধারা ১৭৩বি-র ৬০ কার্যদিবস; অধিকতর তদন্তে ট্রাইব্যুনাল যে সময় নির্ধারণ করবে',
+ io:'ট্রাইব্যুনাল SI বা ঊর্ধ্বতন কর্মকর্তার রিপোর্টে আমল নেয় (ধারা ২৬–২৭)'},
+{law:'বিস্ফোরক দ্রব্য আইন (Explosive Substances Act), ১৯০৮',sec:'৬A',time:'হাতেনাতে ধৃত: ১৫ কার্যদিবস · ধৃত নয়: ৬০ কার্যদিবস',cat:'has',unit:'wd',calc:60,calcNote:'ধৃত নয় ক্ষেত্রে',
+ mx:'কারণ লিখে +৭ কার্যদিবস [৬A(২)]; নতুন IO-তে — ধৃত ৭ / অন্যান্য ৩০ কার্যদিবস [৬A(৪)]',
+ io:'নির্দিষ্ট পদ নেই → সাধারণ কাঠামো'},
+{law:'বাল্যবিবাহ নিরোধ আইন, ২০১৭',sec:'১৬',time:'আইনে কোনো তদন্ত-সময়সীমা নেই',cat:'none',
+ mx:'ধারা ১৬ = আদালতের সরেজমিন (local inquiry) বিধান — তদন্ত-মেয়াদ নয়; ফাঁকা-বিধানে CrPC কাঠামো',
+ io:'নির্দিষ্ট পদ নেই → CrPC কাঠামো'},
+{law:'মাদকদ্রব্য নিয়ন্ত্রণ আইন, ২০১৮',sec:'৩১',time:'হাতেনাতে ধৃত: ৩০ কার্যদিবস (ধৃত হইবার তারিখ থেকে) · ধৃত নয়: ৬০ কার্যদিবস (তথ্য/আদেশ প্রাপ্তির তারিখ থেকে)',cat:'has',unit:'wd',calc:60,calcNote:'ধৃত নয় ক্ষেত্রে',
+ mx:'কারণ লিপিবদ্ধ করে +১৫ কার্যদিবস [৩১(২)]; একই মামলায় গ্রেফতার+পলাতক মিশ্র হলে ৬০-এর পথ [৩১(১)(গ)]; নতুন IO-তে — ধৃত ১৫ / অন্যান্য ৩০ কার্যদিবস [৩১(৪)]',
+ io:'ক্ষমতাপ্রাপ্ত কর্মকর্তা (পুলিশ-প্রথায় SI+ কাঠামো)'},
+{law:'মানব পাচার ও অভিবাসী চোরাচালান প্রতিরোধ ও দমন আইন, ২০২৬',sec:'৩০',time:'৯০ দিবস (অভিযোগ দায়ের/তদন্তের নির্দেশ/দায়িত্ব প্রাপ্তির অনধিক)',cat:'has',unit:'d',calc:90,
+ mx:'মেয়াদের অন্তত ৩ কার্যদিবস আগে আবেদন → +৪৫ দিবস (সর্বোচ্চ ১৩৫); আন্তঃরাষ্ট্রীয় তদন্তে ট্রাইব্যুনাল যৌক্তিক মেয়াদ দিতে পারে',
+ io:'SI বা ঊর্ধ্বতন [৩০(১)]; সরকার-ক্ষমতাপ্রাপ্ত সংস্থায় স্থানান্তরযোগ্য [৩০(৪)]'},
+{law:'শিশু আইন, ২০১৩',sec:'৪৬; ৩২',time:'তদন্তে পৃথক দিনসংখ্যা নেই — ধারা ৪৬ অনুযায়ী CrPC প্রযোজ্য',cat:'trial',unit:'wd',calc:60,calcNote:'কার্যত — ধারা ৪৬ অনুযায়ী CrPC (১৭৩বি) প্রযোজ্য',
+ mx:'বিচার: শিশুর প্রথম উপস্থিতি থেকে ৩৬০ দিন + ৬০ দিন = ৪২০ দিন [৩২] (বিচার-সমাপ্তির মেয়াদ, তদন্তের নয়)',
+ io:'শিশুবিষয়ক পুলিশ কর্মকর্তা / CrPC কাঠামো [৪৬]'},
+{law:'সন্ত্রাসবিরোধী আইন, ২০০৯',sec:'২৪',time:'৬০ দিন (তথ্য প্রাপ্তি/লিপিবদ্ধের তারিখ থেকে)',cat:'has',unit:'d',calc:60,
+ mx:'কারণ লিখে +৩০ দিন [২৪(২)] → +৩০ দিন [২৪(৩)] = সর্বোচ্চ ১২০ দিন; বিদেশ থেকে সাক্ষ্য-সংগ্রহ প্রয়োজন হলে সময়সীমা প্রযোজ্য হবে না',
+ io:'নির্দিষ্ট পদ নেই → ক্ষমতাপ্রাপ্ত পুলিশ কর্মকর্তা'},
+{law:'সাইবার সুরক্ষা আইন, ২০২৬',sec:'৩১–৩২',time:'৯০ দিন (দায়িত্ব প্রাপ্তির তারিখ থেকে)',cat:'has',unit:'d',calc:90,
+ mx:'নিয়ন্ত্রণকারী কর্মকর্তার অনুমোদনে +১৫ দিন → ট্রাইব্যুনালের অনুমতিতে +৩০ দিন = ১৩৫ দিন; প্রযুক্তিগত সীমাবদ্ধতায় ট্রাইব্যুনাল যুক্তিসঙ্গত সময় [৩২(২)]',
+ io:'তদন্তকারী অফিসার (পুলিশ) — নির্দিষ্ট পদ-বিধান নেই [ধারা ৩১]'},
+{law:'মানিলন্ডারিং প্রতিরোধ আইন, ২০১২ (২০১৫-সংশোধিত)',sec:'৯, ১০(২)',time:'নির্দিষ্ট দিনসংখ্যা নেই',cat:'none',
+ mx:'Special Judge অধিকতর তদন্তের আদেশ দিলে নির্ধারিত সময় — যা ৬ মাসের অধিক হবে না [১০(২)]',
+ io:'তদন্তকারী সংস্থা [৯(১), ২(ঠ)] — পুলিশ-তদন্তযোগ্য সম্পৃক্ত অপরাধে CID'},
+{law:'দুর্নীতি দমন কমিশন আইন, ২০০৪',sec:'২০খ',time:'১২০ কর্মদিবস (ক্ষমতা প্রাপ্তির তারিখ থেকে)',cat:'has',unit:'wd',calc:120,
+ mx:'যুক্তিসঙ্গত কারণে আবেদনে +৬০ কর্মদিবস [২০খ(২)]; এরপরও অসম্পূর্ণ হলে বিশেষ ও ব্যতিক্রমী পরিস্থিতিতে নতুন IO: ৯০ কর্মদিবস',
+ io:'দুদকের অনুমোদিত/ক্ষমতাপ্রাপ্ত কর্মকর্তা — সাধারণ থানার SI-এর তদন্তের মামলা নয়'}
+];
+var COST_TIERS=[
+{id:'dacoit',label:'ডাকাতি',gov:6000},
+{id:'murder',label:'হত্যা/খুন',gov:6000},
+{id:'abduction',label:'অপহরণ',gov:5000},
+{id:'trafficking',label:'মানব পাচার',gov:5000},
+{id:'robbery',label:'দস্যুতা',gov:4000},
+{id:'udeath',label:'অপমৃত্যু/অস্বাভাবিক মৃত্যু',gov:4000},
+{id:'acid',label:'অ্যাসিড-সংক্রান্ত মামলা',gov:3000},
+{id:'terror',label:'সন্ত্রাসবিরোধী আইনের মামলা',gov:3000},
+{id:'arms',label:'অস্ত্র আইনের মামলা',gov:3000},
+{id:'speedy',label:'দ্রুত বিচার আইনের মামলা',gov:3000},
+{id:'explosive',label:'বিস্ফোরকদ্রব্য মামলা',gov:3000},
+{id:'ml',label:'মানি লন্ডারিং',gov:3000},
+{id:'cyber',label:'ডিজিটাল/সাইবার-সংক্রান্ত মামলা',gov:3000,note:'মূল প্রজ্ঞাপন-পাঠ প্রকাশ্য নয় — একটি সূত্র ২,০০০ বলেছে (শুধু সুপার এডমিন দেখছেন)'},
+{id:'women',label:'নারী ও শিশু নির্যাতন/ধর্ষণ',gov:2000},
+{id:'narcotics',label:'মাদকদ্রব্য মামলা',gov:2000},
+{id:'other',label:'অন্যান্য মামলা',gov:2000}
+];
+var ltState={q:'',f:'all'};
+
+function bnFmt(n){return fmt(n).replace(/\d/g,function(d){return '০১২৩৪৫৬৭৮৯'[+d];});}
+function costCfg(){
+  if(!db.settings)db.settings={};
+  if(!db.settings.costBill)db.settings.costBill={on:true,vals:{}};
+  if(!db.settings.costBill.vals)db.settings.costBill.vals={};
+  return db.settings.costBill;
+}
+function costVal(id){var v=costCfg().vals[id];return (v===undefined||v===null||v==='')?null:(+v||0);}
+function visibleCostRows(){return COST_TIERS.filter(function(t){return costVal(t.id)!==null;});}
+
+/* ---- ড্যাশবোর্ড-টাইল ---- */
+function renderRefCards(){
+  var wrap=$('dash-stats');if(!wrap)return;
+  var cc=costCfg();
+  var showCost=isSuperAdmin()?true:((cc.on!==false)&&visibleCostRows().length>0);
+  var h='<div class="stats ref-tiles">'+
+    statBox('⚖️','Invest. Time',bnFmt(LAW_TIMES.length)+' আইন','st-b','openLawTimes()');
+  if(showCost){
+    var n=visibleCostRows().length;
+    h+=statBox('💰','Invest. Expenses',(isSuperAdmin()?bnFmt(n)+'/'+bnFmt(COST_TIERS.length):bnFmt(n))+' ধরন','st-p','openCostBill()');
+  }
+  h+='</div>';
+  var cur=wrap.innerHTML;
+  var i=cur.indexOf('<!--REF-->');
+  if(i>=0)cur=cur.substring(0,i);
+  wrap.innerHTML=cur+'<!--REF-->'+h;
+}
+
+/* ---- কার্ড ১: তদন্ত সময়সীমা ---- */
+function ltCatBadge(c){return c==='none'?'<span class="lt-cat lt-c-none">সীমা নেই</span>':(c==='trial'?'<span class="lt-cat lt-c-trial">বিচার-মেয়াদ</span>':'<span class="lt-cat lt-c-has">সীমা নির্ধারিত</span>');}
+function ltUnitBadge(u){return u==='wd'?'<span class="lt-b lt-b-wd">কার্যদিবস</span>':(u==='d'?'<span class="lt-b lt-b-dd">দিন</span>':'');}
+function ltFiltered(){
+  var q=ltState.q.trim().toLowerCase();
+  return LAW_TIMES.filter(function(L){
+    if(ltState.f==='has'&&L.cat!=='has')return false;
+    if(ltState.f==='none'&&L.cat!=='none')return false;
+    if(ltState.f==='trial'&&L.cat!=='trial')return false;
+    if(!q)return true;
+    return (L.law+' '+L.sec+' '+L.time+' '+L.mx+' '+L.io).toLowerCase().indexOf(q)>=0;
+  });
+}
+function ltRowsHtml(){
+  var rows=ltFiltered();
+  if(!rows.length)return '<p class="small muted" style="margin:8px 0">কিছু পাওয়া যায়নি — অন্য শব্দে খুঁজুন</p>';
+  var h='<table class="lt-table"><thead><tr><th>ক্রম</th><th>আইন</th><th>ধারা</th><th>বর্তমান আইন অনুযায়ী সঠিক সময়সীমা</th><th>সর্বোচ্চ / বিশেষ অবস্থা</th><th>কে তদন্ত করতে পারেন (ধারা)</th></tr></thead><tbody>';
+  rows.forEach(function(L){
+    h+='<tr class="lt-r-'+L.cat+'">'+
+      '<td data-l="ক্রম">'+(LAW_TIMES.indexOf(L)+1)+'</td>'+
+      '<td data-l="আইন"><b>'+esc(L.law)+'</b></td>'+
+      '<td data-l="ধারা">'+esc(L.sec)+'</td>'+
+      '<td data-l="সময়সীমা">'+ltCatBadge(L.cat)+' '+esc(L.time)+' '+ltUnitBadge(L.unit)+'</td>'+
+      '<td data-l="সর্বোচ্চ / বিশেষ অবস্থা">'+esc(L.mx)+'</td>'+
+      '<td data-l="তদন্তকারী">'+esc(L.io)+'</td></tr>';
+  });
+  return h+'</tbody></table>';
+}
+function renderLtList(){
+  var el=$('lt-list');if(!el)return;
+  el.innerHTML=ltRowsHtml();
+  var cnt=$('lt-count');if(cnt)cnt.textContent=bnFmt(ltFiltered().length)+'/'+bnFmt(LAW_TIMES.length);
+}
+function ltSetFilter(f){
+  ltState.f=f;
+  ['all','has','none','trial'].forEach(function(k){var c=$('lt-f-'+k);if(c)c.className='lt-chip'+(k===f?' on':'');});
+  renderLtList();
+}
+function ltSearch(v){ltState.q=v||'';renderLtList();}
+function openLawTimes(){
+  var calcOpts=LAW_TIMES.filter(function(L){return L.calc;}).map(function(L){
+    return '<option value="'+LAW_TIMES.indexOf(L)+'">'+esc(L.law)+' — '+esc(L.sec)+(L.calcNote?' ('+esc(L.calcNote)+')':'')+'</option>';
+  }).join('');
+  openModal(modalHead('⚖️ তদন্ত সময়সীমা ও তদন্তকারী পদ')+
+    '<div class="lt-toolbar">'+
+      '<input id="lt-q" placeholder="🔎 আইন / ধারা / পদ লিখুন…" value="'+esc(ltState.q)+'" oninput="ltSearch(this.value)">'+
+      '<button class="lt-chip on" id="lt-f-all" onclick="ltSetFilter(\'all\')">সব</button>'+
+      '<button class="lt-chip" id="lt-f-has" onclick="ltSetFilter(\'has\')">🟢 সীমা আছে</button>'+
+      '<button class="lt-chip" id="lt-f-none" onclick="ltSetFilter(\'none\')">🔴 সীমা নেই</button>'+
+      '<button class="lt-chip" id="lt-f-trial" onclick="ltSetFilter(\'trial\')">⚪ বিচার-মেয়াদ</button>'+
+    '</div>'+
+    '<div class="small muted">দেখানো হচ্ছে <b id="lt-count">'+bnFmt(LAW_TIMES.length)+'/'+bnFmt(LAW_TIMES.length)+'</b> · মোবাইলে প্রতিটি আইন আলাদা ব্লকে দেখাবে</div>'+
+    '<div id="lt-list"></div>'+
+    '<div class="lt-calc">'+
+      '<b>📅 তদন্ত-মেয়াদ ক্যালকুলেটর (আনুমানিক)</b>'+
+      '<div class="flex-row" style="margin-top:6px">'+
+        '<input type="date" id="lt-date" value="'+todayISO()+'">'+
+        '<select id="lt-law">'+calcOpts+'</select>'+
+        '<button class="btn-small" style="flex:none" onclick="ltCalc()">হিসাব</button>'+
+      '</div>'+
+      '<div id="lt-result" class="small" style="margin-top:6px"></div>'+
+      '<div id="lt-apply"></div>'+
+      '<p class="small muted" style="margin:6px 0 0">⚠️ আনুমানিক — তারিখের পরের দিন থেকে গণনা; কার্যদিবস = শুক্র-শনি বাদ (সরকারি ছুটি বাদ নয়); ধারাভুক্ত বৃদ্ধি-মেয়াদ অন্তর্ভুক্ত নয়। চূড়ান্ত হিসাব সংশ্লিষ্ট আইনের পাঠে যাচাই করুন।</p>'+
+    '</div>'+
+    '<div class="ref-tile-btns" style="margin-top:10px">'+
+      '<button class="btn" onclick="printLawTimes()">🖨️ প্রিন্ট</button>'+
+    '</div>'+
+    '<p class="small muted" style="margin:8px 0 0">সূত্র: bdlaws.minlaw.gov.bd ও গেজেট-পাঠ · হালনাগাদ: সেপ্টেম্বর ২০২৬ · এটি তথ্য-সংকলন, আইনি পরামর্শ নয়।</p>');
+  renderLtList();
+  ltSetFilter(ltState.f);
+}
+function calcLawDeadline(startIso,n,type){
+  var d=new Date(startIso+'T00:00:00');
+  if(isNaN(d.getTime()))return '';
+  var cnt=0,guard=0;
+  while(cnt<n&&guard<5000){d.setDate(d.getDate()+1);guard++;
+    var w=d.getDay();
+    if(type==='wd'&&(w===5||w===6))continue;
+    cnt++;}
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function ltCalc(){
+  var el=$('lt-result'),ap=$('lt-apply');if(!el)return;
+  var L=LAW_TIMES[+($('lt-law').value||0)];
+  var isoD=$('lt-date').value;
+  if(!L||!L.calc||!isoD){el.innerHTML='<span style="color:#b91c1c">তারিখ ও আইন নির্বাচন করুন</span>';if(ap)ap.innerHTML='';return;}
+  var end=calcLawDeadline(isoD,L.calc,L.unit);
+  el.innerHTML='🎯 আনুমানিক মেয়াদ-শেষ: <b>'+fmtD(end)+'</b> — '+bnFmt(L.calc)+' '+(L.unit==='wd'?'কার্যদিবস (শুক্র-শনি বাদ)':'দিন')+(L.calcNote?' · হিসাব-ভিত্তি: '+esc(L.calcNote):'');
+  if(ap){
+    if(can('edit')&&visibleCases().length){
+      var opts=visibleCases().map(function(c){return '<option value="'+c.id+'">'+esc((c.caseNo?c.caseNo+' · ':'')+(c.name||'')+(c.client?' — '+c.client:''))+'</option>';}).join('');
+      ap.innerHTML='<div class="flex-row" style="margin-top:6px"><select id="lt-case">'+opts+'</select><button class="btn-small btn-primary" style="flex:none" onclick="ltApplyDeadline()">⏰ এই মামলার ডেডলাইনে সেট</button></div>';
+    }else if(can('edit')){
+      ap.innerHTML='<p class="small muted" style="margin:4px 0 0">সেট করার মতো মামলা নেই</p>';
+    }else{
+      ap.innerHTML='';
+    }
+  }
+}
+function ltApplyDeadline(){
+  var L=LAW_TIMES[+($('lt-law').value||0)];
+  if(!L||!L.calc)return toast('আইন নির্বাচন করুন');
+  var end=calcLawDeadline($('lt-date').value,L.calc,L.unit);
+  if(!end)return toast('তারিখ দিন');
+  var cid=$('lt-case').value;
+  var c=visibleCases().find(function(x){return String(x.id)===String(cid);});
+  if(!c)return toast('মামলা পাওয়া যায়নি');
+  toast('⏰ ডেডলাইন সেট: '+fmtD(end));
+  updateCaseField(c.id,'deadline',end);
+}
+function printLawTimes(){
+  var h='<table><thead><tr><th>ক্রম</th><th>আইন</th><th>ধারা</th><th>বর্তমান আইন অনুযায়ী সঠিক সময়সীমা</th><th>সর্বোচ্চ / বিশেষ অবস্থা</th><th>কে তদন্ত করতে পারেন (ধারা)</th></tr></thead><tbody>';
+  LAW_TIMES.forEach(function(L,i){
+    h+='<tr><td>'+(i+1)+'</td><td><b>'+esc(L.law)+'</b></td><td>'+esc(L.sec)+'</td><td>'+esc(L.time)+(L.unit==='wd'?' [কার্যদিবস]':(L.unit==='d'?' [দিন]':''))+'</td><td>'+esc(L.mx)+'</td><td>'+esc(L.io)+'</td></tr>';
+  });
+  h+='</tbody></table><p class="doc-foot">সূত্র: bdlaws.minlaw.gov.bd ও গেজেট-পাঠ · হালনাগাদ: সেপ্টেম্বর ২০২৬ · তথ্য-সংকলন, আইনি পরামর্শ নয়</p>';
+  printDoc('মামলার তদন্ত সময়সীমা ও তদন্তকারী পদ',h);
+}
+
+/* ---- কার্ড ২: তদন্ত ব্যয় বিল (দ্বৈত-মান) ---- */
+function openCostBill(){
+  if(isSuperAdmin()){
+    var cc=costCfg();
+    var rows='';
+    COST_TIERS.forEach(function(t){
+      var v=cc.vals[t.id];
+      rows+='<tr><td><b>'+esc(t.label)+'</b>'+(t.note?'<br><span class="cb-note">⚠️ '+esc(t.note)+'</span>':'')+'</td>'+
+        '<td class="cb-gov">'+bnFmt(t.gov)+' টাকা</td>'+
+        '<td><input class="cb-in" id="cb-in-'+t.id+'" type="number" inputmode="numeric" min="0" value="'+(v===undefined||v===null?'':v)+'" placeholder="'+t.gov+'"></td></tr>';
+    });
+    openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+
+      '<div class="cb-switch"><label class="switch-row" style="margin:0"><input type="checkbox" id="cb-on" '+(cc.on===false?'':'checked')+' onchange="toggleCostOn()"> <b>অন্যদের জন্য কার্ড চালু</b> — বন্ধ করলে সুপার এডমিন ছাড়া কেউ কার্ডটি দেখবে না</label></div>'+
+      '<p class="small muted" style="margin:0 0 4px">সরকারি হার <b>শুধু আপনি</b> দেখছেন; ডান ঘরে যা লিখবেন, অন্যরা (অ্যাডমিন/ম্যানেজার/অফিসার/ভিউআর/গেস্ট) ঠিক তা-ই দেখবে। খালি ঘর = ওই সারিটি তাদের কাছে লুকানো থাকবে।</p>'+
+      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>সরকারি তদন্ত ব্যয়</th><th>অন্যরা যা দেখবে (টাকা)</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<div class="ref-tile-btns" style="margin-top:10px">'+
+        '<button class="btn btn-primary" onclick="cbSave()">💾 সংরক্ষণ</button>'+
+        '<button class="btn-small" onclick="cbPreset(\'add500\')">⚡ সব সারিতে +৫০০</button>'+
+        '<button class="btn-small" onclick="cbPreset(\'pc25\')">⚡ সব সারিতে +২৫%</button>'+
+        '<button class="btn-small btn-danger" onclick="cbPreset(\'clear\')">🗑️ সব মুছুন</button>'+
+        '<button class="btn" onclick="printCostBill()">🖨️ প্রিন্ট</button>'+
+      '</div>'+
+      '<p class="small muted" style="margin:8px 0 0">ভিত্তি: স্বরাষ্ট্র মন্ত্রণালয়ের জননিরাপত্তা বিভাগের ২০২১-প্রজ্ঞাপন (মামলা তদন্ত ব্যয়বিল আদেশ) — সেপ্টেম্বর ২০২৬ পর্যন্ত বলবৎ সর্বশেষ হার। বরাদ্দ = সর্বোচ্চ সীমা; বাস্তব খরচ ২–৩ গুণ বেশি হতে পারে।</p>');
+  }else{
+    var cc2=costCfg();
+    if(cc2.on===false){
+      openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+'<p class="small muted">এই তালিকা বর্তমানে প্রদর্শনের জন্য বন্ধ আছে।</p>');
+      return;
+    }
+    var rows2=visibleCostRows().map(function(t){return '<tr><td><b>'+esc(t.label)+'</b></td><td class="cb-gov">'+bnFmt(costVal(t.id))+' টাকা</td></tr>';}).join('');
+    if(!rows2)rows2='<tr><td colspan="2" class="small muted">নির্ধারিত হয়নি</td></tr>';
+    openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+
+      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>তদন্ত ব্যয়</th></tr></thead><tbody>'+rows2+'</tbody></table>'+
+      '<div class="ref-tile-btns" style="margin-top:10px"><button class="btn" onclick="printCostBill()">🖨️ প্রিন্ট</button></div>');
+  }
+}
+function cbSave(silent){
+  var cc=costCfg();
+  COST_TIERS.forEach(function(t){
+    var el=$('cb-in-'+t.id);
+    if(!el)return;
+    var v=String(el.value).trim();
+    if(v==='')delete cc.vals[t.id];
+    else cc.vals[t.id]=Math.max(0,Math.round(+v||0));
+  });
+  saveDb();
+  renderRefCards();
+  if(!silent)toast('💾 ব্যয়বিল সংরক্ষিত');
+  return true;
+}
+function toggleCostOn(){
+  var cc=costCfg();
+  cc.on=!!($('cb-on')&&$('cb-on').checked);
+  saveDb();
+  renderRefCards();
+  toast(cc.on?'🟢 অন্যদের জন্য কার্ড চালু':'🔴 অন্যদের জন্য কার্ড বন্ধ — এখন শুধু আপনি দেখবেন');
+}
+function cbPreset(kind){
+  if(kind==='clear'){
+    COST_TIERS.forEach(function(t){var el=$('cb-in-'+t.id);if(el)el.value='';});
+    cbSave(true);
+    toast('🗑️ সব প্রদর্শিত মান মুছে ফেলা হলো (সংরক্ষিত)');
+    return;
+  }
+  COST_TIERS.forEach(function(t){
+    var el=$('cb-in-'+t.id);if(!el)return;
+    var cur=String(el.value).trim();
+    var base=(cur==='')?t.gov:(+cur||0);
+    el.value=String(kind==='add500'?base+500:Math.round(base*1.25));
+  });
+  cbSave(true);
+  toast(kind==='add500'?'⚡ সব সারিতে +৫০০ টাকা (সংরক্ষিত)':'⚡ সব সারিতে +২৫% (সংরক্ষিত)');
+}
+function printCostBill(){
+  var h;
+  if(isSuperAdmin()){
+    h='<table><thead><tr><th>মামলার ধরন</th><th>সরকারি তদন্ত ব্যয় (টাকা)</th><th>অন্যদের প্রদর্শিত মান (টাকা)</th></tr></thead><tbody>';
+    COST_TIERS.forEach(function(t){var v=costVal(t.id);h+='<tr><td>'+esc(t.label)+'</td><td>'+bnFmt(t.gov)+'</td><td>'+(v===null?'—':bnFmt(v))+'</td></tr>';});
+    h+='</tbody></table><p class="doc-foot">ভিত্তি: জননিরাপত্তা বিভাগের ২০২১-প্রজ্ঞাপন · হালনাগাদ: সেপ্টেম্বর ২০২৬ · অভ্যন্তরীণ কপি (সরকারি হারসহ — শুধু সুপার এডমিন)</p>';
+  }else{
+    h='<table><thead><tr><th>মামলার ধরন</th><th>তদন্ত ব্যয় (টাকা)</th></tr></thead><tbody>';
+    visibleCostRows().forEach(function(t){h+='<tr><td>'+esc(t.label)+'</td><td>'+bnFmt(costVal(t.id))+'</td></tr>';});
+    h+='</tbody></table>';
+  }
+  printDoc('মামলার তদন্ত ব্যয় বিল',h);
+}
+
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a41d24bc2e5e3a25',t:'MTc5MDUzOTczOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a42c4b8bbd4b1ed4',t:'MTc5MDY5ODYxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
