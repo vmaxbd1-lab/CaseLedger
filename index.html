@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.29.4</title>
+<title>Case Writer Pro v6.32.0</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -65,6 +65,10 @@ textarea{min-height:80px;resize:vertical}
 .stats.c4 .s-v{font-size:14px}
 .stats.c4 .s-l{font-size:8.5px}
 .stat-note{grid-column:1/-1;font-size:11px;color:var(--mut);font-weight:700;margin-top:2px}
+.dash-mq{grid-column:1/-1;overflow:hidden;background:#fff1f1;border:1px solid #f6c9c9;border-left:4px solid #e03131;border-radius:10px;margin:0 0 6px}
+.dash-mq-in{display:inline-block;white-space:nowrap;padding:7px 0 7px 100%;animation:clmq 28s linear infinite;color:#e03131;font-weight:700;font-size:1.12em}
+@keyframes clmq{to{transform:translateX(-100%)}}
+@media (prefers-reduced-motion:reduce){.dash-mq-in{animation:none;padding-left:10px}}
 .stat.clickable{cursor:pointer;transition:transform .12s}
 .stat.clickable:active{transform:scale(.94)}
 .officer-card.inactive{opacity:.55;background:#f6f7f9}
@@ -260,7 +264,7 @@ textarea{min-height:80px;resize:vertical}
 .notif-item .n-ic{font-size:17px}
 .notif-empty{padding:22px;text-align:center;color:var(--mut);font-size:13px}
 #notif-backdrop{position:fixed;inset:0;z-index:59}
-@media print{.fab,.fab-menu,.notif-panel,#notif-backdrop{display:none!important}}
+@media print{.fab,.fab-menu,.notif-panel,#notif-backdrop,.dash-mq{display:none!important}}
 /* ---- v6.27: রসিদ-স্লিপ ---- */
 .rc{max-width:400px;margin:0 auto;font-size:15px}
 .rc-amt{font-size:36px;font-weight:800;text-align:center;margin:12px 0;color:#16a34a}
@@ -283,6 +287,7 @@ textarea{min-height:80px;resize:vertical}
   #dash-main{grid-column:1/-1}
   #dash-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
   #dash-stats .stats{display:contents}
+  #dash-ref-slot{display:contents}
   #dash-stats .stat{padding:14px 10px;border-radius:14px}
   #dash-stats .s-v{font-size:17px}
   #dash-stats .stat-note{grid-column:1/-1}
@@ -362,7 +367,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.29.4</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.32.0</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -397,7 +402,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.29.4 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.32.0 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -413,6 +418,7 @@ textarea{min-height:80px;resize:vertical}
     <button data-v="dashboard" onclick="go('dashboard')" title="Dashboard">🏠<span class="lbl"> Dashboard</span></button>
     <button data-v="cases" onclick="go('cases')" title="Cases">📁<span class="lbl"> Cases</span></button>
     <button data-v="officers" onclick="go('officers')" title="Officers">👮<span class="lbl"> Officers</span></button>
+    <button data-v="phonebook" id="sb-phonebook" onclick="go('phonebook')" title="Phonebook">📇<span class="lbl"> Phonebook</span></button>
     <button data-v="expenses" id="sb-expenses" onclick="go('expenses')" title="Expenses">💸<span class="lbl"> Expenses</span></button>
     <button id="sb-search" onclick="openSearchView()" title="Global Search">🔎<span class="lbl"> Global Search</span></button>
     <hr>
@@ -505,6 +511,20 @@ textarea{min-height:80px;resize:vertical}
         <h3>👮 Officers</h3>
         <input id="officer-q" placeholder="🔎 Search officer name / phone..." oninput="renderOfficers()">
         <div id="officers-list"></div>
+      </div>
+    </div>
+
+    <!-- PHONEBOOK -->
+    <div id="view-phonebook" class="view">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="pb-add-btn" onclick="openPbForm()">＋ New Contact</button>
+        <button class="btn btn-ghost" id="pb-wa-btn" onclick="waManual()">💬 WhatsApp — নম্বর লিখে</button>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>📇 Phonebook — অফিসার ও গুরুত্বপূর্ণ ব্যক্তি</h3>
+        <input id="pb-q" placeholder="🔎 নাম / মোবাইল নম্বর খুঁজুন..." oninput="renderPhonebook()">
+        <div id="pb-list"></div>
+        <p class="small muted" style="margin:10px 0 0">📱 নম্বর স্বয়ংক্রিয়ভাবে <b>+8801XXXXXXXXX</b> ফরম্যাটে সংরক্ষিত হয় · শেষের ১০ ডিজিট মিললেই একই নম্বর ধরা হয় — দ্বিতীয়বার সেভ হয় না · ✏️/🗑️ শুধুমাত্র Super Admin</p>
       </div>
     </div>
 
@@ -642,7 +662,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.29.4 · PC + Mobile · Smart Cloud Sync · 29 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.32.0 · PC + Mobile · Smart Cloud Sync · 30 Sep 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -670,6 +690,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="sheet-card">
     <div class="grabber"></div>
     <button class="sheet-item" id="ms-search" onclick="openSearchView()">🔎 Global Search</button>
+    <button class="sheet-item" id="ms-phonebook" onclick="closeMoreSheet();go('phonebook')">📇 Phonebook — ফোনবুক</button>
     <button class="sheet-item" id="ms-templates" onclick="go('templates')">📝 WhatsApp Templates</button>
     <button class="sheet-item" id="ms-recycle" onclick="go('recycle')">♻️ Recycle Bin</button>
     <button class="sheet-item" id="ms-settings" onclick="go('settings')">⚙️ Settings</button>
@@ -1790,6 +1811,7 @@ const VIEWMETA={
   dashboard:{title:'Dashboard',back:false},
   cases:{title:'All Cases',back:false},
   officers:{title:'Officers',back:false},
+  phonebook:{title:'Phonebook — ফোনবুক',back:false},
   expenses:{title:'Expense Tracker',back:false},
   profile:{title:'Officer Profile',back:true},
   search:{title:'Global Search',back:true},
@@ -1813,7 +1835,7 @@ function go(v){
 }
 function goBack(){go(sess.view==='profile'?'officers':'dashboard');}
 function refreshCurrentView(){
-  const R={dashboard:renderDashboard,cases:renderCases,officers:renderOfficers,profile:renderProfile,expenses:renderExpenses,search:renderSearchView,templates:renderTemplates,recycle:renderRecycle,settings:renderSettings,users:renderUsers};
+  const R={dashboard:renderDashboard,cases:renderCases,officers:renderOfficers,phonebook:renderPhonebook,profile:renderProfile,expenses:renderExpenses,search:renderSearchView,templates:renderTemplates,recycle:renderRecycle,settings:renderSettings,users:renderUsers};
   if(R[sess.view])R[sess.view]();
   updateNotifBell();updateFab();
 }
@@ -2086,7 +2108,7 @@ function casesFilteredArr(){
   const status=$('cf-status').value,off=$('cf-officer').value,prio=$('cf-priority').value,sort=$('cf-sort').value;
   const from=$('cf-from').value,to=$('cf-to').value;
   let arr=visibleCases().filter(c=>{
-    if(q&&![c.caseNo,c.name,c.client,c.caseType,c.description].some(s=>s&&String(s).toLowerCase().includes(q)))return false;
+    if(q&&![c.caseNo,c.name,c.client,c.caseType,c.description,c.cat].some(s=>s&&String(s).toLowerCase().includes(q)))return false;
     if(status&&c.status!==status)return false;
     if(off&&String(c.officerId)!==String(off))return false;
     if(prio&&c.priority!==prio)return false;
@@ -2363,31 +2385,36 @@ function renderDashboard(){
   let dealIn=0,dueIn=0;
   (iso?finCs:casesIn).forEach(c=>{dealIn+=+c.dealAmount||0;dueIn+=caseDue(c);});
   const inactCount=db.officers.length-activeOfficers().length;
-  let h='<div class="stats">'+
+  const moneyShown=canFin()&&(!iso||officerFullSummary()||finCs.length>0);
+  const mqOn=!!currentUser&&(currentUser.role==='officer'||currentUser.role==='viewer');
+  /* রো-ভিত্তিক লেআউট — ৩/৩/৩/৩/২/২ (মোবাইল/ট্যাবলেট/APK); ডেস্কটপ ≥৯০০px ৬-কলাম অপরিবর্তিত */
+  let h=(mqOn?'<div class="dash-mq"><div class="dash-mq-in">পারিশ্রমিক বুঝিয়ে দিন, প্রয়োজনীয় সেবা গ্রহণ করুন — দায়িত্বশীলতা ও আন্তরিকতার সঙ্গে কাজ সম্পন্ন হবে, ইনশাআল্লাহ।</div></div>':'')+'<div class="stats">'+
     statBox('📁','Total Cases',fmt(casesIn.length),'st-c',"openStatDetail('total')")+
     statBox('⚙️','Active',fmt(activeIn.length),'st-y',"openStatDetail('active')")+
     statBox('✅','Completed',fmt(doneIn.length),'st-g',"openStatDetail('completed')")+
-    '</div><div class="stats c4">'+
-    statBox('⏰','Deadline',fmt(dlExpired.length),dlExpired.length>0?'st-r':'st-c',"openStatDetail('deadline')")+
-    statBox('⚰️','UD Case',fmt(udArr.length),'st-p',"openStatDetail('ud')")+
-    statBox('📂','CR Case',fmt(crArr.length),'st-b',"openStatDetail('cr')")+
+    '</div><div class="stats">'+
     statBox('🗂️','GR Case',fmt(grArr.length),'st-y',"openStatDetail('gr')")+
+    statBox('📂','CR Case',fmt(crArr.length),'st-b',"openStatDetail('cr')")+
+    statBox('⚰️','UD Case',fmt(udArr.length),'st-p',"openStatDetail('ud')")+
+    '</div><div class="stats">'+
     statBox('📚','Other Case',fmt(otArr.length),'st-c',"openStatDetail('other')")+
     statBox('💿','Case CD',fmt(cdArr.length),cdArr.length>0?'st-r':'st-g',"openStatDetail('cd')")+
+    statBox('⏰','Deadline',fmt(dlExpired.length),dlExpired.length>0?'st-r':'st-c',"openStatDetail('deadline')")+
     '</div>';
-  if(canFin()&&(iso?officerFullSummary()||finCs.length>0:true)){
+  if(moneyShown){
     h+='<div class="stats">'+
       statBox('🤝','Total Deal',tk(dealIn),'st-p',"openStatDetail('deal')")+
       statBox('💰','Collected',tk(paidIn),'st-b',"openStatDetail('collected')")+
       statBox('🧾','Total Due',tk(dueIn),'st-r',"openStatDetail('due')")+
       '</div>';
-    if(iso&&!officerFullSummary())h+='<div class="case-meta" style="margin-top:8px">📊 <b>চলমান ও বকেয়া মামলার সর্বমোট</b> — নিষ্পত্তি-হওয়া (সম্পূর্ণ পরিশোধিত/Closed) মামলার হিসাব 🔒 লুকানো আছে</div>';
     if(can('financial'))h+='<div class="stats c2">'+
       statBox('💸','Expense',tk(expIn),'st-y',"openStatDetail('expense')")+
       statBox('📈','Net Income',tk(paidIn-expIn),(paidIn-expIn)>=0?'st-g':'st-r',"openStatDetail('net')")+
       '</div>';
   }
-  if(iso)h+='<div class="stat-note">💰 বিলের হিসাব — শুধুমাত্র বকেয়া আছে এমন চলমান মামলার (পরিশোধিত / Completed-Closed মামলা বাদ) — প্রতিটি মামলা খুলে পুরো হিসাব দেখতে পারবেন</div>';
+  h+='<div id="dash-ref-slot"></div>';
+  if(iso&&moneyShown&&!officerFullSummary())h+='<div class="case-meta" style="margin-top:8px">📊 <b>চলমান ও বকেয়া মামলার সর্বমোট</b> — নিষ্পত্তি-হওয়া (সম্পূর্ণ পরিশোধিত/Closed) মামলার হিসাব 🔒 লুকানো আছে</div>';
+  if(iso)h+='<div class="stat-note">💰 বিলের হিসাব — শুধুমাত্র বকেয়া আছে এমন চলমান মামলার (পরিশোধিত / Completed-Closed মামলা বাদ) — প্রতিটি মামলা খুলে পুরো হিসাব দেখতে পারবেন</div>';
   if(inactCount>0&&!myOfficerId())h+='<div class="stat-note">⛔ '+inactCount+' জন Inactive Officer-এর মামলার হিসাব ড্যাশবোর্ডে বাদ আছে</div>';
   $('dash-stats').innerHTML=h;
   renderDeadlineAlarm();renderDashAlerts();renderRecent();renderRefCards();
@@ -2636,7 +2663,7 @@ function caseCardHTML(c){
   const age=dueAgeDays(c);
   return '<div class="case-card '+((caseMoneyVisible(c)&&due>0)?'alert-red':'')+'">'+
     '<div class="case-head"><div><span class="case-no">'+esc(c.caseNo)+'</span> '+prEmoji(c.priority||'Medium')+'<br><b>'+esc(c.name)+'</b></div><span class="badge st-'+String(c.status||'running').toLowerCase()+'">'+esc(c.status)+'</span></div>'+
-    '<div class="case-meta">👮 '+esc(officerName(c.officerId))+(c.client?' · 👤 '+esc(c.client):'')+(c.caseType?' · 📂 '+esc(c.caseType):'')+'</div>'+
+    '<div class="case-meta">👮 '+esc(officerName(c.officerId))+(c.client?' · 👤 '+esc(c.client):'')+(c.caseType?' · 📂 '+esc(c.caseType):'')+(c.cat?' · <b>'+esc(c.cat)+'</b>':'')+'</div>'+
     '<div class="case-meta">📅 '+fmtD(c.openingDate)+deadlineChip(c)+(isCDCase(c)&&isUnderInvestigation(c)?(cdOverdue(c)?' · <span class="age-chip">💿 CD '+cdAgeDays(c)+'d — লিখতে হবে</span>':' · <span class="pm-chip">💿 CD '+cdAgeDays(c)+'d</span>'):'')+'</div>'+
     (canFin()&&!caseMoneyVisible(c)?
       '<div class="case-meta">🔒 এই মামলার হিসাব লুকানো আছে (নিষ্পত্তি হয়েছে)</div>'
@@ -2668,7 +2695,8 @@ function openCaseForm(caseId,presetOfficerId){
     '<div class="two">'+
       '<div><label>Officer *</label><select id="cfm-officer">'+visibleOfficers().map(o=>'<option value="'+o.id+'"'+(String(o.id)===String(offVal)?' selected':'')+'>'+esc(o.name)+'</option>').join('')+'</select></div>'+
       '<div><label>Client</label><input id="cfm-client" value="'+(c?esc(c.client||''):'')+'" placeholder="Client name"></div>'+
-      '<div><label>Case Type</label><select id="cfm-type">'+caseTypeOptions(c).map(t=>'<option'+(((c?((c.caseType==='Unnatural Death')?'UD':c.caseType):'')===t)?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'+
+      '<div><label>Case Type</label><select id="cfm-type" onchange="cfTypeChange()">'+caseTypeOptions(c).map(t=>'<option'+(((c?((c.caseType==='Unnatural Death')?'UD':c.caseType):'')===t)?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'+
+      '<div id="cfm-cat-wrap" style="display:none"><label>মামলার ধরন/খাত</label><select id="cfm-cat" onchange="cfCatChange()"></select></div>'+
       '<div><label>Deal Amount (৳) *</label><input id="cfm-deal" type="number" value="'+(c?c.dealAmount:'')+'"></div>'+
       '<div><label>Opening Date *</label><input id="cfm-open" type="date" value="'+(c?(c.openingDate||todayISO()):todayISO())+'"></div>'+
       '<div><label>Deadline (শুনানি/ডেলিভারি)</label><input id="cfm-deadline" type="date" value="'+(c?(c.deadline||''):'')+'"></div>'+
@@ -2679,6 +2707,31 @@ function openCaseForm(caseId,presetOfficerId){
     '<label>Notes</label><textarea id="cfm-notes" style="min-height:56px">'+(c?esc(c.notes||''):'')+'</textarea>'+
     '<button class="btn btn-primary" onclick="submitCaseForm('+(c?"'"+c.id+"'":"''")+')">💾 Save Case</button>'+
     '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+  cfTypeChange(c?c.cat:null);
+}
+function cfTypeChange(savedCat){
+  var t=$('cfm-type').value,wrap=$('cfm-cat-wrap'),sel=$('cfm-cat');
+  if(!wrap||!sel)return;
+  var ts=costTiers();
+  var list=(t==='GR')?ts.filter(function(x){return x.id!=='udeath';}):(t==='UD')?ts.filter(function(x){return x.id==='udeath';}):[];
+  if(!list.length){wrap.style.display='none';sel.value='';return;}
+  var cur=null;
+  if(savedCat){var m=list.filter(function(x){return x.label===savedCat;})[0];if(m)cur=m.id;}
+  if(!cur&&sel.value){var m2=list.filter(function(x){return x.id===sel.value;})[0];if(m2)cur=m2.id;}
+  sel.innerHTML='<option value="">— নির্বাচন করুন —</option>'+list.map(function(x){return '<option value="'+esc(x.id)+'"'+(cur===x.id?' selected':'')+'>'+esc(x.label)+'</option>';}).join('');
+  sel.value=cur||'';
+  wrap.style.display='block';
+}
+function cfCatChange(){
+  var id=$('cfm-cat').value;if(!id)return;
+  var t=costTiers().find(function(x){return x.id===id;});if(!t)return;
+  var v=costVal(t.id);
+  $('cfm-deal').value=String((v===null)?t.gov:v);
+  var open=$('cfm-open').value||todayISO();
+  $('cfm-open').value=open;
+  var L=LAW_TIMES[(typeof t.law==='number'&&t.law>=0&&t.law<LAW_TIMES.length)?t.law:0];
+  var dl=calcLawDeadline(open,L.calc,L.unit);
+  if(dl)$('cfm-deadline').value=dl;
 }
 function submitCaseForm(id){
   const name=$('cfm-name').value.trim(),officer=$('cfm-officer').value;
@@ -2686,9 +2739,12 @@ function submitCaseForm(id){
   if(!name)return toast('কেসের নাম দিন');
   if(!officer)return toast('Officer select করুন');
   if(deal<=0)return toast('সঠিক Deal Amount দিন');
+  var catVal='';
+  try{var cw=$('cfm-cat-wrap');if(cw&&cw.style.display!=='none'){var ci=$('cfm-cat').value;if(ci){var ct=costTiers().find(function(x){return x.id===ci;});if(ct)catVal=ct.label;}}}catch(e){}
   const vals={name:name,officerId:officer,client:$('cfm-client').value.trim(),caseType:$('cfm-type').value,
     dealAmount:deal,openingDate:open,deadline:$('cfm-deadline').value,status:$('cfm-status').value,
     priority:$('cfm-priority').value,description:$('cfm-desc').value.trim(),notes:$('cfm-notes').value.trim()};
+  if(catVal)vals.cat=catVal;
   if(id){
     const c=db.cases.find(x=>x.id===id);
     if(!c)return;
@@ -2758,7 +2814,7 @@ function openCaseModal(id){
     '<div class="cm-grid">'+
       '<div><small>Officer</small><b class="link" onclick="openProfile(\''+c.officerId+'\')">👮 '+esc(o?o.name:'—')+'</b></div>'+
       '<div><small>Client</small><b>'+(esc(c.client)||'—')+'</b></div>'+
-      '<div><small>Type</small><b>'+(esc(c.caseType)||'—')+'</b></div>'+
+      '<div><small>Type</small><b>'+(esc(c.caseType)||'—')+'</b>'+(c.cat?' <span class="badge" style="background:#eef2f9;color:var(--navy)">'+esc(c.cat)+'</span>':'')+'</div>'+
       '<div><small>Priority</small>'+prioSel+'</div>'+
       '<div><small>Opening Date</small><b>'+fmtD(c.openingDate)+'</b></div>'+
       '<div><small>Deadline</small><b>'+(c.deadline?fmtD(c.deadline):'—')+'</b></div>'+
@@ -3000,6 +3056,7 @@ function submitOfficerForm(id){
     db.officers.push({id:uid(),name:name,phone:phone,address:addr,note:note,active:active,createdAt:Date.now()});
     toast('✅ Officer added');
   }
+  try{if(id&&Array.isArray(db.pbSkip))db.pbSkip=db.pbSkip.filter(x=>x!==id);pbSyncOfficer(id?officerById(id):db.officers[db.officers.length-1]);}catch(e){}
   saveDb();closeModal();refreshCurrentView();
 }
 function toggleOfficerActive(id){
@@ -3019,9 +3076,152 @@ function deleteOfficer(id){
     db.recycleBin.push({id:binId,type:'officer',data:o,cases:cases,deletedAt:Date.now()});
     db.officers=db.officers.filter(x=>x.id!==id);
     db.cases=db.cases.filter(c=>c.officerId!==id);
+    try{pbAll().forEach(function(pc){if(pc.officerId===id){pc.officerId=null;if(pc.cat==='Officer')pc.cat='অন্যান্য';}});}catch(e){}
     saveDb();closeModal();go('officers');
     toast('🗑️ Officer deleted',{action:'Undo',duration:6000,onAction:function(){restoreItem(binId);}});
   });
+}
+
+/* ==================== PHONEBOOK — অফিসার ও গুরুত্বপূর্ণ ব্যক্তির ফোনবুক (Phase A) ==================== */
+var PB_CATS=['Officer','গুরুত্বপূর্ণ ব্যক্তি','Client','অন্যান্য'];
+function stdPhone(x){
+  const d=telDigits(x).replace(/[^0-9]/g,'');
+  if(!d)return {ok:false};
+  const t=d.slice(-10);
+  if(d.length>=10&&d.length<=15&&/^1[3-9]\d{8}$/.test(t))return {ok:true,v:'+880'+t};
+  return {ok:false};
+}
+function pbAll(){if(!Array.isArray(db.phonebook))db.phonebook=[];return db.phonebook;}
+function pbFindByPhone(ph){const n=normPhone(ph);return n?pbAll().filter(c=>normPhone(c.phone)===n):[];}
+function pbCanAdd(){try{return !!currentUser&&['superadmin','admin','manager'].indexOf(currentUser.role)>=0;}catch(e){return false;}}
+function pbCanMod(){return isSuperAdmin();}
+function pbSyncOfficer(o){
+  try{
+    if(!o||!o.phone)return null;
+    if(Array.isArray(db.pbSkip)&&db.pbSkip.indexOf(o.id)>=0)return null;
+    const st=stdPhone(o.phone);if(!st.ok)return null;
+    const ex=pbFindByPhone(st.v)[0]||null;
+    const mine=pbAll().filter(c=>c.officerId===o.id);
+    if(ex){
+      mine.forEach(c=>{if(c.id!==ex.id)c.officerId=null;});
+      if(!ex.officerId)ex.officerId=o.id;
+      if(!ex.cat||ex.cat==='অন্যান্য')ex.cat='Officer';
+      return ex;
+    }
+    if(mine.length){mine[0].phone=st.v;return mine[0];}
+    const c={id:uid(),name:o.name,phone:st.v,desig:'',cat:'Officer',officerId:o.id,status:(o.active===false?'Inactive':'Active'),note:'',createdAt:Date.now()};
+    pbAll().push(c);return c;
+  }catch(e){return null;}
+}
+function pbEnsure(){try{db.officers.forEach(o=>pbSyncOfficer(o));}catch(e){}}
+function renderPhonebook(){
+  if(!currentUser||!pbCanAdd()){try{$('pb-add-btn').style.display='none';$('pb-wa-btn').style.display='none';$('pb-list').innerHTML='';}catch(e){}return;}
+  pbEnsure();
+  const q=($('pb-q').value||'').trim().toLowerCase();
+  const qd=q.replace(/\D/g,'');
+  const arr=pbAll().filter(c=>!q||String(c.name).toLowerCase().includes(q)||(qd&&normPhone(c.phone).includes(qd))||String(c.phone).includes(q));
+  $('pb-list').innerHTML=arr.map(c=>{
+    const off=c.officerId?db.officers.find(o=>o.id===c.officerId):null;
+    return '<div class="officer-card">'+
+      '<div class="off-avatar">'+esc(initials(c.name))+'</div>'+
+      '<div class="off-info"><b>'+esc(c.name)+'</b> '+
+        (c.status==='Inactive'?'<span class="badge st-closed">Inactive</span>':'<span class="badge st-completed">Active</span>')+
+        ' <span class="badge" style="background:#eef2f9;color:var(--navy)">'+esc(c.cat)+'</span>'+
+        (off?' <span class="badge" style="background:#fff7e6;color:#b45309">👮 Officer</span>':'')+
+        '<small>📱 <a href="tel:'+esc(c.phone)+'" onclick="event.stopPropagation()" style="color:inherit;text-decoration:underline">'+esc(c.phone)+'</a>'+(c.desig?' · '+esc(c.desig):'')+'</small></div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">'+
+        '<button class="btn-small btn-ghost" onclick="waCompose(\''+c.id+'\')">💬 WhatsApp</button>'+
+        (pbCanMod()?'<button class="btn-small btn-ghost" onclick="openPbForm(\''+c.id+'\')">✏️ Edit</button><button class="btn-small btn-ghost" onclick="deletePb(\''+c.id+'\')">🗑️</button>':'')+
+      '</div></div>';
+  }).join('')||'<p class="small muted">কোনো কন্টাক্ট নেই — ＋ New Contact চেপে যোগ করুন।</p>';
+  $('pb-add-btn').style.display=pbCanAdd()?'block':'none';
+}
+function openPbForm(id){
+  if(!id&&!pbCanAdd())return toast('⛔ Permission নেই — নতুন কন্টাক্ট যোগের অনুমতি আপনার নেই');
+  if(id&&!pbCanMod())return toast('⛔ সম্পাদনা শুধুমাত্র Super Admin পারবেন');
+  const c=id?pbAll().find(x=>x.id===id):null;
+  if(id&&!c)return;
+  openModal(modalHead(c?'✏️ Edit Contact':'＋ New Contact')+
+    '<label>নাম *</label><input id="pb-name" value="'+(c?esc(c.name):'')+'" placeholder="e.g. মোঃ করিম">'+
+    '<label>মোবাইল নম্বর *</label><input id="pb-phone" value="'+(c?esc(c.phone):'')+'" placeholder="01XXXXXXXXX — স্বয়ংক্রিয়ভাবে +8801XXXXXXXXX হবে">'+
+    '<label>পদবি / Designation</label><input id="pb-desig" value="'+(c?esc(c.desig||''):'')+'" placeholder="e.g. Inspector, SI, Advocate">'+
+    '<label>ধরন / Category</label><select id="pb-cat">'+PB_CATS.map(x=>'<option value="'+esc(x)+'"'+((c&&c.cat===x)?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>'+
+    '<label>Status</label><select id="pb-status"><option value="Active"'+(!c||c.status!=='Inactive'?' selected':'')+'>🟢 Active</option><option value="Inactive"'+(c&&c.status==='Inactive'?' selected':'')+'>⛔ Inactive</option></select>'+
+    '<label>নোট</label><input id="pb-note" value="'+(c?esc(c.note||''):'')+'" placeholder="ঐচ্ছিক">'+
+    '<button class="btn btn-primary" onclick="submitPbForm('+(c?("'"+c.id+"'"):"''")+')">💾 Save Contact</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function submitPbForm(id){
+  const name=$('pb-name').value.trim();
+  if(!name)return toast('নাম লিখুন');
+  const st=stdPhone($('pb-phone').value.trim());
+  if(!st.ok)return toast('❌ সঠিক বাংলাদেশি মোবাইল নম্বর নয় — যেমন 01721100716');
+  const dup=pbFindByPhone(st.v);
+  var syncOfficer=null;
+  if(id){
+    const c=pbAll().find(x=>x.id===id);if(!c)return;
+    const other=dup.filter(x=>x.id!==id)[0];
+    if(other)return toast('⚠️ এই নম্বরটি আপনার ফোনবুকে পূর্ব থেকেই ‘'+other.name+'’ নামে সংরক্ষিত আছে।');
+    c.name=name;c.phone=st.v;
+    c.desig=$('pb-desig').value.trim();c.cat=$('pb-cat').value;c.status=$('pb-status').value;c.note=$('pb-note').value.trim();
+    const o=c.officerId?db.officers.find(x=>x.id===c.officerId):null;
+    if(o&&normPhone(o.phone)!==normPhone(st.v))syncOfficer=o;
+  }else{
+    if(dup.length)return toast('⚠️ এই নম্বরটি আপনার ফোনবুকে পূর্ব থেকেই ‘'+dup[0].name+'’ নামে সংরক্ষিত আছে।');
+    pbAll().push({id:uid(),name:name,phone:st.v,desig:$('pb-desig').value.trim(),cat:$('pb-cat').value,status:$('pb-status').value,note:$('pb-note').value.trim(),officerId:null,createdAt:Date.now()});
+    toast('✅ Contact সেভ হয়েছে — '+st.v);
+  }
+  saveDb();closeModal();refreshCurrentView();
+  if(syncOfficer)askConfirm('Officer-নম্বর সিঙ্ক','এই কন্টাক্ট <b>'+esc(syncOfficer.name)+'</b> অফিসার-রেকর্ডের সঙ্গে যুক্ত। Officer ID-তেও নম্বরটি বদলে যাবে — নিশ্চিত?','হ্যাঁ, বদলান',function(){syncOfficer.phone=st.v;saveDb();refreshCurrentView();toast('✅ Officer-নম্বরও সিঙ্ক হয়েছে');});
+}
+function deletePb(id){
+  if(!pbCanMod())return toast('⛔ ডিলিট শুধুমাত্র Super Admin পারবেন');
+  const c=pbAll().find(x=>x.id===id);if(!c)return;
+  const PBlinked=!!c.officerId;
+  askConfirm('Delete Contact','<b>'+esc(c.name)+'</b> ('+esc(c.phone)+') ফোনবুক থেকে মুছে যাবে।'+(PBlinked?'<br><small>⚠️ এই নম্বর একটি Officer-রেকর্ডের সঙ্গে যুক্ত — কন্টাক্ট মুছে ফেলা হলে অটো-সিঙ্ক বন্ধ থাকবে (অফিসার-ফর্মে পরে সেভ করলে আবার যুক্ত হবে)।</small>':''),'Delete',function(){
+    if(PBlinked){db.pbSkip=Array.isArray(db.pbSkip)?db.pbSkip:[];db.pbSkip.push(c.officerId);}
+    const backup=JSON.parse(JSON.stringify(c));
+    db.phonebook=pbAll().filter(x=>x.id!==id);
+    saveDb();renderPhonebook();
+    toast('🗑️ Contact deleted',{action:'Undo',duration:6000,onAction:function(){pbAll().push(backup);saveDb();renderPhonebook();}});
+  });
+}
+const WA_NEWWORK='আসসালামু আলাইকুম স্যার,\n\nআশা করি ভালো আছেন। আপনার কাছে নতুন কোনো মামলা বা সংশ্লিষ্ট কাজ থাকলে আমাকে জানাতে পারেন। আপনার প্রয়োজন ও নির্দেশনা অনুযায়ী দায়িত্বশীলতা ও আন্তরিকতার সঙ্গে কাজ করার জন্য আমি প্রস্তুত আছি।\n\nকোনো কাজের প্রয়োজন হলে বিস্তারিত জানালে বিষয়টি নিয়ে আলোচনা করতে পারি, ইনশাআল্লাহ।\n\nধন্যবাদ স্যার। আপনার সুস্বাস্থ্য ও সাফল্য কামনা করছি।\n\n— Case Writer Pro';
+function waCompose(id){
+  const c=pbAll().find(x=>x.id===id);if(!c)return;
+  openModal(modalHead('💬 WhatsApp — '+esc(c.name))+
+    '<label>প্রাপক</label><input value="'+esc(c.name)+' · '+esc(c.phone)+'" disabled style="opacity:.7">'+
+    '<label>বার্তা (এডিট করে নিতে পারেন)</label><textarea id="wa-msg" rows="8">'+WA_NEWWORK+'</textarea>'+
+    '<button class="btn btn-primary" onclick="waSendFrom(\''+c.phone+'\')">💬 WhatsApp-এ খুলুন</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function waSendFrom(phone){
+  const t=($('wa-msg').value||'').trim();
+  window.open(waHref(phone,t),'_blank');
+  closeModal();
+}
+function waManual(){
+  openModal(modalHead('💬 WhatsApp — নম্বর লিখে')+
+    '<label>মোবাইল নম্বর *</label><input id="wa-num" placeholder="01XXXXXXXXX / +8801XXXXXXXXX / বিদেশি +CC..." inputmode="tel">'+
+    '<p class="small muted">বাংলাদেশি নম্বর স্বয়ংক্রিয়ভাবে +880 ফরম্যাটে যাবে · বিদেশি নম্বর দেশের কোডসহ (+) লিখুন · নম্বরটি ফোনবুকে সেভ হবে না</p>'+
+    '<label>বার্তা</label><textarea id="wa-msg" rows="8">'+WA_NEWWORK+'</textarea>'+
+    '<button class="btn btn-primary" onclick="waSendManual()">💬 WhatsApp-এ খুলুন</button>'+
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+}
+function waSendManual(){
+  const raw=($('wa-num').value||'').trim();
+  const t=($('wa-msg').value||'').trim();
+  const st=stdPhone(raw);
+  var href='';
+  if(st.ok)href=waHref(st.v,t);
+  else{
+    const explicitPlus=raw.charAt(0)==='+';
+    const digits=telDigits(raw).replace(/[^0-9]/g,'');
+    if(explicitPlus&&digits.length>=8&&digits.length<=15&&digits.slice(0,2)!=='88')href='https://wa.me/'+digits+(t?('?text='+encodeURIComponent(t)):'');
+    else return toast('❌ সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন (যেমন 01721100716) — অথবা বিদেশি হলে দেশের কোডসহ + দিয়ে শুরু করুন');
+  }
+  window.open(href,'_blank');
+  closeModal();
 }
 
 /* ==================== OFFICER PROFILE ==================== */
@@ -3607,6 +3807,7 @@ function applyPerms(){
   const sx=document.querySelector('#sidebar button[data-v="expenses"]');
   if(sx)sx.style.display=can('financial')?'flex':'none';
   const ids={ 'ms-search':true,'sb-search':true,
+    'ms-phonebook':pbCanAdd(),'sb-phonebook':pbCanAdd(),
     'ms-templates':(can('financial')||can('settings')),'sb-templates':(can('financial')||can('settings')),
     'ms-recycle':can('delete'),'sb-recycle':can('delete'),
     'ms-settings':can('settings'),'sb-settings':can('settings'),
@@ -3720,23 +3921,31 @@ var LAW_TIMES=[
  io:'দুদকের অনুমোদিত/ক্ষমতাপ্রাপ্ত কর্মকর্তা — সাধারণ থানার SI-এর তদন্তের মামলা নয়'}
 ];
 var COST_TIERS=[
-{id:'dacoit',label:'ডাকাতি',gov:6000},
-{id:'murder',label:'হত্যা/খুন',gov:6000},
-{id:'abduction',label:'অপহরণ',gov:5000},
-{id:'trafficking',label:'মানব পাচার',gov:5000},
-{id:'robbery',label:'দস্যুতা',gov:4000},
-{id:'udeath',label:'অপমৃত্যু/অস্বাভাবিক মৃত্যু',gov:4000},
-{id:'acid',label:'অ্যাসিড-সংক্রান্ত মামলা',gov:3000},
-{id:'terror',label:'সন্ত্রাসবিরোধী আইনের মামলা',gov:3000},
-{id:'arms',label:'অস্ত্র আইনের মামলা',gov:3000},
-{id:'speedy',label:'দ্রুত বিচার আইনের মামলা',gov:3000},
-{id:'explosive',label:'বিস্ফোরকদ্রব্য মামলা',gov:3000},
-{id:'ml',label:'মানি লন্ডারিং',gov:3000},
-{id:'cyber',label:'ডিজিটাল/সাইবার-সংক্রান্ত মামলা',gov:3000,note:'মূল প্রজ্ঞাপন-পাঠ প্রকাশ্য নয় — একটি সূত্র ২,০০০ বলেছে (শুধু সুপার এডমিন দেখছেন)'},
-{id:'women',label:'নারী ও শিশু নির্যাতন/ধর্ষণ',gov:2000},
-{id:'narcotics',label:'মাদকদ্রব্য মামলা',gov:2000},
-{id:'other',label:'অন্যান্য মামলা',gov:2000}
+{id:'dacoit',label:'ডাকাতি',gov:6000,law:0},
+{id:'murder',label:'হত্যা/খুন',gov:6000,law:0},
+{id:'abduction',label:'অপহরণ',gov:5000,law:0},
+{id:'trafficking',label:'মানব পাচার',gov:5000,law:12},
+{id:'robbery',label:'দস্যুতা',gov:4000,law:0},
+{id:'udeath',label:'অপমৃত্যু/অস্বাভাবিক মৃত্যু',gov:4000,law:0},
+{id:'acid',label:'অ্যাসিড-সংক্রান্ত মামলা',gov:3000,law:3},
+{id:'terror',label:'সন্ত্রাসবিরোধী আইনের মামলা',gov:3000,law:14},
+{id:'arms',label:'অস্ত্র আইনের মামলা',gov:3000,law:1},
+{id:'speedy',label:'দ্রুত বিচার আইনের মামলা',gov:3000,law:2},
+{id:'explosive',label:'বিস্ফোরকদ্রব্য মামলা',gov:3000,law:9},
+{id:'ml',label:'মানি লন্ডারিং',gov:3000,law:16},
+{id:'cyber',label:'ডিজিটাল/সাইবার-সংক্রান্ত মামলা',gov:3000,law:15,note:'মূল প্রজ্ঞাপন-পাঠ প্রকাশ্য নয় — একটি সূত্র ২,০০০ বলেছে (শুধু সুপার এডমিন দেখছেন)'},
+{id:'women',label:'নারী ও শিশু নির্যাতন/ধর্ষণ',gov:2000,law:5},
+{id:'narcotics',label:'মাদকদ্রব্য মামলা',gov:2000,law:11},
+{id:'other',label:'অন্যান্য মামলা',gov:2000,law:0}
 ];
+/* খাত-তালিকা এখন db-সমরক্ষিত (SA-সম্পাদনাযোগ্য) — প্রথম ব্যবহারে ডিফল্ট-টেমপ্লেট থেকে মাইগ্রেট */
+function costTiers(){
+  if(!Array.isArray(db.settings.costTiers)||!db.settings.costTiers.length){
+    db.settings.costTiers=COST_TIERS.map(function(t){return {id:t.id,label:t.label,gov:t.gov,note:t.note||'',law:(typeof t.law==='number'?t.law:0)};});
+  }
+  return db.settings.costTiers;
+}
+
 var ltState={q:'',f:'all'};
 
 function bnFmt(n){return fmt(n).replace(/\d/g,function(d){return '০১২৩৪৫৬৭৮৯'[+d];});}
@@ -3747,24 +3956,20 @@ function costCfg(){
   return db.settings.costBill;
 }
 function costVal(id){var v=costCfg().vals[id];return (v===undefined||v===null||v==='')?null:(+v||0);}
-function visibleCostRows(){return COST_TIERS.filter(function(t){return costVal(t.id)!==null;});}
+function visibleCostRows(){return costTiers().filter(function(t){return costVal(t.id)!==null;});}
 
 /* ---- ড্যাশবোর্ড-টাইল ---- */
 function renderRefCards(){
-  var wrap=$('dash-stats');if(!wrap)return;
+  var slot=$('dash-ref-slot');if(!slot)return;
   var cc=costCfg();
   var showCost=isSuperAdmin()?true:((cc.on!==false)&&visibleCostRows().length>0);
-  var h='<div class="stats ref-tiles">'+
-    statBox('⚖️','Invest. Time',bnFmt(LAW_TIMES.length)+' আইন','st-b','openLawTimes()');
+  var h='<div class="stats c2 ref-tiles">'+
+    statBox('⚖️','Invest. Time','সময়সীমা','st-b','openLawTimes()');
   if(showCost){
-    var n=visibleCostRows().length;
-    h+=statBox('💰','Invest. Expenses',(isSuperAdmin()?bnFmt(n)+'/'+bnFmt(COST_TIERS.length):bnFmt(n))+' ধরন','st-p','openCostBill()');
+    h+=statBox('💰','Invest. Cost','খরচ','st-p','openCostBill()');
   }
   h+='</div>';
-  var cur=wrap.innerHTML;
-  var i=cur.indexOf('<!--REF-->');
-  if(i>=0)cur=cur.substring(0,i);
-  wrap.innerHTML=cur+'<!--REF-->'+h;
+  slot.innerHTML=h;
 }
 
 /* ---- কার্ড ১: তদন্ত সময়সীমা ---- */
@@ -3891,20 +4096,26 @@ function openCostBill(){
   if(isSuperAdmin()){
     var cc=costCfg();
     var rows='';
-    COST_TIERS.forEach(function(t){
+    costTiers().forEach(function(t){
       var v=cc.vals[t.id];
-      rows+='<tr><td><b>'+esc(t.label)+'</b>'+(t.note?'<br><span class="cb-note">⚠️ '+esc(t.note)+'</span>':'')+'</td>'+
-        '<td class="cb-gov">'+bnFmt(t.gov)+' টাকা</td>'+
-        '<td><input class="cb-in" id="cb-in-'+t.id+'" type="number" inputmode="numeric" min="0" value="'+(v===undefined||v===null?'':v)+'" placeholder="'+t.gov+'"></td></tr>';
+      var def=COST_TIERS.find(function(d){return d.id===t.id;});
+      var edited=def&&def.gov!==t.gov;
+      rows+='<tr><td><input id="cb-nm-'+t.id+'" value="'+esc(t.label)+'" style="min-width:120px">'+(t.note?'<br><span class="cb-note">⚠️ '+esc(t.note)+'</span>':'')+'</td>'+
+        '<td class="cb-gov"><input id="cb-gov-'+t.id+'" type="number" inputmode="numeric" min="0" value="'+t.gov+'" style="width:88px">'+(edited?' <span class="cb-note" title="গেজেট-হার থেকে সম্পাদিত">✏️</span>':'')+'</td>'+
+        '<td><input class="cb-in" id="cb-in-'+t.id+'" type="number" inputmode="numeric" min="0" value="'+(v===undefined||v===null?'':v)+'" placeholder="'+t.gov+'"></td>'+
+        '<td style="min-width:150px"><select id="cb-law-'+t.id+'" style="max-width:100%">'+LAW_TIMES.map(function(L,li){return '<option value="'+li+'"'+((t.law===li)?' selected':'')+'>'+esc(L.law)+'</option>';}).join('')+'</select><br><button class="btn-small btn-danger" style="margin-top:4px" onclick="cbDelTier(\''+t.id+'\')">🗑️ খাত মুছুন</button></td></tr>';
     });
-    openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+
+    openModal(modalHead('💰 মামলা লেখার খরচ')+
       '<div class="cb-switch"><label class="switch-row" style="margin:0"><input type="checkbox" id="cb-on" '+(cc.on===false?'':'checked')+' onchange="toggleCostOn()"> <b>অন্যদের জন্য কার্ড চালু</b> — বন্ধ করলে সুপার এডমিন ছাড়া কেউ কার্ডটি দেখবে না</label></div>'+
       '<p class="small muted" style="margin:0 0 4px">সরকারি হার <b>শুধু আপনি</b> দেখছেন; ডান ঘরে যা লিখবেন, অন্যরা (অ্যাডমিন/ম্যানেজার/অফিসার/ভিউআর/গেস্ট) ঠিক তা-ই দেখবে। খালি ঘর = ওই সারিটি তাদের কাছে লুকানো থাকবে।</p>'+
-      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>সরকারি তদন্ত ব্যয়</th><th>অন্যরা যা দেখবে (টাকা)</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<p class="small muted" style="margin:0 0 4px">খাতের <b>নাম · সরকারি হার · প্রযোজ্য আইন-সময়সীমা</b> — সব সম্পাদনাযোগ্য (শুধু আপনি); ডান ঘরের মান অন্যরা দেখবে ও নতুন মামলার খাত-নির্বাচনে Deal-অ্যামাউন্ট হিসেবে বসবে। ✏️ = গেজেট-হার থেকে সম্পাদিত।</p>'+
+      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>সরকারি খরচ</th><th>অন্যরা যা দেখবে (টাকা)</th><th>আইন-সময়সীমা</th></tr></thead><tbody>'+rows+'</tbody></table>'+
       '<div class="ref-tile-btns" style="margin-top:10px">'+
         '<button class="btn btn-primary" onclick="cbSave()">💾 সংরক্ষণ</button>'+
         '<button class="btn-small" onclick="cbPreset(\'add500\')">⚡ সব সারিতে +৫০০</button>'+
         '<button class="btn-small" onclick="cbPreset(\'pc25\')">⚡ সব সারিতে +২৫%</button>'+
+        '<span style="display:inline-flex;gap:4px;align-items:center"><input id="cb-custom" type="number" inputmode="numeric" placeholder="সংখ্যা" style="width:80px;padding:6px 8px"><button class="btn-small" onclick="cbPresetCustom()">⚡ কাস্টম +</button></span>'+
+        '<button class="btn-small" onclick="cbAddTier()">➕ নতুন খাত</button>'+
         '<button class="btn-small btn-danger" onclick="cbPreset(\'clear\')">🗑️ সব মুছুন</button>'+
         '<button class="btn" onclick="printCostBill()">🖨️ প্রিন্ট</button>'+
       '</div>'+
@@ -3912,19 +4123,23 @@ function openCostBill(){
   }else{
     var cc2=costCfg();
     if(cc2.on===false){
-      openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+'<p class="small muted">এই তালিকা বর্তমানে প্রদর্শনের জন্য বন্ধ আছে।</p>');
+      openModal(modalHead('💰 মামলা লেখার খরচ')+'<p class="small muted">এই তালিকা বর্তমানে প্রদর্শনের জন্য বন্ধ আছে।</p>');
       return;
     }
     var rows2=visibleCostRows().map(function(t){return '<tr><td><b>'+esc(t.label)+'</b></td><td class="cb-gov">'+bnFmt(costVal(t.id))+' টাকা</td></tr>';}).join('');
     if(!rows2)rows2='<tr><td colspan="2" class="small muted">নির্ধারিত হয়নি</td></tr>';
-    openModal(modalHead('💰 মামলার তদন্ত ব্যয় বিল')+
-      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>তদন্ত ব্যয়</th></tr></thead><tbody>'+rows2+'</tbody></table>'+
+    openModal(modalHead('💰 মামলা লেখার খরচ')+
+      '<table class="cb-table"><thead><tr><th>মামলার ধরন</th><th>খরচ</th></tr></thead><tbody>'+rows2+'</tbody></table>'+
       '<div class="ref-tile-btns" style="margin-top:10px"><button class="btn" onclick="printCostBill()">🖨️ প্রিন্ট</button></div>');
   }
 }
 function cbSave(silent){
   var cc=costCfg();
-  COST_TIERS.forEach(function(t){
+  costTiers().forEach(function(t){
+    var nm=$('cb-nm-'+t.id),gv=$('cb-gov-'+t.id),lw=$('cb-law-'+t.id);
+    if(nm&&String(nm.value).trim())t.label=String(nm.value).trim();
+    if(gv&&String(gv.value).trim()!=='')t.gov=Math.max(0,Math.round(+gv.value||0));
+    if(lw&&String(lw.value).trim()!=='')t.law=Math.max(0,Math.min(LAW_TIMES.length-1,Math.round(+lw.value||0)));
     var el=$('cb-in-'+t.id);
     if(!el)return;
     var v=String(el.value).trim();
@@ -3945,12 +4160,12 @@ function toggleCostOn(){
 }
 function cbPreset(kind){
   if(kind==='clear'){
-    COST_TIERS.forEach(function(t){var el=$('cb-in-'+t.id);if(el)el.value='';});
+    costTiers().forEach(function(t){var el=$('cb-in-'+t.id);if(el)el.value='';});
     cbSave(true);
     toast('🗑️ সব প্রদর্শিত মান মুছে ফেলা হলো (সংরক্ষিত)');
     return;
   }
-  COST_TIERS.forEach(function(t){
+  costTiers().forEach(function(t){
     var el=$('cb-in-'+t.id);if(!el)return;
     var cur=String(el.value).trim();
     var base=(cur==='')?t.gov:(+cur||0);
@@ -3959,21 +4174,49 @@ function cbPreset(kind){
   cbSave(true);
   toast(kind==='add500'?'⚡ সব সারিতে +৫০০ টাকা (সংরক্ষিত)':'⚡ সব সারিতে +২৫% (সংরক্ষিত)');
 }
+function cbPresetCustom(){
+  var n=Math.round(+$('cb-custom').value||0);
+  if(!n)return toast('⚠️ কাস্টম সংখ্যা লিখুন (যেমন ২৫০)');
+  costTiers().forEach(function(t){
+    var el=$('cb-in-'+t.id);if(!el)return;
+    var cur=String(el.value).trim();
+    var base=(cur==='')?t.gov:(+cur||0);
+    el.value=String(Math.max(0,base+n));
+  });
+  cbSave(true);
+  toast('⚡ সব সারিতে +'+bnFmt(n)+' টাকা (সংরক্ষিত)');
+}
+function cbAddTier(){
+  var t={id:'ct-'+uid(),label:'নতুন খাত',gov:0,note:'',law:0};
+  costTiers().push(t);
+  saveDb();openCostBill();
+  try{$('cb-nm-'+t.id).focus();$('cb-nm-'+t.id).select();}catch(e){}
+}
+function cbDelTier(id){
+  var ts=costTiers();
+  var i=ts.findIndex(function(x){return x.id===id;});
+  if(i<0)return;
+  var backup=JSON.parse(JSON.stringify(ts[i]));
+  ts.splice(i,1);
+  delete costCfg().vals[id];
+  saveDb();renderRefCards();openCostBill();
+  toast('🗑️ খাত মুছে ফেলা হলো',{action:'Undo',duration:6000,onAction:function(){costTiers().push(backup);saveDb();renderRefCards();openCostBill();}});
+}
 function printCostBill(){
   var h;
   if(isSuperAdmin()){
-    h='<table><thead><tr><th>মামলার ধরন</th><th>সরকারি তদন্ত ব্যয় (টাকা)</th><th>অন্যদের প্রদর্শিত মান (টাকা)</th></tr></thead><tbody>';
-    COST_TIERS.forEach(function(t){var v=costVal(t.id);h+='<tr><td>'+esc(t.label)+'</td><td>'+bnFmt(t.gov)+'</td><td>'+(v===null?'—':bnFmt(v))+'</td></tr>';});
+    h='<table><thead><tr><th>মামলার ধরন</th><th>সরকারি খরচ (টাকা)</th><th>অন্যদের প্রদর্শিত মান (টাকা)</th></tr></thead><tbody>';
+    costTiers().forEach(function(t){var v=costVal(t.id);h+='<tr><td>'+esc(t.label)+'</td><td>'+bnFmt(t.gov)+'</td><td>'+(v===null?'—':bnFmt(v))+'</td></tr>';});
     h+='</tbody></table><p class="doc-foot">ভিত্তি: জননিরাপত্তা বিভাগের ২০২১-প্রজ্ঞাপন · হালনাগাদ: সেপ্টেম্বর ২০২৬ · অভ্যন্তরীণ কপি (সরকারি হারসহ — শুধু সুপার এডমিন)</p>';
   }else{
-    h='<table><thead><tr><th>মামলার ধরন</th><th>তদন্ত ব্যয় (টাকা)</th></tr></thead><tbody>';
+    h='<table><thead><tr><th>মামলার ধরন</th><th>খরচ (টাকা)</th></tr></thead><tbody>';
     visibleCostRows().forEach(function(t){h+='<tr><td>'+esc(t.label)+'</td><td>'+bnFmt(costVal(t.id))+'</td></tr>';});
     h+='</tbody></table>';
   }
-  printDoc('মামলার তদন্ত ব্যয় বিল',h);
+  printDoc('মামলা লেখার খরচ',h);
 }
 
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a42c4b8bbd4b1ed4',t:'MTc5MDY5ODYxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a432c5904adea721',t:'MTc5MDc2NjUyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
