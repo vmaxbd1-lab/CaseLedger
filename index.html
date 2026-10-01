@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16324f">
-<title>Case Writer Pro v6.32.0</title>
+<title>Case Writer Pro v6.33.0</title>
 <style>
 *{box-sizing:border-box}
 :root{--navy:#16324f;--navy2:#1d5b79;--teal:#2a9d8f;--green:#16a34a;--red:#dc2626;--orange:#d97706;--bg:#eef2f7;--card:#fff;--line:#e3e8ef;--txt:#22303f;--mut:#64748b}
@@ -367,7 +367,7 @@ textarea{min-height:80px;resize:vertical}
 <div id="setup-view" class="fullscreen">
   <div class="setup-box">
     <div class="logo-big">⚖️</div>
-    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.32.0</span></h2>
+    <h2 style="margin:6px 0 2px">Case Writer Pro <span style="font-size:11px;opacity:.7">v6.33.0</span></h2>
     <p style="margin:0 0 14px;font-size:13px;opacity:.85">প্রথমবার ব্যবহার — Super Admin অ্যাকাউন্ট তৈরি করুন</p>
     <div class="card">
       <label>আপনার নাম *</label>
@@ -402,7 +402,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="logo-big">🔒</div>
   <h2 id="login-biz" style="margin:8px 0 2px">Case Writer Pro</h2>
   <p style="margin:0;font-size:12px;opacity:.8">মোবাইল নম্বর ও PIN দিয়ে লগইন করুন</p>
-  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.32.0 · PC + Mobile · Cloud</p>
+  <p style="margin:3px 0 14px;font-size:10px;opacity:.55">Case Writer Pro v6.33.0 · PC + Mobile · Cloud</p>
   <input id="loginPhone" class="pin-input" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" onkeyup="if(event.key==='Enter'){try{document.getElementById('pinInput').focus();}catch(e){}}">
   <input id="pinInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" onkeyup="if(event.key==='Enter')tryLogin()">
   <button class="btn btn-primary" style="max-width:220px" onclick="tryLogin()">Unlock 🔓</button>
@@ -662,7 +662,7 @@ textarea{min-height:80px;resize:vertical}
         <h3>⚠️ Danger Zone</h3>
         <button class="btn btn-danger" onclick="openResetApp()">🗑️ Reset App (সব ডেটা মুছে যাবে!)</button>
       </div>
-      <p class="small muted center">Case Writer Pro v6.32.0 · PC + Mobile · Smart Cloud Sync · 30 Sep 2026 · ⚖️ Made for case writers</p>
+      <p class="small muted center">Case Writer Pro v6.33.0 · PC + Mobile · Smart Cloud Sync · 1 Oct 2026 · ⚖️ Made for case writers</p>
     </div>
 
     <!-- USERS -->
@@ -1211,26 +1211,58 @@ function openDraftRequest(){
     '<p class="small muted" style="margin:2px 0 8px">এই ডিভাইস থেকে সরাসরি সেভ করা যায় না (শুধু-পড়া সংযোগ) — তাই অনুরোধটি WhatsApp-এ অ্যাডমিনের কাছে যাবে, তিনি যাচাই করে যোগ করে দেবেন।</p>'+
     '<label>Case Name / Title *</label><input id="dr-name" placeholder="e.g. State vs. Karim">'+
     '<div class="two">'+
-      '<div><label>Case Type</label><select id="dr-type">'+caseTypeOptions(null).map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+      '<div><label>Case Type</label><select id="dr-type" onchange="drTypeChange()">'+caseTypeOptions(null).map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
       '<div><label>Deal Amount (৳)</label><input id="dr-deal" type="number"></div>'+
     '</div>'+
+    '<div id="dr-cat-wrap" style="display:none"><label>মামলার ধরন/খাত</label><select id="dr-cat" onchange="drCatChange()"></select></div>'+
     '<label>Client</label><input id="dr-client" placeholder="Client name">'+
     '<label>Opening Date</label><input id="dr-open" type="date" value="'+todayISO()+'">'+
     '<label>Notes</label><textarea id="dr-notes" style="min-height:48px"></textarea>'+
     '<button class="btn btn-primary" onclick="sendDraftRequest()">📤 WhatsApp-এ পাঠান</button>'+
     '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>');
+  try{$('dr-cat-wrap').style.display='none';}catch(e){}
+}
+/* ড্রাফট-অনুরোধ মোডালে খাত-নির্বাহ — মূল কেস-ফর্মের একই নিয়মে (GR=১৫ খাত, UD=শুধু অপমৃত্যু) */
+function drTypeChange(){
+  var t=$('dr-type').value,wrap=$('dr-cat-wrap'),sel=$('dr-cat');
+  if(!wrap||!sel)return;
+  var ts=costTiers();
+  var list=(t==='GR')?ts.filter(function(x){return x.id!=='udeath';}):(t==='UD')?ts.filter(function(x){return x.id==='udeath';}):[];
+  if(!list.length){wrap.style.display='none';sel.value='';return;}
+  var cur=(sel.value&&list.filter(function(x){return x.id===sel.value;})[0])?sel.value:'';
+  sel.innerHTML='<option value="">— নির্বাচন করুন —</option>'+list.map(function(x){return '<option value="'+esc(x.id)+'"'+(cur===x.id?' selected':'')+'>'+esc(x.label)+'</option>';}).join('');
+  sel.value=cur;
+  wrap.style.display='block';
+}
+function drCatChange(){
+  var id=$('dr-cat').value;if(!id)return;
+  var t=costTiers().find(function(x){return x.id===id;});if(!t)return;
+  var v=costVal(t.id);
+  $('dr-deal').value=String((v===null)?t.gov:v);
+}
+function drDeadline(){
+  try{
+    var id=$('dr-cat').value;if(!id)return '';
+    var t=costTiers().find(function(x){return x.id===id;});if(!t)return '';
+    var L=LAW_TIMES[(typeof t.law==='number'&&t.law>=0&&t.law<LAW_TIMES.length)?t.law:0];
+    return calcLawDeadline($('dr-open').value||todayISO(),L.calc,L.unit)||'';
+  }catch(e){return '';}
 }
 function sendDraftRequest(){
   const name=($('dr-name').value||'').trim();
   if(!name)return toast('মামলার নাম লিখুন');
   const wa=db.settings.adminWhatsapp;
   if(!wa)return toast('অ্যাডমিনের WhatsApp নম্বর সেট নেই — Settings → General-এ সেট করতে বলুন');
-  const d={app:'CaseLedgerDraft',v:1,name:name,type:$('dr-type').value,client:($('dr-client').value||'').trim(),deal:+$('dr-deal').value||0,open:$('dr-open').value||todayISO(),notes:($('dr-notes').value||'').trim(),byName:currentUser.name,byPhone:currentUser.phone||'',at:new Date().toISOString()};
+  const dCatId=((($('dr-cat-wrap').style||{}).display||'')!=='none'&&$('dr-cat').value)||'';
+  const dCatT=dCatId?(costTiers().find(function(x){return x.id===dCatId;})||null):null;
+  const d={app:'CaseLedgerDraft',v:1,name:name,type:$('dr-type').value,client:($('dr-client').value||'').trim(),deal:+$('dr-deal').value||0,open:$('dr-open').value||todayISO(),notes:($('dr-notes').value||'').trim(),cat:dCatT?dCatT.label:'',catId:dCatT?dCatT.id:'',dl:dCatT?drDeadline():'',byName:currentUser.name,byPhone:currentUser.phone||'',at:new Date().toISOString()};
   const link=guestLinkBase()+'#draft='+b64uEnc(JSON.stringify(d));
   const msg='🔔 নতুন মামলার অনুরোধ (Case Writer Pro)\n'+
     '👤 অফিসার: '+d.byName+(d.byPhone?' ('+d.byPhone+')':'')+'\n'+
     '📁 মামলা: '+d.name+'\n'+
     '🏷️ টাইপ: '+d.type+'\n'+
+    (d.cat?'🏷️ খাত: '+d.cat+'\n':'')+
+    (d.dl?'⏰ তদন্ত শেষ (আইন-সময়সীমা): '+d.dl+'\n':'')+
     (d.client?'👥 মক্ষেল: '+d.client+'\n':'')+
     (d.deal?'💰 ফি: ৳'+d.deal+'\n':'')+
     '📅 দায়ের: '+d.open+'\n'+
@@ -1274,6 +1306,8 @@ function applyPendingDraft(){
     if(d.deal)$('cfm-deal').value=String(d.deal);
     if(d.open)$('cfm-open').value=String(d.open).slice(0,10);
     if(d.notes)$('cfm-notes').value='[অনুরোধ: '+d.byName+'] '+String(d.notes).slice(0,400);
+    if(d.catId&&d.cat){try{$('cfm-type').value=String(d.type||'GR').slice(0,20);cfTypeChange(String(d.cat).slice(0,60));}catch(e){}}
+    if(d.dl){try{$('cfm-deadline').value=String(d.dl).slice(0,10);}catch(e){}}
     toast('📥 WhatsApp-এর মামলার অনুরোধ থেকে ফর্ম ভরা হয়েছে — যাচাই করে Save করুন');
   }catch(e){}
 }
@@ -2796,7 +2830,7 @@ function openCaseModal(id){
     const ev=[];
     if(c.openingDate)ev.push({d:c.openingDate,cls:'tl-open',ic:'📁',txt:'মামলা খোলা'+(c.caseType?' · '+esc(c.caseType):'')});
     (c.payments||[]).forEach(p=>ev.push({d:p.date||'',cls:'tl-pay',ic:'💰',txt:'পেমেন্ট '+tk(p.amount)+(p.receiptNo?' · '+esc(p.receiptNo):'')+(p.method?' · '+esc(p.method):'')}));
-    (c.caseCDs||[]).forEach(x=>ev.push({d:x.date||'',cls:'tl-cd',ic:'💿',txt:'Case CD '+esc(x.cdNo)}));
+    (c.caseCDs||[]).forEach(x=>ev.push({d:x.date||'',cls:'tl-cd',ic:'💿',txt:'Case CD '+esc(x.cdNo)+(x.note?' ('+esc(x.note)+')':'')}));
     if(c.deadline)ev.push({d:c.deadline,cls:'tl-deadline',ic:'⏰',txt:'ডেডলাইন'+((c.status==='Completed'||c.status==='Closed')?' (নিষ্পত্তি হয়েছে)':'')});
     ev.sort((a,b)=>String(a.d||'').localeCompare(String(b.d||'')));
     tlSection='<div class="cm-sec"><b>🕐 Case Timeline ('+ev.length+')</b><div class="tl">'+
@@ -4218,5 +4252,5 @@ function printCostBill(){
 
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a432c5904adea721',t:'MTc5MDc2NjUyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43aa1354b105807',t:'MTc5MDg0ODkyNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
